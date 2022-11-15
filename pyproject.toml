@@ -1,0 +1,16 @@
+[project]
+name = "iostypingsound"
+authors = [
+  { name="Nathan Fiscaletti", email="nate.fiscaletti@gmail.com" },
+]
+description = "Adds the iOS Typing Sound to your system"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/nathan-fiscaletti/iostypingsound"

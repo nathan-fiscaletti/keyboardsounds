@@ -11,6 +11,8 @@ any time you type anywhere on your system, it will sound like an iOS keyboard.
 
 ## Installation
 
+> Note: `ffmpeg` must be available on your path for this application to function.
+
 ```sh
 $ pip install iostypingsound
 ```

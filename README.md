@@ -5,7 +5,7 @@ any time you type anywhere on your system, it will sound like an iOS keyboard.
 
 ## Demo
 
-> Click to download preview video and watch with audio
+> The preview is somewhat pointless without audio. You can click the preview to download the original video and watch it with audio enabled.
 
 [![Preview Thumbnail](./preview.gif)](./preview.mov?raw=true)
 

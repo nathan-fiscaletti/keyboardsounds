@@ -5,9 +5,9 @@ any time you type anywhere on your system, it will sound like an iOS keyboard.
 
 ## Demo
 
-> Watch with audio enabled
+> Click to download preview video and watch with audio
 
-[![Preview Thumbnail](./preview-thumb.png)](./preview.mov?raw=true)
+[![Preview Thumbnail](./preview.gif)](./preview.mov?raw=true)
 
 ## Installation
 

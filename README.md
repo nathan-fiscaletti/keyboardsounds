@@ -5,8 +5,6 @@ any time you type anywhere on your system, it will sound like an iOS keyboard.
 
 [![Sponsor Me!](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
 [![PyPI version](https://badge.fury.io/py/iostypingsound.svg)](https://badge.fury.io/py/iostypingsound)
-[![Downloads](https://pepy.tech/badge/iostypingsound)](https://pepy.tech/project/iostypingsound)
-[![GitHub issues](https://img.shields.io/github/issues/nathan-fiscaletti/iostypingsound.svg)](https://github.com/nathan-fiscaletti/iostypingsound/issues)
 [![GitHub license](https://img.shields.io/github/license/nathan-fiscaletti/iostypingsound.svg)](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/LICENSE)
 
 ## Demo

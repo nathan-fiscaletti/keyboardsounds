@@ -123,7 +123,7 @@ class DaemonManager:
 
         subprocess.Popen(
             [sys.argv[0], "start-daemon", str(volume), profile, str(repeat)],
-            start_new_session=True,
+            start_new_session=True, shell=True,
         )
         time.sleep(0.5)
         return True

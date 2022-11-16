@@ -14,7 +14,7 @@ $ pip install iostypingsound
 
 > The preview is somewhat pointless without audio. You can click the preview to download the original video and watch it with audio enabled.
 
-[![Preview Thumbnail](./preview.gif)](./preview.mov?raw=true)
+[![Preview Thumbnail](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/preview.gif?raw=true)](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/preview.mov?raw=true)
 
 ## Usage
 
@@ -40,4 +40,4 @@ $ iostype stop
 
 In an effort not to directly distribute the iOS keyboard sound effects this package comes with a video recording of an iOS screen including typing in the recording. This recording is loaded at run-time and the audio clips are extracted and stored in memory for use.
 
-> See [audio_extractor.prime_audio_clips](iostypingsound/audio_extractor.py#L36) for more information.
+> See [audio_extractor.prime_audio_clips](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/iostypingsound/audio_extractor.py#L36) for more information.

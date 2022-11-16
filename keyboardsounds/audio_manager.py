@@ -62,7 +62,7 @@ class AudioManager:
         source.close()
         self.sounds[id].seek(0)
 
-    def get_sound(self, key: Key | KeyCode):
+    def get_sound(self, key):
         for mapping in self.profile.data["keys"]:
             if (key.name if isinstance(key, Key) else key.char) in mapping["keys"]:
                     configured_sound = mapping["sound"]

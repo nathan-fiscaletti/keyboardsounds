@@ -7,7 +7,7 @@ setup(
    author='Nathan Fiscaletti',
    author_email='nate.fiscaletti@gmail.com',
    packages=['iostypingsound'],
-   install_requires=['pygame', 'pynput'],
+   install_requires=['pygame', 'pynput', 'psutil'],
    package_data={
     'iostypingsound': [
       'setup/*'

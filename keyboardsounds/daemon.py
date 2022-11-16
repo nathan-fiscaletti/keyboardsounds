@@ -5,8 +5,8 @@ from pygame import mixer
 
 from pynput.keyboard import Listener
 
-from keyboard_sounds.profile import Profile
-from keyboard_sounds.audio_manager import AudioManager
+from keyboardsounds.profile import Profile
+from keyboardsounds.audio_manager import AudioManager
 
 _am = None
 _volume = 100

@@ -9,7 +9,7 @@ import io
 from imageio_ffmpeg import get_ffmpeg_exe
 from pynput.keyboard import Key, KeyCode
 
-from keyboard_sounds.profile import Profile
+from keyboardsounds.profile import Profile
 
 class AudioManager:
     def __init__(self, profile: Profile) -> None:

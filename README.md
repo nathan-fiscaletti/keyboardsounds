@@ -12,7 +12,7 @@ $ pip install keyboardsounds
 
 > Click to view a preview of the application.
 
-[![Preview Video](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/video-preview.png?raw=true)](https://www.youtube.com/watch?v=r-B0Iqad564)
+[![Preview Video](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/video-preview.png?raw=true)](https://www.youtube.com/watch?v=sWAj8zEk7sQ)
 
 ## Overview
 
@@ -29,7 +29,7 @@ You can also create [Custom Profiles](#custom-profiles).
 
 In an effort not to directly distribute the iOS keyboard sound effects this package comes with a video recording of an iOS screen including typing in the recording. This recording is loaded at run-time and the audio clips are extracted and stored in memory for use.
 
-> See [AudioManager.prime_audio_clips](./keyboard_sounds/audio_manager.py#L19) for more information.
+> See [AudioManager.prime_audio_clips](./keyboardsounds/audio_manager.py#L19) for more information.
 
 ## Usage
 
@@ -40,19 +40,19 @@ usage:
 
   manage daemon:
 
-    keyboard-sounds start [-v <volume>] [-p <profile>]
-    keyboard-sounds stop
-    keyboard-sounds status
+    keyboardsounds start [-v <volume>] [-p <profile>]
+    keyboardsounds stop
+    keyboardsounds status
 
   manage profiles:
 
-    keyboard-sounds add-profile -z <zipfile>
-    keyboard-sounds remove-profile -n <profile>
-    keyboard-sounds list-profiles
+    keyboardsounds add-profile -z <zipfile>
+    keyboardsounds remove-profile -n <profile>
+    keyboardsounds list-profiles
 
   other:
 
-    keyboard-sounds version
+    keyboardsounds version
 
 
 positional arguments:
@@ -78,12 +78,12 @@ Starts the daemon if it is not running. Otherwise, can be used to re-start it wi
 
 ```powershell
 # Start with default volume of 100%
-$ keyboard-sounds start
+$ keyboardsounds start
 ```
 
 ```powershell
 # Start or reconfigure with a volume of 50%
-$ keyboard-sounds start -v 50
+$ keyboardsounds start -v 50
 ```
 
 **Action: `status`**
@@ -91,7 +91,7 @@ $ keyboard-sounds start -v 50
 Checks the current status of the daemon.
 
 ```powershell
-$ keyboard-sounds status
+$ keyboardsounds status
 ```
 
 **Action: `stop`**
@@ -99,7 +99,7 @@ $ keyboard-sounds status
 Stops the daemon if it is running.
 
 ```powershell
-$ keyboard-sounds stop
+$ keyboardsounds stop
 ```
 
 ### Manage Profiles
@@ -109,7 +109,7 @@ $ keyboard-sounds stop
 Adds a new profile to the application.
 
 ```powershell
-$ keyboard-sounds add-profile -z ./my-profile.zip
+$ keyboardsounds add-profile -z ./my-profile.zip
 ```
 
 **Action: `remove-profile`**
@@ -117,7 +117,7 @@ $ keyboard-sounds add-profile -z ./my-profile.zip
 Removes a profile from the application.
 
 ```powershell
-$ keyboard-sounds remove-profile -n myprofile
+$ keyboardsounds remove-profile -n myprofile
 ```
 
 **Action: `list-profiles`**
@@ -125,7 +125,7 @@ $ keyboard-sounds remove-profile -n myprofile
 Lists the currently loaded profiles.
 
 ```powershell
-$ keyboard-sounds list-profiles
+$ keyboardsounds list-profiles
 ```
 
 ## Custom Profiles

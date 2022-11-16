@@ -5,8 +5,8 @@ import subprocess
 import time
 import json
 
-import keyboard_sounds.daemon as daemon
-from keyboard_sounds.profile import Profile
+import keyboardsounds.daemon as daemon
+from keyboardsounds.profile import Profile
 
 class DaemonManager:
     def __init__(self, lock_file) -> None:

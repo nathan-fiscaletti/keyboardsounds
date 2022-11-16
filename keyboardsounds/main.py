@@ -5,9 +5,9 @@ import json
 
 from importlib.metadata import version
 
-from keyboard_sounds.daemon_manager import DaemonManager
-from keyboard_sounds.profile import Profile
-from keyboard_sounds.root import ROOT
+from keyboardsounds.daemon_manager import DaemonManager
+from keyboardsounds.profile import Profile
+from keyboardsounds.root import ROOT
 
 def main():
     LOCK_FILE = f"{ROOT}/.lock"
@@ -33,7 +33,7 @@ def main():
     )
 
     parser = argparse.ArgumentParser(
-        prog=f"keyboard-sounds",
+        prog=f"keyboardsounds",
         usage=argparse.SUPPRESS,
         description=f"Keyboard Sounds v{version_number}{os.linesep * 2}{usage}{os.linesep}",
         formatter_class=argparse.RawDescriptionHelpFormatter

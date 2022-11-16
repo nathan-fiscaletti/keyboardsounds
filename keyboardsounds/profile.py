@@ -4,7 +4,7 @@ import zipfile
 import shutil
 import tempfile
 
-from keyboard_sounds.root import ROOT
+from keyboardsounds.root import ROOT
 
 VALID_PROFILE_TYPES = ["video-extract", "files"]
 

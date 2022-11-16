@@ -14,7 +14,7 @@ $ pip install iostypingsound
 
 > Click to view a preview of the application.
 
-[![Preview Video](https://img.youtube.com/vi/r-B0Iqad564/0.jpg)](https://www.youtube.com/watch?v=r-B0Iqad564)
+[![Preview Video](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/video-preview.png?raw=true)](https://www.youtube.com/watch?v=r-B0Iqad564)
 
 ## How are the sounds packaged?
 

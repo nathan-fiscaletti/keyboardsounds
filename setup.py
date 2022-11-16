@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
    name='iostypingsound',
-   version='1.0.0',
+   version='1.0.1',
    description='Adds the iOS Typing Sound to your system',
    author='Nathan Fiscaletti',
    author_email='nate.fiscaletti@gmail.com',

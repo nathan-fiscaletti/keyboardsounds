@@ -5,13 +5,8 @@ import os
 from iostypingsound.process_manager import ProcessManager
 from iostypingsound.ios_keys import run
 from iostypingsound.root import ROOT
-from iostypingsound.audio_extractor import ffmpeg_installed
 
 def main():
-    if not ffmpeg_installed():
-        print(f"(ffmpeg) Error: ffmpeg is not available in path. Please install ffmpeg and try again.")
-        return False
-
     PID_LOCK_FILE = f"{ROOT}/pid.lock"
 
     pm = ProcessManager(PID_LOCK_FILE)

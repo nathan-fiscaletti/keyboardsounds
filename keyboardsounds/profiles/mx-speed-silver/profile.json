@@ -1,0 +1,41 @@
+{
+    "name": "mx-speed-silver",
+    "type": "files",
+    "default": [
+        "mx1", "mx2", "mx3", "mx4", "mx5", "mx6"
+    ],
+    "sounds": [
+        {
+            "id": "mx1",
+            "file": "mx-speed-silver-1.wav"
+        },
+        {
+            "id": "mx2",
+            "file": "mx-speed-silver-2.wav"
+        },
+        {
+            "id": "mx3",
+            "file": "mx-speed-silver-3.wav"
+        },
+        {
+            "id": "mx4",
+            "file": "mx-speed-silver-4.wav"
+        },
+        {
+            "id": "mx5",
+            "file": "mx-speed-silver-5.wav"
+        },
+        {
+            "id": "mx6",
+            "file": "mx-speed-silver-6.wav"
+        }
+    ],
+    "keys": [
+        {
+            "sound": ["mx1", "mx2", "mx3"],
+            "keys": [
+                "backspace"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "name": "osu-nagatoro",
+    "type": "files",
+    "default": "n1",
+    "sounds": [
+        {
+            "id": "n1",
+            "file": "nagatoro-1.wav"
+        },
+        {
+            "id": "n2",
+            "file": "nagatoro-2.wav"
+        }
+    ],
+    "keys": [
+        {
+            "keys": [
+                "backspace", "space", "alt", "ctrl",
+                "shift", "tab", "enter",
+                "insert", "home", "page_up",
+                "page_down", "delete", "end"
+            ],
+            "sound": "n2"
+        }
+    ]
+}

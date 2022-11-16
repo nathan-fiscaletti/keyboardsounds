@@ -5,6 +5,7 @@ import subprocess
 import wave
 import os
 import io
+import random
 
 from imageio_ffmpeg import get_ffmpeg_exe
 from pynput.keyboard import Key, KeyCode
@@ -64,5 +65,14 @@ class AudioManager:
     def get_sound(self, key: Key | KeyCode):
         for mapping in self.profile.data["keys"]:
             if (key.name if isinstance(key, Key) else key.char) in mapping["keys"]:
-                    return io.BytesIO(self.sounds[mapping["sound"]].getbuffer().tobytes())
-        return io.BytesIO(self.sounds[self.profile.data["default"]].getbuffer().tobytes())
+                    configured_sound = mapping["sound"]
+                    if type(configured_sound) is list:
+                        return io.BytesIO(self.sounds[random.choice(configured_sound)].getbuffer().tobytes())
+                    else:
+                        return io.BytesIO(self.sounds[configured_sound].getbuffer().tobytes())
+
+        configured_default = self.profile.data["default"]
+        if type(configured_default) is list:
+            return io.BytesIO(self.sounds[random.choice(configured_default)].getbuffer().tobytes())
+        return io.BytesIO(self.sounds[configured_default].getbuffer().tobytes())
+        

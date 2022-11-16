@@ -41,8 +41,13 @@ class Profile:
 
         # Validate Default
 
-        if self.data["default"] is None or self.data["default"] not in [(sound["id"] if "id" in sound else None) for sound in self.data["sounds"]]:
-            raise ValueError(f"Profile '{self.name}' is corrupted. Default sound key '{self.data['default']}' does not reference a valid id in the sounds array.")
+        if type(self.data["default"]) is list:
+            for default in self.data["default"]:
+                if default is None or default not in [(sound["id"] if "id" in sound else None) for sound in self.data["sounds"]]:
+                    raise ValueError(f"Profile '{self.name}' is corrupted. Default sound key '{default}' does not reference a valid id in the sounds array.")
+        else:
+            if self.data["default"] is None or self.data["default"] not in [(sound["id"] if "id" in sound else None) for sound in self.data["sounds"]]:
+                raise ValueError(f"Profile '{self.name}' is corrupted. Default sound key '{self.data['default']}' does not reference a valid id in the sounds array.")
         
         # Validate Sounds
 

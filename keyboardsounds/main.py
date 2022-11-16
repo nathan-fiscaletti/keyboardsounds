@@ -21,7 +21,7 @@ def main():
     usage = (
         f"usage: {os.linesep * 2}"
         f"  manage daemon:{os.linesep * 2}"
-        f"    %(prog)s start [-v <volume>] [-p <profile>]{os.linesep}"
+        f"    %(prog)s start [-v <volume>] [-p <profile>] [-r]{os.linesep}"
         f"    %(prog)s stop{os.linesep}"
         f"    %(prog)s status{os.linesep * 2}"
         f"  manage profiles:{os.linesep * 2}"
@@ -44,6 +44,7 @@ def main():
     # Start Action
     parser.add_argument("-v", "--volume", type=int, default=100, metavar="volume", help="volume of the sound effects (0-100), default 100")
     parser.add_argument("-p", "--profile", type=str, default="ios", metavar="profile", help="sound profile to use, default 'ios'")
+    parser.add_argument("-r", "--repeat", default=False, action="store_true", help="repeat the sound effect when the key is held down")
 
     # Profiles
     parser.add_argument("-n", "--name", type=str, default=None, metavar="name", help="name of the profile remove")
@@ -59,16 +60,10 @@ def main():
             print("Re-configuring running instance of Keyboard Sounds daemon...")
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
-        
-        if not dm.try_start(volume=args.volume, profile=args.profile):
-            print("Failed to start daemon.")
+        if not dm.try_start(volume=args.volume, profile=args.profile, repeat=args.repeat):
+            print("Failed to start.")
             return;
-
-        volume = dm.get_volume()
-        volume_status = f" (Volume: {volume}%)" if volume is not None else ""
-        pid = dm.get_pid()
-        pid_status = f" (PID: {pid})" if pid is not None else ""
-        print(f"Started Keyboard Sounds daemon{volume_status}{pid_status}.")
+        print(f"Started Keyboard Sounds.")
     elif args.action == "stop":
         stopped = dm.try_stop()
         print("Stopped Keyboard Sounds daemon." if stopped else "Failed to stop Keyboard Sounds daemon. Is it running?")

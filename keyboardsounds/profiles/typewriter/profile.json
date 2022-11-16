@@ -1,35 +1,49 @@
 {
     "name": "typewriter",
     "type": "files",
-    "default": "key",
+    "default": ["key1", "key2"],
     "sounds": [
         {
-            "id": "key",
+            "id": "key1",
             "file": "key.wav"
         },
         {
-            "id": "alt",
-            "file": "alt.wav"
+            "id": "key2",
+            "file": "key2.wav"
+        },
+        {
+            "id": "space",
+            "file": "space.wav"
         },
         {
             "id": "back",
-            "file": "back.wav"
+            "file": "delete.wav"
+        },
+        {
+            "id": "enter",
+            "file": "enter.wav"
         }
     ],
     "keys": [
         {
             "sound": "back",
             "keys": [
-                "space", "backspace"
+                "backspace", "delete"
             ]
         },
         {
-            "sound": "alt",
+            "sound": "enter",
+            "keys": [
+                "enter"
+            ]
+        },
+        {
+            "sound": "space",
             "keys": [
                 "alt", "ctrl", "shift",
                 "tab", "enter", "insert",
                 "home", "page_up", "page_down",
-                "delete", "end"
+                "delete", "end", "space"
             ]
         }
     ]

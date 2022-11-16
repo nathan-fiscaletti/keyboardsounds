@@ -8,22 +8,13 @@
 $ pip install keyboardsounds
 ```
 
+This python package will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
+
 ## Preview Video
 
 > Click to view a preview of the application.
 
 [![Preview Video](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/video-preview.png?raw=true)](https://www.youtube.com/watch?v=sWAj8zEk7sQ)
-
-## Overview
-
-This python package will add the ability to play sounds while typing anywhere on your system.
-
-By default, it ships with two profiles.
-
-- **ios**: Mimics the sounds made by an iPhone or iPad keyboard.
-- **typewriter**: Mimics the sounds of a typewriter.
-
-You can also create [Custom Profiles](#custom-profiles).
 
 ## iOS Sounds
 
@@ -40,7 +31,7 @@ usage:
 
   manage daemon:
 
-    keyboardsounds start [-v <volume>] [-p <profile>]
+    keyboardsounds start [-v <volume>] [-p <profile>] [-r]
     keyboardsounds stop
     keyboardsounds status
 
@@ -65,6 +56,7 @@ options:
                         volume of the sound effects (0-100), default 100
   -p profile, --profile profile
                         sound profile to use, default 'ios'
+  -r, --repeat          repeat the sound effect when the key is held down
   -n name, --name name  name of the profile remove
   -z file, --zip file   path to the zip file containing the profile to add
   -V, --version         show program's version number and exit
@@ -84,6 +76,16 @@ $ keyboardsounds start
 ```powershell
 # Start or reconfigure with a volume of 50%
 $ keyboardsounds start -v 50
+```
+
+```powershell
+# Start or reconfigure with a specific profile
+$ keyboardsounds start -p typewriter
+```
+
+```powershell
+# Start or reconfigure to allow for key repeat sounds
+$ keyboardsounds start -r
 ```
 
 **Action: `status`**
@@ -130,25 +132,22 @@ $ keyboardsounds list-profiles
 
 ## Custom Profiles
 
+> 🛈 Custom Profile Builder Coming Soon
+
 This application supports custom profiles in which you can provide your own WAV files to be used for the different keys pressed.
-
-By default, it ships with two profiles.
-
-- **ios**: Mimics the sounds made by an iPhone or iPad keyboard.
-- **typewriter**: Mimics the sounds of a typewriter.
 
 ### Creating a Profile
 
 1. Create a new directory containing the sounds you wish to use.
 2. Add a new file to the directory called `profile.json`.
 3. Follow the example format below to create the profile.
-4. Zip the directory into a ZIP file.
+4. Combine the files into a ZIP file. The files must be at the root of the zip file.
 
 You can then add this profile using the `add-profile` action.
 
 ### Example Profile
 
-> Note: Comments are not technically valid JSON. Make sure you remove them if you choose to use this example as a starting point for your `profile.json` file.
+> Note: Comments are technically **not** valid JSON. Make sure you remove them if you choose to use this example as a starting point for your `profile.json` file.
 
 ```json
 {
@@ -161,7 +160,11 @@ You can then add this profile using the `add-profile` action.
     // References a sound in the "sounds" array.
     // This will be used as the default value for any key
     // not specified in the "keys" array.
-    "default": "key",
+    //
+    // This can either be a single ID from the "sounds" array
+    // or an array of IDs, from which one will be randomly
+    // selected each time a key is pressed.
+    "default": ["key", "key2"],
 
     // This is an array of the different sounds available.
     // All sound files should be stored directly in the root
@@ -176,8 +179,16 @@ You can then add this profile using the `add-profile` action.
             "file": "key.wav"
         },
         {
+            "id": "key2",
+            "file": "key2.wav"
+        },
+        {
             "id": "alt",
             "file": "alt.wav"
+        },
+        {
+            "id": "alt2",
+            "file": "alt2.wav"
         },
         {
             "id": "back",
@@ -189,13 +200,17 @@ You can then add this profile using the `add-profile` action.
     // from the "sounds" array.
     "keys": [
         {
+            // This can either be a single ID from the "sounds
+            // array or an array of IDs, from which one will
+            // be randomly selected each time a key is pressed.
             "sound": "back",
+
             "keys": [
                 "space", "backspace"
             ]
         },
         {
-            "sound": "alt",
+            "sound": ["alt", "alt2"],
             "keys": [
                 "alt", "ctrl", "shift",
                 "tab", "enter", "insert",

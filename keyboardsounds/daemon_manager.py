@@ -24,19 +24,27 @@ class DaemonManager:
                 with open(self.lock_file, "r") as f:
                     self.proc_info = json.load(f)
             except ValueError:
+                self.proc_info = None
                 pass
+        else:
+            self.proc_info = None
 
         if self.proc_info:
             try:
                 self.proc = psutil.Process(self.proc_info["pid"])
             except psutil.NoSuchProcess:
+                self.proc = None
                 pass
+        else:
+            self.proc = None
 
         if self.proc:
             try:
                 self.is_daemon_process = self.proc.name() == psutil.Process().name()
             except ValueError:
                 pass
+        else:
+            self.is_daemon_process = False
 
     def status(self, full=False) -> str:
         if full:
@@ -98,7 +106,7 @@ class DaemonManager:
 
         return True
 
-    def try_start(self, volume: int, profile: str) -> None:
+    def try_start(self, volume: int, profile: str, repeat: bool) -> None:
         try:
             Profile(profile)
         except ValueError as err:
@@ -114,22 +122,16 @@ class DaemonManager:
             self.try_stop()
 
         subprocess.Popen(
-            [sys.argv[0], "start-daemon", str(volume), profile],
+            [sys.argv[0], "start-daemon", str(volume), profile, str(repeat)],
             start_new_session=True,
         )
         time.sleep(0.5)
         return True
 
     def capture_daemon_initialization(self):
-        if len(sys.argv) == 4 and sys.argv[1] == "start-daemon":
+        if len(sys.argv) == 5 and sys.argv[1] == "start-daemon":
             if self.status() == "running":
                 return
-
-            profile = "ios"
-            try:
-                profile = sys.argv[3]
-            except:
-                pass
 
             volume = 100
             try:
@@ -137,17 +139,30 @@ class DaemonManager:
             except:
                 pass
 
+            profile = "ios"
+            try:
+                profile = sys.argv[3]
+            except:
+                pass
+
+            repeat = False
+            try:
+                repeat = sys.argv[4] == 'True'
+            except:
+                pass
+
             with open(self.lock_file, 'w') as f:
                 json.dump({
                     "pid": os.getpid(),
                     "volume": volume,
-                    "profile": profile
+                    "profile": profile,
+                    "repeat": repeat,
                 }, f)
 
             f = open(os.devnull, 'w')
             sys.stdout = f
             sys.stderr = f
-            daemon.run(volume, profile)
+            daemon.run(volume, profile, repeat)
             return True
         return False
         

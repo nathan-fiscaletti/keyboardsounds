@@ -1,0 +1,103 @@
+{
+    "name": "telios-v2",
+    "type": "files",
+    "default": ["k1", "k2", "k3", "k4", "k5", "k6"],
+    "sounds": [
+        {
+            "id": "back",
+            "file": "back.wav"
+        },
+        {
+            "id": "caps",
+            "file": "caps.wav"
+        },
+        {
+            "id": "ctrl",
+            "file": "ctrl.wav"
+        },
+        {
+            "id": "ent",
+            "file": "ent.wav"
+        },
+        {
+            "id": "k1",
+            "file": "key1.wav"
+        },
+        {
+            "id": "k2",
+            "file": "key2.wav"
+        },
+        {
+            "id": "k3",
+            "file": "key3.wav"
+        },
+        {
+            "id": "k4",
+            "file": "key4.wav"
+        },
+        {
+            "id": "k5",
+            "file": "key5.wav"
+        },
+        {
+            "id": "k6",
+            "file": "key6.wav"
+        },
+        {
+            "id": "shift",
+            "file": "shift.wav"
+        },
+        {
+            "id": "space",
+            "file": "space.wav"
+        },
+        {
+            "id": "tab",
+            "file": "tab.wav"
+        }
+    ],
+    "keys": [
+        {
+            "keys": [
+                "backspace", "delete"
+            ],
+            "sound": "back"
+        },
+        {
+            "keys": [
+                "capslock"
+            ],
+            "sound": "caps"
+        },
+        {
+            "keys": [
+                "ctrl"
+            ],
+            "sound": "ctrl"
+        },
+        {
+            "keys": [
+                "enter"
+            ],
+            "sound": "ent"
+        },
+        {
+            "keys": [
+                "shift"
+            ],
+            "sound": "shift"
+        },
+        {
+            "keys": [
+                "space"
+            ],
+            "sound": "space"
+        },
+        {
+            "keys": [
+                "tab"
+            ],
+            "sound": "tab"
+        }
+    ]
+}

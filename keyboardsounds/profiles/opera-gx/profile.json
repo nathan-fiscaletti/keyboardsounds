@@ -1,0 +1,90 @@
+{
+    "name": "opera-gx",
+    "type": "files",
+    "default": ["k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9", "k10", "k11", "k12"],
+    "sounds": [
+        {
+            "id": "back",
+            "file": "backspace.wav"
+        },
+        {
+            "id": "ent",
+            "file": "enter.wav"
+        },
+        {
+            "id": "space",
+            "file": "space.wav"
+        },
+        {
+            "id": "k1",
+            "file": "1real.wav"
+        },
+        {
+            "id": "k2",
+            "file": "2real.wav"
+        },
+        {
+            "id": "k3",
+            "file": "3real.wav"
+        },
+        {
+            "id": "k4",
+            "file": "4real.wav"
+        },
+        {
+            "id": "k5",
+            "file": "5real.wav"
+        },
+        {
+            "id": "k6",
+            "file": "6real.wav"
+        },
+        {
+            "id": "k7",
+            "file": "7real.wav"
+        },
+        {
+            "id": "k8",
+            "file": "8real.wav"
+        },
+        {
+            "id": "k9",
+            "file": "9real.wav"
+        },
+        {
+            "id": "k10",
+            "file": "10real.wav"
+        },
+        {
+            "id": "k11",
+            "file": "11real.wav"
+        },
+        {
+            "id": "k12",
+            "file": "12real.wav"
+        }
+    ],
+    "keys": [
+        {
+            "keys": [
+                "backspace", "delete"
+            ],
+            "sound": "back"
+        },
+        {
+            "keys": [
+                "space", "alt", "ctrl",
+                "shift", "tab",
+                "insert", "home", "page_up",
+                "page_down", "end"
+            ],
+            "sound": "space"
+        },
+        {
+            "keys": [
+                "enter"
+            ],
+            "sound": "ent"
+        }
+    ]
+}

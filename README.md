@@ -14,7 +14,7 @@ This python package will add the iOS Keyboard Typing Sound to your system so tha
 
 ## Installation
 
-> Note: `ffmpeg` must be available on your path for this application to function.
+> Note: `ffmpeg` must be available on your path for this application to function. Click [here](https://ffmpeg.org/download.html) for more information.
 
 ```sh
 $ pip install iostypingsound

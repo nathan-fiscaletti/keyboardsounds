@@ -19,8 +19,8 @@ def main():
             f.write(str(os.getpid()))
 
         f = open(os.devnull, 'w')
-        # sys.stdout = f
-        # sys.stderr = f
+        sys.stdout = f
+        sys.stderr = f
         run()
 
     parser = argparse.ArgumentParser(description="Manage the iOS Typing Sound daemon.")

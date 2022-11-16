@@ -34,7 +34,7 @@ In an effort not to directly distribute the iOS keyboard sound effects this pack
 ## Usage
 
 ```yaml
-Keyboard Sounds v2.2.0
+Keyboard Sounds vX.X.X
 
 usage:
 

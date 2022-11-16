@@ -1,10 +1,10 @@
 [project]
-name = "iostypingsound"
+name = "keyboardsounds"
 version = "2.2.0"
 authors = [
   { name="Nathan Fiscaletti", email="nate.fiscaletti@gmail.com" },
 ]
-description = "Adds the iOS Typing Sound to your system"
+description = "Adds the ability to play sounds while typing on any system."
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
@@ -14,4 +14,4 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/nathan-fiscaletti/iostypingsound"
+"Homepage" = "https://github.com/nathan-fiscaletti/keyboardsounds"

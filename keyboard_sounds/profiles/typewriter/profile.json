@@ -1,0 +1,36 @@
+{
+    "name": "typewriter",
+    "type": "files",
+    "default": "key",
+    "sounds": [
+        {
+            "id": "key",
+            "file": "key.wav"
+        },
+        {
+            "id": "alt",
+            "file": "alt.wav"
+        },
+        {
+            "id": "back",
+            "file": "back.wav"
+        }
+    ],
+    "keys": [
+        {
+            "sound": "back",
+            "keys": [
+                "space", "backspace"
+            ]
+        },
+        {
+            "sound": "alt",
+            "keys": [
+                "alt", "ctrl", "shift",
+                "tab", "enter", "insert",
+                "home", "page_up", "page_down",
+                "delete", "end"
+            ]
+        }
+    ]
+}

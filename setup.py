@@ -1,21 +1,21 @@
 from setuptools import setup
 
 setup(
-   name='iostypingsound',
+   name='keyboardsounds',
    version='2.2.0',
-   description='Adds the iOS Typing Sound to your system',
+   description='Adds the ability to play sounds while typing on any system.',
    author='Nathan Fiscaletti',
    author_email='nate.fiscaletti@gmail.com',
-   packages=['iostypingsound'],
+   packages=['keyboardsounds'],
    install_requires=['pygame', 'pynput', 'psutil', 'imageio-ffmpeg'],
    package_data={
-    'iostypingsound': [
-      'setup/*'
+    'keyboardsounds': [
+      'profiles/*'
     ],
    },
    entry_points={
          'console_scripts': [
-                'iostype = iostypingsound.main:main',
+                'keyboard-sounds = keyboard_sounds.main:main',
          ],
    },
 )

@@ -1,0 +1,40 @@
+{
+    "name": "ios",
+    "type": "video-extract",
+    "default": "key",
+    "video": "ios-video-recording.mp4",
+    "sounds": [
+        {
+            "id": "key",
+            "start": 3.377,
+            "end": 3.392
+        },
+        {
+            "id": "alt",
+            "start": 5.050,
+            "end": 5.073
+        },
+        {
+            "id": "back",
+            "start": 6.723,
+            "end": 6.766
+        }
+    ],
+    "keys": [
+        {
+            "keys": [
+                "space", "alt", "ctrl",
+                "shift", "tab", "enter",
+                "insert", "home", "page_up",
+                "page_down", "delete", "end"
+            ],
+            "sound": "alt"
+        },
+        {
+            "keys": [
+                "backspace"
+            ],
+            "sound": "back"
+        }
+    ]
+}

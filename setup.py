@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
    name='keyboardsounds',
-   version='3.0.0',
+   version='3.1.0',
    description='Adds the ability to play sounds while typing on any system.',
    author='Nathan Fiscaletti',
    author_email='nate.fiscaletti@gmail.com',
@@ -10,7 +10,8 @@ setup(
    install_requires=['pygame', 'pynput', 'psutil', 'imageio-ffmpeg'],
    package_data={
     'keyboardsounds': [
-      'profiles/*'
+      'profiles/ios/*',
+      'profiles/typewriter/*'
     ],
    },
    entry_points={

@@ -10,34 +10,60 @@ This python package will add the iOS Keyboard Typing Sound to your system so tha
 $ pip install iostypingsound
 ```
 
-## Demo
+## Preview Video
 
-> The preview is somewhat pointless without audio. You can click the preview to download the original video and watch it with audio enabled.
+> Click to view a preview of the application.
 
-[![Preview Thumbnail](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/preview.gif?raw=true)](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/preview.mov?raw=true)
+[![Preview Video](https://img.youtube.com/vi/r-B0Iqad564/0.jpg)](https://www.youtube.com/watch?v=r-B0Iqad564)
 
-## Usage
-
-Start the daemon
-
-```sh
-$ iostype start
-```
-
-Check the status of the daemon
-
-```sh
-$ iostype status
-```
-
-Stop the daemon
-
-```sh
-$ iostype stop
-```
-
-## Where do the sounds come from?
+## How are the sounds packaged?
 
 In an effort not to directly distribute the iOS keyboard sound effects this package comes with a video recording of an iOS screen including typing in the recording. This recording is loaded at run-time and the audio clips are extracted and stored in memory for use.
 
-> See [audio_extractor.prime_audio_clips](https://github.com/nathan-fiscaletti/iostypingsound/blob/master/iostypingsound/audio_extractor.py#L36) for more information.
+## Usage
+
+```yaml
+iOS Typing Sound vX.X.X
+
+Manage the iOS Typing Sound daemon.
+
+usage: iostype [start [-v <volume>]|stop|status]
+
+positional arguments:
+  {start,stop,status}
+
+options:
+  -h, --help           show this help message and exit
+  -v volume            volume of the sound effects (0-100)
+  -V, --version        show program's version number and exit
+```
+
+### Action: `start`
+
+Starts the daemon if it is not running. Otherwise, can be used to re-start it with an adjusted configuration.
+
+```powershell
+# Start with default volume of 100%
+$ iostype start
+```
+
+```powershell
+# Start or reconfigure with a volume of 50%
+$ iostype start -v 50
+```
+
+### Action: `status`
+
+Checks the current status of the daemon.
+
+```powershell
+$ iostype status
+```
+
+### Action: `stop`
+
+Stops the daemon if it is running.
+
+```powershell
+$ iostype stop
+```

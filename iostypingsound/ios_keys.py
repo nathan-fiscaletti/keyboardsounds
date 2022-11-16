@@ -12,6 +12,8 @@ from iostypingsound.audio_extractor import Sound
 
 from iostypingsound.root import ROOT
 
+_volume = 100
+
 def on_press(key):
     # Default to key.wav
     sound = Sound.Key
@@ -30,10 +32,16 @@ def on_press(key):
         sound = Sound.Alt
 
     # Play the sound
-    mixer.Sound(get_sound(sound)).play()
+    clip = mixer.Sound(get_sound(sound))
+    global _volume
+    clip.set_volume(float(_volume) / float(100))
+    clip.play()
 
-def run():
+def run(volume):
     success = prime_audio_clips()
+
+    global _volume
+    _volume = volume
 
     if success:
         mixer.init()

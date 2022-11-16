@@ -3,30 +3,31 @@ import sys
 import psutil
 import subprocess
 import time
+import json
 
 from iostypingsound.ios_keys import run
 
 class ProcessManager:
     def __init__(self, lock_file) -> None:
         self.lock_file = lock_file
-        self.pid = None
-        self.pid_lock_exists = False
+        self.proc_info = None
+        self.lock_exists = False
         self.is_ios_keys_process = False
         self.proc = None
         self._load_status()
 
     def _load_status(self):
         if os.path.isfile(self.lock_file):
-            self.pid_lock_exists = True
+            self.lock_exists = True
             try:
                 with open(self.lock_file, "r") as f:
-                    self.pid = int(f.read())
+                    self.proc_info = json.load(f)
             except ValueError:
                 pass
 
-        if self.pid:
+        if self.proc_info:
             try:
-                self.proc = psutil.Process(self.pid)
+                self.proc = psutil.Process(self.proc_info["pid"])
             except psutil.NoSuchProcess:
                 pass
 
@@ -38,7 +39,7 @@ class ProcessManager:
 
     def status(self) -> str:
         self._load_status()
-        if self.pid_lock_exists:
+        if self.lock_exists:
             if self.is_ios_keys_process:
                 return "running"
             else:
@@ -46,33 +47,50 @@ class ProcessManager:
         else:
             return "free"
 
+    def get_volume(self) -> int:
+        self._load_status()
+        status = self.status()
+        if status == "running":
+            return self.proc_info["volume"]
+        return None
+
+    def get_pid(self) -> int:
+        self._load_status()
+        status = self.status()
+        if status == "running":
+            return self.proc_info["pid"]
+        return None
+
     def try_stop(self) -> None:
         status = self.status()
         if status == "free":
-            print("Error: iOS Typing Sound is not running.")
-            return
+            return False
 
-        if self.pid_lock_exists:
-            if self.is_ios_keys_process:
-                self.proc.kill()
+        if status == "running":
+            self.proc.kill()
+            status = self.status()
+
+        if status == "stale":
             os.unlink(self.lock_file)
-        self.pid = None
-        self.pid_lock_exists = False
+
+        self.proc_info = None
+        self.lock_exists = False
         self.is_ios_keys_process = False
         self.proc = None
 
-    def try_start(self) -> None:
+        return True
+
+    def try_start(self, volume: int) -> None:
         status = self.status()
         if status == "running":
-            print("Error: iOS Typing Sound is already running.")
-            return
+            self.try_stop()
+            status = self.status()
 
         if status == "stale":
-            print("Error: Found stale instance of iOS Typing Sound. Attempting to stop it before starting...")
             self.try_stop()
 
         subprocess.Popen(
-            [sys.argv[0], "start-daemon"],
+            [sys.argv[0], "start-daemon", str(volume)],
             start_new_session=True,
         )
         time.sleep(0.5)

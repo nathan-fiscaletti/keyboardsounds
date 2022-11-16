@@ -39,3 +39,5 @@ $ iostype stop
 ## Where do the sounds come from?
 
 In an effort not to directly distribute the iOS keyboard sound effects this package comes with a video recording of an iOS screen including typing in the recording. This recording is loaded at run-time and the audio clips are extracted and stored in memory for use.
+
+> See [audio_extractor.prime_audio_clips](iostypingsound/audio_extractor.py#L36) for more information.

@@ -123,7 +123,8 @@ class DaemonManager:
 
         subprocess.Popen(
             [sys.argv[0], "start-daemon", str(volume), profile, str(repeat)],
-            start_new_session=True,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+            start_new_session=True
         )
         time.sleep(0.5)
         return True

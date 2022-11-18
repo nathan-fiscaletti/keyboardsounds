@@ -15,7 +15,8 @@ def main():
 
     # Work around to get pygame to load mp3 files on windows
     # see https://github.com/pygame/pygame/issues/2647
-    os.add_dll_directory(pygame.__path__[0])
+    if os.name == "nt":
+        os.add_dll_directory(pygame.__path__[0])
 
     dm = DaemonManager(LOCK_FILE)
     if dm.capture_daemon_initialization():

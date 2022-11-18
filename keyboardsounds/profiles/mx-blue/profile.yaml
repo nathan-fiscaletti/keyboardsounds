@@ -1,0 +1,26 @@
+profile:
+  name: mx-blue
+  author: kbsim
+  description: Sample of Cherry MX Blue key switches
+
+sources:
+  - id: key1
+    source:
+      press: press_key1.mp3
+      release: release.mp3
+  - id: key2
+    source:
+      press: press_key2.mp3
+      release: release.mp3
+  - id: key3
+    source:
+      press: press_key3.mp3
+      release: release.mp3
+  - id: key4
+    source:
+      press: press_key4.mp3
+      release: release.mp3
+  - id: key5
+    source:
+      press: press_key5.mp3
+      release: release.mp3

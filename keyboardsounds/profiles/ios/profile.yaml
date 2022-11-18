@@ -1,0 +1,30 @@
+profile:
+  name: ios
+  author: Apple, Inc. (Sampled)
+  type: video-extract
+  video: ios-video-recording.mp4
+  description: Simulates the sounds made by an iPhone or iPad keyboard.
+
+sources:
+  - id: standard_key_sound
+    start: 3.377
+    end: 3.392
+  - id: alternative_key_sound
+    start: 5.050
+    end: 5.073
+  - id: back_key_sound
+    start: 6.723
+    end: 6.766
+
+keys:
+  default: standard_key_sound
+  other:
+    - sound: alternative_key_sound
+      keys: [
+        space, alt, ctrl,
+        shift, tab, enter,
+        insert, home, page_up,
+        page_down, delete, end
+      ]
+    - sound: back_key_sound
+      keys: [ backspace ]

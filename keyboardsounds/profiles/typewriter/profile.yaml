@@ -1,0 +1,31 @@
+profile:
+  name: typewriter
+  author: Mechvibes Community
+  description: Sample audio of an antique typewriter
+
+sources:
+  - id: key1
+    source: key.wav
+  - id: key2
+    source: key2.wav
+  - id: space
+    source: space.wav
+  - id: enter
+    source: enter.wav
+  - id: back
+    source: delete.wav
+
+keys:
+  default: [ key1, key2 ]
+  other:
+    - sound: back
+      keys: [ backspace, delete ]
+    - sound: enter
+      keys: [ enter ]
+    - sound: space
+      keys: [
+        space, alt, ctrl,
+        shift, tab, enter,
+        insert, home, page_up,
+        page_down, end
+      ]

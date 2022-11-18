@@ -20,7 +20,7 @@ This python package will add the ability to play sounds while typing anywhere on
 
 In an effort not to directly distribute the iOS keyboard sound effects this package comes with a video recording of an iOS screen including typing in the recording. This recording is loaded at run-time and the audio clips are extracted and stored in memory for use.
 
-> See [AudioManager.prime_audio_clips](./keyboardsounds/audio_manager.py#L19) for more information.
+> See [AudioManager.prime_audio_clips](./keyboardsounds/audio_manager.py#L17) for more information.
 
 ## Usage
 
@@ -56,7 +56,6 @@ options:
                         volume of the sound effects (0-100), default 100
   -p profile, --profile profile
                         sound profile to use, default 'ios'
-  -r, --repeat          repeat the sound effect when the key is held down
   -n name, --name name  name of the profile remove
   -z file, --zip file   path to the zip file containing the profile to add
   -V, --version         show program's version number and exit
@@ -81,11 +80,6 @@ $ keyboardsounds start -v 50
 ```powershell
 # Start or reconfigure with a specific profile
 $ keyboardsounds start -p typewriter
-```
-
-```powershell
-# Start or reconfigure to allow for key repeat sounds
-$ keyboardsounds start -r
 ```
 
 **Action: `status`**
@@ -139,85 +133,69 @@ This application supports custom profiles in which you can provide your own WAV 
 ### Creating a Profile
 
 1. Create a new directory containing the sounds you wish to use.
-2. Add a new file to the directory called `profile.json`.
-3. Follow the example format below to create the profile.
+2. Add a new file to the directory called `profile.yaml`.
+3. Follow the example format below to fill the file in.
 4. Combine the files into a ZIP file. The files must be at the root of the zip file.
 
-You can then add this profile using the `add-profile` action.
+You can then load this profile into the application using the `add-profile` action.
 
 ### Example Profile
 
-> Note: Comments are technically **not** valid JSON. Make sure you remove them if you choose to use this example as a starting point for your `profile.json` file.
+```yaml
+# General information about your profile, this includes
+# name, author and description.
+#
+# You are only required to provide the "name" field.
+profile:
+  name: my-profile
+  author: Nathan Fiscaletti
+  description: Describe the sounds packaged in this profile
 
-```json
-{
-    // The name of the profile.
-    "name": "myprofile",
+# A list of all audio sources used by this profile each
+# containing an identifier and a source.
+#
+# The source can either be the name of an audio file
+# packaged with this profile OR a dictionary with two
+# keys, one 'press' and one 'release', who's
+# corresponding values are names of audio files
+# packaged with this profile.
+sources:
+  - id: key1
+    source: sound1.wav
+  - id: key2
+    source:
+      press: sound2.wav
+      release: sound3.wav
 
-    // Type should always be "files".
-    "type": "files",
+# An optional mappings of audio sources to
+# particular keys on the keyboard.
+#
+# If you chose to omit the keys section, each time
+# a key is pressed on the keyboard a random sound
+# from the list of audio sources will be used.
+keys:
+  # The default value to use for any key not
+  # mapped elsewhere in the keys object.
+  #
+  # If you provide the keys object, you MUST
+  # provide a value for the default property.
+  #
+  # The value for this property can either be
+  # the ID of one of the sources you defined
+  # above, or an array of IDs.
+  default: [ key1, key2 ]
 
-    // References a sound in the "sounds" array.
-    // This will be used as the default value for any key
-    // not specified in the "keys" array.
-    //
-    // This can either be a single ID from the "sounds" array
-    // or an array of IDs, from which one will be randomly
-    // selected each time a key is pressed.
-    "default": ["key", "key2"],
+  # A list of mappings of sources to keyboard keys.
+  other:
+      # The sound to play when one of the keys listed
+      # in the keys array is pressed.
+      #
+      # The value for this property can either be
+      # the ID of one of the sources you defined
+      # above, or an array of IDs.
+    - sound: key1
+      # An array of keys that you can press that this
+      # sound will be mapped to.
+      keys: [ backspace, delete ]
 
-    // This is an array of the different sounds available.
-    // All sound files should be stored directly in the root
-    // of the custom profile directory.
-    //
-    // Each sound is assigned an ID which can be referenced by
-    // either the "default" property or by one of the elements
-    // of the "keys" array.
-    "sounds": [
-        {
-            "id": "key",
-            "file": "key.wav"
-        },
-        {
-            "id": "key2",
-            "file": "key2.wav"
-        },
-        {
-            "id": "alt",
-            "file": "alt.wav"
-        },
-        {
-            "id": "alt2",
-            "file": "alt2.wav"
-        },
-        {
-            "id": "back",
-            "file": "back.wav"
-        }
-    ],
-
-    // An array that maps specific keys to specific sounds
-    // from the "sounds" array.
-    "keys": [
-        {
-            // This can either be a single ID from the "sounds
-            // array or an array of IDs, from which one will
-            // be randomly selected each time a key is pressed.
-            "sound": "back",
-
-            "keys": [
-                "space", "backspace"
-            ]
-        },
-        {
-            "sound": ["alt", "alt2"],
-            "keys": [
-                "alt", "ctrl", "shift",
-                "tab", "enter", "insert",
-                "home", "page_up", "page_down",
-                "delete", "end"
-            ]
-        }
-    ]
-}
 ```

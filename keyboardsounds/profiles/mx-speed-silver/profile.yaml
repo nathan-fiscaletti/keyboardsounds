@@ -1,0 +1,23 @@
+profile:
+  name: mx-speed-silver
+  author: Mechvibes Community
+  description: Sample audio of MX Speed Silver key switches
+
+sources:
+  - id: key1
+    source: mx-speed-silver-1.wav
+  - id: key2
+    source: mx-speed-silver-2.wav
+  - id: key3
+    source: mx-speed-silver-3.wav
+  - id: key4
+    source: mx-speed-silver-4.wav
+  - id: key5
+    source: mx-speed-silver-5.wav
+  - id: key6
+    source: mx-speed-silver-6.wav
+
+keys:
+  other:
+    - sound: [ key1, key2, key3 ]
+      keys: [ backspace ]

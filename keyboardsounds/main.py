@@ -1,7 +1,8 @@
 import argparse
-import sys
 import os
-import json
+
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+import pygame
 
 from importlib.metadata import version
 
@@ -11,6 +12,10 @@ from keyboardsounds.root import ROOT
 
 def main():
     LOCK_FILE = f"{ROOT}/.lock"
+
+    # Work around to get pygame to load mp3 files on windows
+    # see https://github.com/pygame/pygame/issues/2647
+    os.add_dll_directory(pygame.__path__[0])
 
     dm = DaemonManager(LOCK_FILE)
     if dm.capture_daemon_initialization():
@@ -44,7 +49,6 @@ def main():
     # Start Action
     parser.add_argument("-v", "--volume", type=int, default=100, metavar="volume", help="volume of the sound effects (0-100), default 100")
     parser.add_argument("-p", "--profile", type=str, default="ios", metavar="profile", help="sound profile to use, default 'ios'")
-    parser.add_argument("-r", "--repeat", default=False, action="store_true", help="repeat the sound effect when the key is held down")
 
     # Profiles
     parser.add_argument("-n", "--name", type=str, default=None, metavar="name", help="name of the profile remove")
@@ -60,7 +64,7 @@ def main():
             print("Re-configuring running instance of Keyboard Sounds daemon...")
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
-        if not dm.try_start(volume=args.volume, profile=args.profile, repeat=args.repeat):
+        if not dm.try_start(volume=args.volume, profile=args.profile):
             print("Failed to start.")
             return;
         print(f"Started Keyboard Sounds.")
@@ -83,9 +87,22 @@ def main():
         Profile.remove_profile(args.name)
         return
     elif args.action == "list-profiles":
-        profiles = Profile.list()
-        delim = f"{os.linesep}  - "
-        print(f"{os.linesep}available profiles:{os.linesep}{delim}{delim.join(profiles)}{os.linesep}")
+        profiles = [profile.metadata() for profile in Profile.list()]
+
+        names = [profile["name"] for profile in profiles]
+        names.append('Name')
+        authors = [profile["author"] for profile in profiles]
+        authors.append('Author')
+        name_len = len(max(names, key=len))
+        auth_len = len(max(authors, key=len))
+
+        print(f"{os.linesep} Available profiles{os.linesep}")
+        print(f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | Description")
+        print(f" {'-' * name_len} | {'-' * auth_len} | -----------")
+        for profile in profiles:
+            print(f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}")
+        print(os.linesep)
+
         return
     else:
         parser.print_usage()

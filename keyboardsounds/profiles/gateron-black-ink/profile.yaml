@@ -1,0 +1,48 @@
+profile:
+  name: gateron-black-ink
+  author: kbsim
+  description: Sample of Gateron Black Ink key switches
+
+sources:
+  - id: key1
+    source:
+      press: press_key1.mp3
+      release: release_key.mp3
+  - id: key2
+    source:
+      press: press_key2.mp3
+      release: release_key.mp3
+  - id: key3
+    source:
+      press: press_key3.mp3
+      release: release_key.mp3
+  - id: key4
+    source:
+      press: press_key4.mp3
+      release: release_key.mp3
+  - id: key5
+    source:
+      press: press_key5.mp3
+      release: release_key.mp3
+  - id: space
+    source:
+      press: press_space.mp3
+      release: release_space.mp3
+  - id: enter
+    source:
+      press: press_enter.mp3
+      release: release_enter.mp3
+  - id: back
+    source:
+      press: press_back.mp3
+      release: release_back.mp3
+
+keys:
+  default: [ key1, key2, key3, key4, key5 ]
+  other:
+    - sound: back
+      keys: [ backspace, delete ]
+    - sound: enter
+      keys: [ enter ]
+    - sound: space
+      keys: [ space ]

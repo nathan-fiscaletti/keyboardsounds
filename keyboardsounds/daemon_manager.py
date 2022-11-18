@@ -106,7 +106,7 @@ class DaemonManager:
 
         return True
 
-    def try_start(self, volume: int, profile: str, repeat: bool) -> None:
+    def try_start(self, volume: int, profile: str) -> None:
         try:
             Profile(profile)
         except ValueError as err:
@@ -122,15 +122,15 @@ class DaemonManager:
             self.try_stop()
 
         subprocess.Popen(
-            [sys.argv[0], "start-daemon", str(volume), profile, str(repeat)],
+            [sys.argv[0], "start-daemon", str(volume), profile],
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
             start_new_session=True
         )
-        time.sleep(0.5)
+        time.sleep(1.0)
         return True
 
     def capture_daemon_initialization(self):
-        if len(sys.argv) == 5 and sys.argv[1] == "start-daemon":
+        if len(sys.argv) == 4 and sys.argv[1] == "start-daemon":
             if self.status() == "running":
                 return
 
@@ -146,24 +146,17 @@ class DaemonManager:
             except:
                 pass
 
-            repeat = False
-            try:
-                repeat = sys.argv[4] == 'True'
-            except:
-                pass
-
             with open(self.lock_file, 'w') as f:
                 json.dump({
                     "pid": os.getpid(),
                     "volume": volume,
                     "profile": profile,
-                    "repeat": repeat,
                 }, f)
 
             f = open(os.devnull, 'w')
             sys.stdout = f
             sys.stderr = f
-            daemon.run(volume, profile, repeat)
+            daemon.run(volume, profile)
             return True
         return False
         

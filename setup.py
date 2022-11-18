@@ -10,10 +10,15 @@ setup(
    install_requires=['pygame', 'pynput', 'psutil', 'imageio-ffmpeg'],
    package_data={
     'keyboardsounds': [
+      'profiles/alpaca/*',
+      'profiles/gateron-black-ink/*',
+      'profiles/gateron-red-ink/*',
+      'profiles/holy-panda/*',
       'profiles/ios/*',
+      'profiles/mx-black/*',
+      'profiles/mx-blue/*',
+      'profiles/mx-brown/*',
       'profiles/mx-speed-silver/*',
-      'profiles/opera-gx/*',
-      'profiles/osu-nagatoro/*',
       'profiles/telios-v2/*',
       'profiles/typewriter/*',
     ],

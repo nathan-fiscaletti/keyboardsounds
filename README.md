@@ -16,11 +16,23 @@ This python package will add the ability to play sounds while typing anywhere on
 
 [![Preview Video](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/video-preview.png?raw=true)](https://www.youtube.com/watch?v=sWAj8zEk7sQ)
 
-## iOS Sounds
+## Default Sound Profiles
 
-In an effort not to directly distribute the iOS keyboard sound effects this package comes with a video recording of an iOS screen including typing in the recording. This recording is loaded at run-time and the audio clips are extracted and stored in memory for use.
+By default, Keyboard Sounds comes with the following profiles pre-loaded.
 
-> See [AudioManager.prime_audio_clips](./keyboardsounds/audio_manager.py#L17) for more information.
+|Name              | Author                | Description                                             |
+|----------------- | --------------------- | ------------------------------------------------------- |
+|alpaca            | kbsim                 | Sample of an Alpaca Mechanical Keyboard                 |
+|gateron-black-ink | kbsim                 | Sample of Gateron Black Ink key switches                |
+|gateron-red-ink   | kbsim                 | Sample of Gateron Red Ink key switches                  |
+|holy-panda        | kbsim                 | Sample of Holy Panda key switches                       |
+|ios               | Apple, Inc. (Sampled) | Simulates the sounds made by an iPhone or iPad keyboard.|
+|mx-black          | kbsim                 | Sample of Cherry MX Black key switches                  |
+|mx-blue           | kbsim                 | Sample of Cherry MX Blue key switches                   |
+|mx-brown          | kbsim                 | Sample of Cherry MX Brown key switches                  |
+|mx-speed-silver   | Mechvibes Community   | Sample audio of MX Speed Silver key switches            |
+|telios-v2         | Mechvibes Community   | Sample audio of Telios V2 linear key switches           |
+|typewriter        | Mechvibes Community   | Sample audio of an antique typewriter                   |
 
 ## Usage
 

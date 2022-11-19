@@ -145,7 +145,7 @@ $ keyboardsounds list-profiles
 
 ## Custom Profiles
 
-This application supports custom profiles in which you can provide your own WAV files to be used for the different keys pressed.
+This application supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
 
 ### Creating a Profile
 

@@ -96,29 +96,29 @@ Can also be used to re-start the daemon with an adjusted configuration.
 
 ```powershell
 # Start with default volume of 100%
-$ keyboardsounds start
+$ kbs start
 ```
 
 ```powershell
 # Start or reconfigure with a volume of 50%
-$ keyboardsounds start -v 50
+$ kbs start -v 50
 ```
 
 ```powershell
 # Start or reconfigure with a specific profile
-$ keyboardsounds start -p typewriter
+$ kbs start -p typewriter
 ```
 
 **Check the current status of the daemon.**
 
 ```powershell
-$ keyboardsounds status
+$ kbs status
 ```
 
 **Stop the daemon if it is running.**
 
 ```powershell
-$ keyboardsounds stop
+$ kbs stop
 ```
 
 ### Manage Profiles
@@ -126,19 +126,19 @@ $ keyboardsounds stop
 **Add a new profile to the application.**
 
 ```powershell
-$ keyboardsounds add-profile -z ./my-profile.zip
+$ kbs add-profile -z ./my-profile.zip
 ```
 
 **Removes a profile from the application.**
 
 ```powershell
-$ keyboardsounds remove-profile -n myprofile
+$ kbs remove-profile -n myprofile
 ```
 
 **Lists the currently loaded profiles.**
 
 ```powershell
-$ keyboardsounds list-profiles
+$ kbs list-profiles
 ```
 
 ## Custom Profiles

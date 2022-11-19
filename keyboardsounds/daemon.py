@@ -20,7 +20,7 @@ def __on_press(key):
     sound = __am.get_sound(key, action="press")
     if sound is not None:
         clip = mixer.Sound(sound)
-        clip.set__volume(float(__volume) / float(100))
+        clip.set_volume(float(__volume) / float(100))
         clip.play()
 
     # Play the sound
@@ -33,7 +33,7 @@ def __on_release(key):
     sound = __am.get_sound(key, action="release")
     if sound is not None:
         clip = mixer.Sound(sound)
-        clip.set__volume(float(__volume) / float(100))
+        clip.set_volume(float(__volume) / float(100))
         clip.play()
 
     __down = [k for k in __down if k != key]

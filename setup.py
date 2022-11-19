@@ -25,7 +25,8 @@ setup(
    },
    entry_points={
          'console_scripts': [
-                'kbs = keyboardsounds.main:main',
+              'keyboardsounds = keyboardsounds.main:main',
+              'kbs = keyboardsounds.main:main',
          ],
    },
 )

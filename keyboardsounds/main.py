@@ -41,7 +41,7 @@ def main():
     )
 
     parser = argparse.ArgumentParser(
-        prog=f"kbs",
+        prog=f"[keyboardsounds|kbs]",
         usage=argparse.SUPPRESS,
         description=f"Keyboard Sounds v{version_number}{os.linesep * 2}{usage}{os.linesep}",
         formatter_class=argparse.RawDescriptionHelpFormatter

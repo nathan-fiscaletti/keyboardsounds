@@ -4,6 +4,8 @@ import tempfile
 import yaml
 import shutil
 
+from typing import List
+
 from enum import Enum
 from pynput.keyboard import Listener, Key
 
@@ -28,7 +30,7 @@ class AudioFile:
 class ProfileBuilder(PathResolver):
     def __init__(self, path):
         super().__init__(path)
-        self.__audio_files = list[AudioFile]()
+        self.__audio_files = []
         self.__data = {}
         self.__load_audio_files()
         
@@ -52,7 +54,7 @@ class ProfileBuilder(PathResolver):
     def preview_metadata(self):
         return yaml.dump(self.get_metadata())
 
-    def get_audio_files(self) -> list[AudioFile]:
+    def get_audio_files(self) -> List[AudioFile]:
         return self.__audio_files
 
     def has_audio_file(self, audio_file) -> bool:
@@ -89,7 +91,7 @@ class ProfileBuilder(PathResolver):
         self.__data["sources"] = [source for source in self.__data["sources"] if source["id"] != id]
         self.__data["sources"].append(existing_source)
 
-    def get_sources(self) -> list[dict]:
+    def get_sources(self) -> List[dict]:
         return self.__data["sources"] if "sources" in self.__data else []
 
     def has_source(self, id) -> bool:
@@ -99,7 +101,7 @@ class ProfileBuilder(PathResolver):
     def preview_sources(self) -> str:
         return yaml.dump(self.__data["sources"])
 
-    def set_default_source(self, source: str | list[str]):
+    def set_default_source(self, source: any):
         if "keys" not in self.__data:
             self.__data["keys"] = {}
         self.__data["keys"]["default"] = source
@@ -112,7 +114,7 @@ class ProfileBuilder(PathResolver):
     def has_default_source(self) -> bool:
         return "keys" in self.__data and "default" in self.__data["keys"]
 
-    def add_key_mapping(self, id: str, keys: list[str], source: str | list[str]):
+    def add_key_mapping(self, id: str, keys: List[str], source: any):
         if "keys" not in self.__data:
             self.__data["keys"] = {}
         if "other" not in self.__data["keys"]:

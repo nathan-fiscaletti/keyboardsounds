@@ -34,13 +34,14 @@ def main():
         f"  manage profiles:{os.linesep * 2}"
         f"    %(prog)s add-profile -z <zipfile>{os.linesep}"
         f"    %(prog)s remove-profile -n <profile>{os.linesep}"
-        f"    %(prog)s list-profiles{os.linesep * 2}"
+        f"    %(prog)s list-profiles{os.linesep}"
+        f"    %(prog)s build-profile -d <sound_dir> -o <zip_file>{os.linesep * 2}"
         f"  other:{os.linesep * 2}"
-        f"    %(prog)s version{os.linesep}"
+        f"    %(prog)s [--version|-V]{os.linesep}"
     )
 
     parser = argparse.ArgumentParser(
-        prog=f"keyboardsounds",
+        prog=f"kbs",
         usage=argparse.SUPPRESS,
         description=f"Keyboard Sounds v{version_number}{os.linesep * 2}{usage}{os.linesep}",
         formatter_class=argparse.RawDescriptionHelpFormatter

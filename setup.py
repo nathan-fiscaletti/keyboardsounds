@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
    name='keyboardsounds',
-   version='4.5.0',
+   version='5.0.0',
    description='Adds the ability to play sounds while typing on any system.',
    author='Nathan Fiscaletti',
    author_email='nate.fiscaletti@gmail.com',
@@ -25,7 +25,7 @@ setup(
    },
    entry_points={
          'console_scripts': [
-                'keyboardsounds = keyboardsounds.main:main',
+                'kbs = keyboardsounds.main:main',
          ],
    },
 )

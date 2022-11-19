@@ -28,7 +28,7 @@ def main():
     usage = (
         f"usage: {os.linesep * 2}"
         f"  manage daemon:{os.linesep * 2}"
-        f"    %(prog)s start [-v <volume>] [-p <profile>] [-r]{os.linesep}"
+        f"    %(prog)s start [-v <volume>] [-p <profile>]{os.linesep}"
         f"    %(prog)s stop{os.linesep}"
         f"    %(prog)s status{os.linesep * 2}"
         f"  manage profiles:{os.linesep * 2}"

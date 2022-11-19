@@ -51,28 +51,27 @@ By default, Keyboard Sounds comes with the following profiles pre-loaded.
 ```yaml
 Keyboard Sounds vX.X.X
 
-usage: 
+usage: <keyboardsounds|kbs> <action> [params]
 
   manage daemon:
 
-    kbs start [-v <volume>] [-p <profile>]
-    kbs stop
-    kbs status
+    <keyboardsounds|kbs> start [-v <volume>] [-p <profile>]
+    <keyboardsounds|kbs> stop
+    <keyboardsounds|kbs> status
 
   manage profiles:
 
-    kbs add-profile -z <zipfile>
-    kbs remove-profile -n <profile>
-    kbs list-profiles
-    kbs build-profile -d <sound_dir> -o <zip_file>
+    <keyboardsounds|kbs> <ap|add-profile> -z <zipfile>
+    <keyboardsounds|kbs> <rp|remove-profile> -n <profile>
+    <keyboardsounds|kbs> <lp|list-profiles>
+    <keyboardsounds|kbs> <bp|build-profile> -d <sound_dir> -o <zip_file>
 
   other:
 
-    kbs [--version|-V]
+    <keyboardsounds|kbs> [--version|-V]
 
 positional arguments:
-  {start,stop,status,add-profile,remove-profile,list-profiles,build-profile}
-                        The action to perform
+  action                The action to perform
 
 optional arguments:
   -h, --help            show this help message and exit

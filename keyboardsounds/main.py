@@ -26,28 +26,28 @@ def main():
     version_number = version("keyboardsounds")
 
     usage = (
-        f"usage: {os.linesep * 2}"
+        f"usage: %(prog)s <action> [params]{os.linesep *2}"
         f"  manage daemon:{os.linesep * 2}"
         f"    %(prog)s start [-v <volume>] [-p <profile>]{os.linesep}"
         f"    %(prog)s stop{os.linesep}"
         f"    %(prog)s status{os.linesep * 2}"
         f"  manage profiles:{os.linesep * 2}"
-        f"    %(prog)s add-profile -z <zipfile>{os.linesep}"
-        f"    %(prog)s remove-profile -n <profile>{os.linesep}"
-        f"    %(prog)s list-profiles{os.linesep}"
-        f"    %(prog)s build-profile -d <sound_dir> -o <zip_file>{os.linesep * 2}"
+        f"    %(prog)s <ap|add-profile> -z <zipfile>{os.linesep}"
+        f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
+        f"    %(prog)s <lp|list-profiles>{os.linesep}"
+        f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
         f"  other:{os.linesep * 2}"
         f"    %(prog)s [--version|-V]{os.linesep}"
     )
 
     parser = argparse.ArgumentParser(
-        prog=f"[keyboardsounds|kbs]",
+        prog=f"<keyboardsounds|kbs>",
         usage=argparse.SUPPRESS,
         description=f"Keyboard Sounds v{version_number}{os.linesep * 2}{usage}{os.linesep}",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    parser.add_argument("action", choices=["start", "stop", "status", "add-profile", "remove-profile", "list-profiles", "build-profile"], help="The action to perform")
+    parser.add_argument("action", help="The action to perform")
     
     # Start Action
     parser.add_argument("-v", "--volume", type=int, default=100, metavar="volume", help="volume of the sound effects (0-100), default 100")
@@ -80,19 +80,19 @@ def main():
     elif args.action == "status":
         status = dm.status(full=True)
         print(f"{status}")
-    elif args.action == "add-profile":
+    elif args.action == "add-profile" or args.action == "ap":
         if args.zip is None:
             print("Please specify a zip file for the profile to add.")
             return
         Profile.add_profile(args.zip)
         return
-    elif args.action == "remove-profile":
+    elif args.action == "remove-profile" or args.action == "rp":
         if args.name is None:
             print("Please specify a name for the profile to remove.")
             return
         Profile.remove_profile(args.name)
         return
-    elif args.action == "list-profiles":
+    elif args.action == "list-profiles" or args.action == "lp":
         profiles = [profile.metadata() for profile in Profile.list()]
 
         names = [profile["name"] for profile in profiles]
@@ -110,7 +110,7 @@ def main():
         print(os.linesep)
 
         return
-    elif args.action == "build-profile":
+    elif args.action == "build-profile" or args.action == "bp":
         if args.directory is None:
             print("Please specify a directory containing the sounds to use for the profile.")
             return

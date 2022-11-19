@@ -10,41 +10,41 @@ from keyboardsounds.profile import Profile
 
 class DaemonManager:
     def __init__(self, lock_file) -> None:
-        self.lock_file = lock_file
-        self.proc_info = None
-        self.lock_exists = False
-        self.is_daemon_process = False
-        self.proc = None
-        self._load_status()
+        self.__lock_file = lock_file
+        self.__proc_info = None
+        self.__lock_exists = False
+        self.__is_daemon_process = False
+        self.__proc = None
+        self.__load_status()
 
-    def _load_status(self):
-        if os.path.isfile(self.lock_file):
-            self.lock_exists = True
+    def __load_status(self):
+        if os.path.isfile(self.__lock_file):
+            self.__lock_exists = True
             try:
-                with open(self.lock_file, "r") as f:
-                    self.proc_info = json.load(f)
+                with open(self.__lock_file, "r") as f:
+                    self.__proc_info = json.load(f)
             except ValueError:
-                self.proc_info = None
+                self.__proc_info = None
                 pass
         else:
-            self.proc_info = None
+            self.__proc_info = None
 
-        if self.proc_info:
+        if self.__proc_info:
             try:
-                self.proc = psutil.Process(self.proc_info["pid"])
+                self.__proc = psutil.Process(self.__proc_info["pid"])
             except psutil.NoSuchProcess:
-                self.proc = None
+                self.__proc = None
                 pass
         else:
-            self.proc = None
+            self.__proc = None
 
-        if self.proc:
+        if self.__proc:
             try:
-                self.is_daemon_process = self.proc.name() == psutil.Process().name()
+                self.__is_daemon_process = self.__proc.name() == psutil.Process().name()
             except ValueError:
                 pass
         else:
-            self.is_daemon_process = False
+            self.__is_daemon_process = False
 
     def status(self, full=False) -> str:
         if full:
@@ -57,9 +57,9 @@ class DaemonManager:
             status_text = "Running" if self.status() == "running" else "Stale" if self.status() == "stale" else "Not running"
             return f"Status: {status_text}{volume_status}{pid_status}{profile_status}"
         else:
-            self._load_status()
-            if self.lock_exists:
-                if self.is_daemon_process:
+            self.__load_status()
+            if self.__lock_exists:
+                if self.__is_daemon_process:
                     return "running"
                 else:
                     return "stale"
@@ -67,24 +67,24 @@ class DaemonManager:
                 return "free"
 
     def get_volume(self) -> int:
-        self._load_status()
+        self.__load_status()
         status = self.status()
         if status == "running":
-            return self.proc_info["volume"]
+            return self.__proc_info["volume"]
         return None
 
     def get_pid(self) -> int:
-        self._load_status()
+        self.__load_status()
         status = self.status()
         if status == "running":
-            return self.proc_info["pid"]
+            return self.__proc_info["pid"]
         return None
 
     def get_profile(self) -> str:
-        self._load_status()
+        self.__load_status()
         status = self.status()
         if status == "running":
-            return self.proc_info["profile"]
+            return self.__proc_info["profile"]
         return None
 
     def try_stop(self) -> None:
@@ -93,16 +93,16 @@ class DaemonManager:
             return False
 
         if status == "running":
-            self.proc.kill()
+            self.__proc.kill()
             status = self.status()
 
         if status == "stale":
-            os.unlink(self.lock_file)
+            os.unlink(self.__lock_file)
 
-        self.proc_info = None
-        self.lock_exists = False
-        self.is_daemon_process = False
-        self.proc = None
+        self.__proc_info = None
+        self.__lock_exists = False
+        self.__is_daemon_process = False
+        self.__proc = None
 
         return True
 
@@ -146,7 +146,7 @@ class DaemonManager:
             except:
                 pass
 
-            with open(self.lock_file, 'w') as f:
+            with open(self.__lock_file, 'w') as f:
                 json.dump({
                     "pid": os.getpid(),
                     "volume": volume,

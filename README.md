@@ -52,6 +52,7 @@ usage:
     keyboardsounds add-profile -z <zipfile>
     keyboardsounds remove-profile -n <profile>
     keyboardsounds list-profiles
+    keyboardsounds build-profile -d ./sounds -o ./my_profile.zip
 
   other:
 
@@ -59,7 +60,7 @@ usage:
 
 
 positional arguments:
-  {start,stop,status,add-profile,remove-profile,list-profiles}
+  {start,stop,status,add-profile,remove-profile,list-profiles,build-profile}
                         The action to perform
 
 options:
@@ -71,6 +72,10 @@ options:
   -n name, --name name  name of the profile remove
   -z file, --zip file   path to the zip file containing the profile to add
   -V, --version         show program's version number and exit
+  -d directory, --directory directory
+                        path to the directory containing the sounds to use for the profile
+  -o file, --output file
+                        path to the zip file to create
 ```
 
 ### Manage Daemon
@@ -138,8 +143,6 @@ $ keyboardsounds list-profiles
 
 ## Custom Profiles
 
-> 🛈 Custom Profile Builder Coming Soon
-
 This application supports custom profiles in which you can provide your own WAV files to be used for the different keys pressed.
 
 ### Creating a Profile
@@ -150,6 +153,8 @@ This application supports custom profiles in which you can provide your own WAV 
 4. Combine the files into a ZIP file. The files must be at the root of the zip file.
 
 You can then load this profile into the application using the `add-profile` action.
+
+> Note: Alternately you can use the `build-profile` action for an environment with built in validation when creating a new profile.
 
 ### Example Profile
 

@@ -5,47 +5,47 @@ from pynput.keyboard import Listener
 from keyboardsounds.profile import Profile
 from keyboardsounds.audio_manager import AudioManager
 
-_am: AudioManager = None
-_volume = 100
-_down = []
+__am: AudioManager = None
+__volume = 100
+__down = []
 
-def on_press(key):
-    global _am
-    global _volume
-    global _down
+def __on_press(key):
+    global __am
+    global __volume
+    global __down
 
-    if key in _down:
+    if key in __down:
         return
 
-    sound = _am.get_sound(key, action="press")
+    sound = __am.get_sound(key, action="press")
     if sound is not None:
         clip = mixer.Sound(sound)
-        clip.set_volume(float(_volume) / float(100))
+        clip.set__volume(float(__volume) / float(100))
         clip.play()
 
     # Play the sound
-    _down.append(key)
+    __down.append(key)
 
-def on_release(key):
-    global _down
-    global _am
+def __on_release(key):
+    global __down
+    global __am
 
-    sound = _am.get_sound(key, action="release")
+    sound = __am.get_sound(key, action="release")
     if sound is not None:
         clip = mixer.Sound(sound)
-        clip.set_volume(float(_volume) / float(100))
+        clip.set__volume(float(__volume) / float(100))
         clip.play()
 
-    _down = [k for k in _down if k != key]
+    __down = [k for k in __down if k != key]
 
 def run(volume: int, profile: str):
-    global _am
-    global _volume
+    global __am
+    global __volume
 
-    _am = AudioManager(Profile(profile))
-    _volume = volume
+    __volume = volume
+    __am = AudioManager(Profile(profile))
 
-    if _am.prime_audio_clips():
-        mixer.init()
-        with Listener(on_press=on_press, on_release=on_release) as listener:
-            listener.join()
+    mixer.init()
+    with Listener(on_press=__on_press, on_release=__on_release) as listener:
+        listener.join()
+        

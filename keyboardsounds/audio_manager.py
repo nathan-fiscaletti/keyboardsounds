@@ -13,8 +13,9 @@ class AudioManager:
     def __init__(self, profile: Profile) -> None:
         self.sounds = {}
         self.profile = profile
+        self.__prime_audio_clips()
 
-    def prime_audio_clips(self) -> bool:
+    def __prime_audio_clips(self):
         if self.profile.value('profile.type') == "video-extract":
             ffmpeg_exe = get_ffmpeg_exe()
             VIDEO_FILE = self.profile.get_file_path(self.profile.value('profile.video'))
@@ -55,11 +56,8 @@ class AudioManager:
                 elif type(source["source"]) == str:
                     self.__extract(source["id"], self.profile.get_file_path(source["source"]))
 
-        print(self.sounds)
-        return True
-
     def __extract(self, id, input, start: float = 0.0, end: float = None):
-        if input[-3:] == 'mp3':
+        if input.endswith(('mp3', 'MP3')):
             source = open(input, 'rb')
             data = source.read()
             source.close()
@@ -81,19 +79,19 @@ class AudioManager:
             if self.profile.value('keys.other') is not None:
                 for mapping in self.profile.value('keys.other'):
                     if (key.name if isinstance(key, Key) else key.char) in mapping["keys"]:
-                        return self.__get_sound__(mapping["sound"], action)
+                        return self.__get_sound(mapping["sound"], action)
             if self.profile.value('keys.default') is not None:
-                return self.__get_sound__(self.profile.value('keys.default'), action)
-        return self.__get_sound__(key=None, action=action)
+                return self.__get_sound(self.profile.value('keys.default'), action)
+        return self.__get_sound(key=None, action=action)
 
-    def __get_sound__(self, key=None, action: str = "press") -> io.BytesIO:
+    def __get_sound(self, key=None, action: str = "press") -> io.BytesIO:
         if key is None:
             key = list(self.sounds.keys())
         if type(key) is list:
-            return self.__parse_sound__(self.sounds[random.choice(key)], action)
-        return self.__parse_sound__(self.sounds[key], action)
+            return self.__parse_sound(self.sounds[random.choice(key)], action)
+        return self.__parse_sound(self.sounds[key], action)
     
-    def __parse_sound__(self, sound, action: str = "press") -> io.BytesIO:
+    def __parse_sound(self, sound, action: str = "press") -> io.BytesIO:
         if type(sound) is dict:
             return io.BytesIO(sound[action].getbuffer().tobytes())
         return io.BytesIO(sound.getbuffer().tobytes()) if action == "press" else None

@@ -8,6 +8,7 @@ from importlib.metadata import version
 
 from keyboardsounds.daemon_manager import DaemonManager
 from keyboardsounds.profile import Profile
+from keyboardsounds.profile_builder import CliProfileBuilder
 from keyboardsounds.root import ROOT
 
 def main():
@@ -45,7 +46,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    parser.add_argument("action", choices=["start", "stop", "status", "add-profile", "remove-profile", "list-profiles"], help="The action to perform")
+    parser.add_argument("action", choices=["start", "stop", "status", "add-profile", "remove-profile", "list-profiles", "build-profile"], help="The action to perform")
     
     # Start Action
     parser.add_argument("-v", "--volume", type=int, default=100, metavar="volume", help="volume of the sound effects (0-100), default 100")
@@ -54,8 +55,11 @@ def main():
     # Profiles
     parser.add_argument("-n", "--name", type=str, default=None, metavar="name", help="name of the profile remove")
     parser.add_argument("-z", "--zip", type=str, default=None, metavar="file", help="path to the zip file containing the profile to add")
-
     parser.add_argument("-V", "--version", action="version", version=version_number)
+
+    # Profile Builder
+    parser.add_argument("-d", "--directory", type=str, default=None, metavar="directory", help="path to the directory containing the sounds to use for the profile")
+    parser.add_argument("-o", "--output", type=str, default=None, metavar="file", help="path to the zip file to create")
 
     args = parser.parse_args()
 
@@ -105,6 +109,16 @@ def main():
         print(os.linesep)
 
         return
+    elif args.action == "build-profile":
+        if args.directory is None:
+            print("Please specify a directory containing the sounds to use for the profile.")
+            return
+        if args.output is None:
+            print("Please specify a zip file to create.")
+            return
+        
+        builder = CliProfileBuilder(args.directory, args.output)
+        builder.start()
     else:
         parser.print_usage()
 

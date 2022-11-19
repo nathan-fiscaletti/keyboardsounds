@@ -8,14 +8,13 @@ from keyboardsounds.root import ROOT
 from keyboardsounds.path_resolver import PathResolver
 from keyboardsounds.profile_validation import validate_profile
 
-
 class Profile(PathResolver):
     def __init__(self, name: str):
         super().__init__(os.path.join(ROOT, "profiles", name))
         self.name = name
-        self.validate()
+        self.__validate()
 
-    def validate(self):
+    def __validate(self):
         # Validate File Structure
 
         if not os.path.isdir(self.root):
@@ -25,10 +24,10 @@ class Profile(PathResolver):
     
         with open(self.get_file_path('profile.yaml'), "r") as f:
             data = yaml.safe_load(f)
-            self.data = validate_profile(self, data)
+            self.__data = validate_profile(self, data)
 
     def value(self, key: str):
-        value = self.data
+        value = self.__data
         map = key.split(".")
         for key in map:
             if key not in value:
@@ -36,10 +35,13 @@ class Profile(PathResolver):
             value = value[key]
         return value
 
+    def data(self):
+        return self.__data
+
     def metadata(self):
-        name = self.data["profile"]["name"]
-        author = self.data["profile"]["author"] if "author" in self.data["profile"] else None
-        description = self.data["profile"]["description"] if "description" in self.data["profile"] else None
+        name = self.__data["profile"]["name"]
+        author = self.__data["profile"]["author"] if "author" in self.__data["profile"] else None
+        description = self.__data["profile"]["description"] if "description" in self.__data["profile"] else None
         return {
             "name": name,
             "author": author,

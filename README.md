@@ -4,10 +4,6 @@
 [![PyPI version](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
 [![GitHub license](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
 
-```sh
-$ pip install keyboardsounds
-```
-
 This python package will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
 
 ## Preview Video
@@ -15,6 +11,22 @@ This python package will add the ability to play sounds while typing anywhere on
 > Click to view a preview of the application.
 
 [![Preview Video](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/video-preview.png?raw=true)](https://www.youtube.com/watch?v=sWAj8zEk7sQ)
+
+## Installation
+
+**Python 3.7** or higher is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
+
+Once you have Python installed, you can install this application by running the following command.
+
+```sh
+$ pip install keyboardsounds
+```
+
+## Platform Support
+
+|Windows|Linux|macOS|
+|---|---|---|
+|✅ Supported|✅ Supported|❓ Not Tested|
 
 ## Default Sound Profiles
 
@@ -43,7 +55,7 @@ usage:
 
   manage daemon:
 
-    keyboardsounds start [-v <volume>] [-p <profile>] [-r]
+    keyboardsounds start [-v <volume>] [-p <profile>]
     keyboardsounds stop
     keyboardsounds status
 
@@ -80,9 +92,9 @@ options:
 
 ### Manage Daemon
 
-**Action: `start`**
+**Start the daemon.**
 
-Starts the daemon if it is not running. Otherwise, can be used to re-start it with an adjusted configuration.
+Can also be used to re-start the daemon with an adjusted configuration.
 
 ```powershell
 # Start with default volume of 100%
@@ -99,17 +111,13 @@ $ keyboardsounds start -v 50
 $ keyboardsounds start -p typewriter
 ```
 
-**Action: `status`**
-
-Checks the current status of the daemon.
+**Check the current status of the daemon.**
 
 ```powershell
 $ keyboardsounds status
 ```
 
-**Action: `stop`**
-
-Stops the daemon if it is running.
+**Stop the daemon if it is running.**
 
 ```powershell
 $ keyboardsounds stop
@@ -117,25 +125,19 @@ $ keyboardsounds stop
 
 ### Manage Profiles
 
-**Action: `add-profile`**
-
-Adds a new profile to the application.
+**Add a new profile to the application.**
 
 ```powershell
 $ keyboardsounds add-profile -z ./my-profile.zip
 ```
 
-**Action: `remove-profile`**
-
-Removes a profile from the application.
+**Removes a profile from the application.**
 
 ```powershell
 $ keyboardsounds remove-profile -n myprofile
 ```
 
-**Action: `list-profiles`**
-
-Lists the currently loaded profiles.
+**Lists the currently loaded profiles.**
 
 ```powershell
 $ keyboardsounds list-profiles

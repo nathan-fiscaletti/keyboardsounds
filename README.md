@@ -55,9 +55,16 @@ usage: <keyboardsounds|kbs> <action> [params]
 
   manage daemon:
 
-    <keyboardsounds|kbs> start [-v <volume>] [-p <profile>]
+    <keyboardsounds|kbs> start
     <keyboardsounds|kbs> stop
     <keyboardsounds|kbs> status
+    <keyboardsounds|kbs> <dl|daemon-logs>
+
+  manage configuration:
+
+    <keyboardsounds|kbs> <sp|set-profile> -v <profile>
+    <keyboardsounds|kbs> <sv|set-volume> -v <volume>
+    <keyboardsounds|kbs> <cf|config>
 
   manage profiles:
 
@@ -75,10 +82,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v volume, --volume volume
-                        volume of the sound effects (0-100), default 100
-  -p profile, --profile profile
-                        sound profile to use, default 'ios'
+  -v value, --value value
+                        value for the configuration property
   -n name, --name name  name of the profile remove
   -z file, --zip file   path to the zip file containing the profile to add
   -V, --version         show program's version number and exit
@@ -90,23 +95,10 @@ optional arguments:
 
 ### Manage Daemon
 
-**Start the daemon.**
-
-Can also be used to re-start the daemon with an adjusted configuration.
+**Start the daemon with the current configuration.**
 
 ```powershell
-# Start with default volume of 100%
 $ kbs start
-```
-
-```powershell
-# Start or reconfigure with a volume of 50%
-$ kbs start -v 50
-```
-
-```powershell
-# Start or reconfigure with a specific profile
-$ kbs start -p typewriter
 ```
 
 **Check the current status of the daemon.**
@@ -119,6 +111,34 @@ $ kbs status
 
 ```powershell
 $ kbs stop
+```
+
+**Display daemon logs (if any)**
+
+```powershell
+$ kbs daemon-logs
+```
+
+### Manage Configuration
+
+> Note: If the daemon is currently running, configuration changes should take effect immediately.
+
+**Change the current profile**
+
+```powershell
+$ kbs set-profile -v my-profile-name
+```
+
+**Change the volume**
+
+```powershell
+$ kbs set-volume -v 50
+```
+
+**Display current configuration**
+
+```powershell
+$ kbs config
 ```
 
 ### Manage Profiles

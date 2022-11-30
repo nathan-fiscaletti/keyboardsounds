@@ -5,8 +5,11 @@ import subprocess
 import time
 import json
 
+from typing import TypeVar
+
 import keyboardsounds.daemon as daemon
 from keyboardsounds.profile import Profile
+from keyboardsounds.root import ROOT
 
 class DaemonManager:
     def __init__(self, lock_file) -> None:
@@ -106,7 +109,10 @@ class DaemonManager:
 
         return True
 
-    def try_start(self, volume: int, profile: str) -> None:
+    def try_start(self) -> None:
+        profile = self.get_configured_profile()
+        volume = self.get_configured_volume()
+
         try:
             Profile(profile)
         except ValueError as err:
@@ -128,6 +134,54 @@ class DaemonManager:
         )
         time.sleep(1.0)
         return True
+
+    def get_log(self) -> str:
+        log_path = os.path.join(ROOT, "daemon.log")
+        content = None
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f:
+                content = f.read()
+        return content
+
+
+    def set_configured_volume(self, volume: float):
+        config = {
+            "profile": self.get_configured_profile(),
+            "volume": volume
+        }
+        self.__save_config(config)
+
+    def set_configured_profile(self, profile: str):
+        config = {
+            "profile": profile,
+            "volume": self.get_configured_volume()
+        }
+        self.__save_config(config)
+
+    def __save_config(self, config):
+        config_file = os.path.join(ROOT, 'config.json')
+        with open(config_file, 'w') as cf:
+            json.dump(config, cf)
+
+    def get_configured_volume(self):
+        return self.__get_config_value("volume", 100.0, float)
+
+    def get_configured_profile(self) -> str:
+        return self.__get_config_value("profile", "ios", str)
+
+    def __get_config_value(self, key, default, T: type) -> any:
+        config_file = os.path.join(ROOT, 'config.json')
+        if not os.path.exists(config_file):
+            return default
+        
+        with open(config_file, 'r') as cf:
+            config = json.load(cf)
+
+        if key in config:
+            value = config[key]
+            return value if type(value) is T else None
+
+        return default
 
     def capture_daemon_initialization(self):
         if len(sys.argv) == 4 and sys.argv[1] == "start-daemon":
@@ -153,7 +207,7 @@ class DaemonManager:
                     "profile": profile,
                 }, f)
 
-            f = open(os.devnull, 'w')
+            f = open(os.path.join(ROOT, "daemon.log"), 'w')
             sys.stdout = f
             sys.stderr = f
             daemon.run(volume, profile)

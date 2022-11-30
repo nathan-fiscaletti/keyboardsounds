@@ -2,12 +2,12 @@ from setuptools import setup
 
 setup(
    name='keyboardsounds',
-   version='5.3.0',
+   version='5.4.0',
    description='Adds the ability to play sounds while typing on any system.',
    author='Nathan Fiscaletti',
    author_email='nate.fiscaletti@gmail.com',
    packages=['keyboardsounds'],
-   install_requires=['pygame', 'pynput', 'psutil', 'imageio-ffmpeg'],
+   install_requires=['pygame', 'pynput', 'psutil', 'imageio-ffmpeg', 'pyyaml'],
    package_data={
     'keyboardsounds': [
       'profiles/alpaca/*',

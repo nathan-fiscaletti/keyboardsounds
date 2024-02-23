@@ -50,6 +50,11 @@ By default, Keyboard Sounds comes with the following profiles pre-loaded.
 
 ## Usage
 
+- [Managing the Daemon](#manage-the-daemon)
+- [Managing Application Rules](#managing-application-rules)
+- [Manage Profiles](#manage-profiles)
+- [Custom Profiles](#custom-profiles)
+
 ```yaml
 Keyboard Sounds vX.X.X
 
@@ -68,14 +73,23 @@ usage: <keyboardsounds|kbs> <action> [params]
     <keyboardsounds|kbs> <lp|list-profiles>
     <keyboardsounds|kbs> <bp|build-profile> -d <sound_dir> -o <zip_file>
 
+  manage rules:
+
+    <keyboardsounds|kbs> <ar|add-rule> -a <app> -r <rule>
+    <keyboardsounds|kbs> <rr|remove-rule> -a <app>
+    <keyboardsounds|kbs> <lr|list-rules>
+    <keyboardsounds|kbs> <sr|set-global-rule> -r <rule>
+    <keyboardsounds|kbs> <gr|get-global-rule>
+
   other:
 
     <keyboardsounds|kbs> [--version|-V]
 
+
 positional arguments:
   action                The action to perform
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -v volume, --volume volume
                         volume of the sound effects (0-100), default 100
@@ -88,9 +102,11 @@ optional arguments:
                         path to the directory containing the sounds to use for the profile
   -o file, --output file
                         path to the zip file to create
+  -a app, --app app     absolute path to the application to add the rule for
+  -r rule, --rule rule  rule to apply. must be one of 'enable', 'disable', or 'exclusive'
 ```
 
-### Manage Daemon
+### Manage the Daemon
 
 **Start the daemon.**
 
@@ -121,6 +137,50 @@ $ kbs status
 
 ```powershell
 $ kbs stop
+```
+
+### Managing Application Rules
+
+Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
+
+**Application Rules are only available on Windows.**
+
+#### Rule Types
+
+- `enable` - Enable sound effects for the application.
+- `disable` - Disable sound effects for the application.
+- `exclusive` - Only play sound effects for the application.
+
+> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
+
+**Add a new rule for an application.**
+
+```powershell
+$ kbs add-rule -a "C:\Program Files\MyApp\MyApp.exe" -r enable
+```
+
+**Remove a rule for an application.**
+
+```powershell
+$ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
+```
+
+**Lists the currently loaded rules.**
+
+```powershell
+$ kbs list-rules
+```
+
+**Set the global rule.**
+
+```powershell
+$ kbs set-global-rule -r disable
+```
+
+**Get the current global rule.**
+
+```powershell
+$ kbs get-global-rule
 ```
 
 ### Manage Profiles

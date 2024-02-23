@@ -79,6 +79,7 @@ if WIN32:
         """
         rules = app_rules.get_rules()
 
+        global __am
         if rules.has_exclusive_rule():
             if app_path == rules.get_exclusive_rule().app_path:
                 __am.set_enabled(True)
@@ -87,7 +88,6 @@ if WIN32:
             return
 
         action = rules.get_action(app_path)    
-        global __am
         if action == Action.DISABLE:
             __am.set_enabled(False)
         elif action in [Action.ENABLE, Action.EXCLUSIVE]:

@@ -218,3 +218,13 @@ keys:
       keys: [ backspace, delete ]
 
 ```
+
+## Development
+
+To install the package in development mode, run the following commands.
+
+```sh
+$ git clone git@github.com:nathan-fiscaletti/keyboardsounds.git
+$ cd keyboardsounds
+$ pip install -e .
+```

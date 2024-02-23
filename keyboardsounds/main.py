@@ -183,14 +183,16 @@ def main():
             print("Please specify a rule to apply. Must be one of 'enable', 'disable', or 'exclusive'.")
             return
         
-        print(f"Keyboard Sounds v{version_number} - Application Rules{os.linesep}")
-
         args.rule = args.rule.lower()
 
         rules = get_rules()
-        if args.rule not in [Action.ENABLE.value, Action.DISABLE.value, Action.EXCLUSIVE.value]:
+        if args.rule.lower() not in [Action.ENABLE.value, Action.DISABLE.value, Action.EXCLUSIVE.value]:
             print("Invalid rule. Must be one of 'enable', 'disable', or 'exclusive'.")
             return
+        if args.rule.lower() == Action.EXCLUSIVE.value:
+            if rules.has_exclusive_rule():
+                print("Exclusive rule already exists. Only one exclusive rule can be set.")
+                return
         rules.set_rule(args.app, Action(args.rule))
         try:
             rules.save()

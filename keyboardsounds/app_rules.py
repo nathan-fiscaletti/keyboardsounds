@@ -3,7 +3,7 @@ import json
 
 from enum import Enum
 
-from typing import List
+from typing import List, Optional
 
 from keyboardsounds.root import ROOT
 
@@ -87,6 +87,25 @@ class Rules:
         :return: True if a rule exists for the application, False otherwise.
         """
         return any(r.app_path == app_path for r in self.rules)
+    
+    def has_exclusive_rule(self) -> bool:
+        """
+        Checks if there is an exclusive rule in the rules.
+
+        :return: True if an exclusive rule exists, False otherwise.
+        """
+        return any(r.action == Action.EXCLUSIVE for r in self.rules)
+    
+    def get_exclusive_rule(self) -> Optional[Rule]:
+        """
+        Retrieves the exclusive rule from the rules.
+
+        :return: Rule with an exclusive action.
+        """
+        for r in self.rules:
+            if r.action == Action.EXCLUSIVE:
+                return r
+        return None
 
     def get_action(self, app_path: str) -> Action:
         """

@@ -78,7 +78,15 @@ if WIN32:
         - app_path: The file path of the application that has just gained focus.
         """
         rules = app_rules.get_rules()
-        action = rules.get_action(app_path)
+
+        if rules.has_exclusive_rule():
+            if app_path == rules.get_exclusive_rule().app_path:
+                __am.set_enabled(True)
+            else:
+                __am.set_enabled(False)
+            return
+
+        action = rules.get_action(app_path)    
         global __am
         if action == Action.DISABLE:
             __am.set_enabled(False)

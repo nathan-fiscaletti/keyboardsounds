@@ -112,30 +112,30 @@ options:
 
 Can also be used to re-start the daemon with an adjusted configuration.
 
-```powershell
+```bash
 # Start with default volume of 100%
 $ kbs start
 ```
 
-```powershell
+```bash
 # Start or reconfigure with a volume of 50%
 $ kbs start -v 50
 ```
 
-```powershell
+```bash
 # Start or reconfigure with a specific profile
 $ kbs start -p typewriter
 ```
 
 **Check the current status of the daemon.**
 
-```powershell
+```bash
 $ kbs status
 ```
 
 **Stop the daemon if it is running.**
 
-```powershell
+```bash
 $ kbs stop
 ```
 
@@ -155,31 +155,31 @@ Keyboard Sounds supports the ability to enable or disable the typing sound effec
 
 **Add a new rule for an application.**
 
-```powershell
+```bash
 $ kbs add-rule -a "C:\Program Files\MyApp\MyApp.exe" -r enable
 ```
 
 **Remove a rule for an application.**
 
-```powershell
+```bash
 $ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
 ```
 
 **Lists the currently loaded rules.**
 
-```powershell
+```bash
 $ kbs list-rules
 ```
 
 **Set the global rule.**
 
-```powershell
+```bash
 $ kbs set-global-rule -r disable
 ```
 
 **Get the current global rule.**
 
-```powershell
+```bash
 $ kbs get-global-rule
 ```
 
@@ -187,19 +187,19 @@ $ kbs get-global-rule
 
 **Add a new profile to the application.**
 
-```powershell
+```bash
 $ kbs add-profile -z ./my-profile.zip
 ```
 
 **Removes a profile from the application.**
 
-```powershell
+```bash
 $ kbs remove-profile -n myprofile
 ```
 
 **Lists the currently loaded profiles.**
 
-```powershell
+```bash
 $ kbs list-profiles
 ```
 
@@ -283,7 +283,7 @@ keys:
 
 To install the package in development mode, run the following commands.
 
-```sh
+```bash
 $ git clone git@github.com:nathan-fiscaletti/keyboardsounds.git
 $ cd keyboardsounds
 $ pip install -e .

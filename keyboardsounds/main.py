@@ -45,7 +45,7 @@ def main():
     if WIN32:
         win_messages = (
             f"  manage rules:{os.linesep * 2}"
-            f"    %(prog)s <ar|add-rule> -a <app> -r <rule>{os.linesep}"
+            f"    %(prog)s <ar|add-rule> -r <rule> -a <app>{os.linesep}"
             f"    %(prog)s <rr|remove-rule> -a <app>{os.linesep}"
             f"    %(prog)s <lr|list-rules>{os.linesep}"
             f"    %(prog)s <sr|set-global-rule> -r <rule>{os.linesep}"

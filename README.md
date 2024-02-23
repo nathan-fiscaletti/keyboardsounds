@@ -75,7 +75,7 @@ usage: <keyboardsounds|kbs> <action> [params]
 
   manage rules:
 
-    <keyboardsounds|kbs> <ar|add-rule> -a <app> -r <rule>
+    <keyboardsounds|kbs> <ar|add-rule> -r <rule> -a <app>
     <keyboardsounds|kbs> <rr|remove-rule> -a <app>
     <keyboardsounds|kbs> <lr|list-rules>
     <keyboardsounds|kbs> <sr|set-global-rule> -r <rule>
@@ -156,7 +156,7 @@ Keyboard Sounds supports the ability to enable or disable the typing sound effec
 **Add a new rule for an application.**
 
 ```bash
-$ kbs add-rule -a "C:\Program Files\MyApp\MyApp.exe" -r enable
+$ kbs add-rule -r enable -a "C:\Program Files\MyApp\MyApp.exe" 
 ```
 
 **Remove a rule for an application.**

@@ -143,7 +143,7 @@ $ kbs stop
 
 Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
 
-**Application Rules are only available on Windows.**
+**⚠️ Application Rules are only available on Windows.**
 
 #### Rule Types
 

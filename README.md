@@ -50,6 +50,11 @@ By default, Keyboard Sounds comes with the following profiles pre-loaded.
 
 ## Usage
 
+- [Managing the Daemon](#manage-the-daemon)
+- [Managing Application Rules](#managing-application-rules)
+- [Manage Profiles](#manage-profiles)
+- [Custom Profiles](#custom-profiles)
+
 ```yaml
 Keyboard Sounds vX.X.X
 
@@ -68,14 +73,23 @@ usage: <keyboardsounds|kbs> <action> [params]
     <keyboardsounds|kbs> <lp|list-profiles>
     <keyboardsounds|kbs> <bp|build-profile> -d <sound_dir> -o <zip_file>
 
+  manage rules:
+
+    <keyboardsounds|kbs> <ar|add-rule> -r <rule> -a <app>
+    <keyboardsounds|kbs> <rr|remove-rule> -a <app>
+    <keyboardsounds|kbs> <lr|list-rules>
+    <keyboardsounds|kbs> <sr|set-global-rule> -r <rule>
+    <keyboardsounds|kbs> <gr|get-global-rule>
+
   other:
 
     <keyboardsounds|kbs> [--version|-V]
 
+
 positional arguments:
   action                The action to perform
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -v volume, --volume volume
                         volume of the sound effects (0-100), default 100
@@ -88,58 +102,106 @@ optional arguments:
                         path to the directory containing the sounds to use for the profile
   -o file, --output file
                         path to the zip file to create
+  -a app, --app app     absolute path to the application to add the rule for
+  -r rule, --rule rule  rule to apply. must be one of 'enable', 'disable', or 'exclusive'
 ```
 
-### Manage Daemon
+### Manage the Daemon
 
 **Start the daemon.**
 
 Can also be used to re-start the daemon with an adjusted configuration.
 
-```powershell
+```bash
 # Start with default volume of 100%
 $ kbs start
 ```
 
-```powershell
+```bash
 # Start or reconfigure with a volume of 50%
 $ kbs start -v 50
 ```
 
-```powershell
+```bash
 # Start or reconfigure with a specific profile
 $ kbs start -p typewriter
 ```
 
 **Check the current status of the daemon.**
 
-```powershell
+```bash
 $ kbs status
 ```
 
 **Stop the daemon if it is running.**
 
-```powershell
+```bash
 $ kbs stop
+```
+
+### Managing Application Rules
+
+Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
+
+**⚠️ Application Rules are only available on Windows.**
+
+#### Rule Types
+
+- `enable` - Enable sound effects for the application.
+- `disable` - Disable sound effects for the application.
+- `exclusive` - Only play sound effects for the application.
+
+> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
+
+**Add a new rule for an application.**
+
+```bash
+$ kbs add-rule -r enable -a "C:\Program Files\MyApp\MyApp.exe" 
+```
+
+**Remove a rule for an application.**
+
+```bash
+$ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
+```
+
+**Lists the currently loaded rules.**
+
+```bash
+$ kbs list-rules
+```
+
+**Set the global rule.**
+
+> The global rule is used as the fallback for any application that does not have a specific rule set. By default, it is set to `enable`.
+
+```bash
+$ kbs set-global-rule -r disable
+```
+
+**Get the current global rule.**
+
+```bash
+$ kbs get-global-rule
 ```
 
 ### Manage Profiles
 
 **Add a new profile to the application.**
 
-```powershell
+```bash
 $ kbs add-profile -z ./my-profile.zip
 ```
 
 **Removes a profile from the application.**
 
-```powershell
+```bash
 $ kbs remove-profile -n myprofile
 ```
 
 **Lists the currently loaded profiles.**
 
-```powershell
+```bash
 $ kbs list-profiles
 ```
 
@@ -218,3 +280,115 @@ keys:
       keys: [ backspace, delete ]
 
 ```
+
+## Development
+
+To install the package in development mode, run the following commands.
+
+```bash
+$ git clone git@github.com:nathan-fiscaletti/keyboardsounds.git
+$ cd keyboardsounds
+$ pip install -e .
+```
+
+## Development
+
+This section is intended for developers who wish to contribute to this project. Follow the steps below to set up your development environment and start contributing.
+
+### Prerequisites
+
+- [Git](https://git-scm.com/downloads)
+- [Python](https://www.python.org/) (version 3.7 or higher)
+- [pip](https://pip.pypa.io/en/stable/installing/) (Python package installer)
+- [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html) (optional, but recommended)
+
+### Setting Up the Development Environment
+
+1. **Clone the Repository**
+
+   Begin by cloning the repository to your local machine using Git:
+
+   ```bash
+   git clone https://github.com/yourusername/yourprojectname.git
+   ```
+
+2. **Navigate to the Project Directory**
+
+   Change to the project directory:
+
+   ```bash
+   cd yourprojectname
+   ```
+
+3. **Create a Virtual Environment (Optional)**
+
+   It's recommended to create a virtual environment to keep dependencies required by different projects separate. If you have `virtualenv` installed, create a virtual environment:
+
+   ```bash
+   virtualenv venv
+   ```
+
+   Activate the virtual environment:
+
+   - On Windows:
+     ```cmd
+     .\venv\Scripts\activate
+     ```
+   - On Unix or MacOS:
+     ```bash
+     source venv/bin/activate
+     ```
+
+4. **Install Dependencies**
+
+   Install the project dependencies using `pip`:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Running the Project Locally
+
+- To run the project, use the following command:
+
+  ```bash
+  python main.py
+  ```
+
+  Replace `main.py` with the script you wish to run. This command will execute the script and start your application.
+
+### Running Tests
+
+- Ensure that your changes do not break any existing functionality by running the tests. If the project uses a test framework (like `pytest`), you can run tests using:
+
+  ```bash
+  pytest
+  ```
+
+  or if tests are set up with `unittest`:
+
+  ```bash
+  python -m unittest discover
+  ```
+
+### Contributing
+
+Contributions are what make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+#### Submitting Pull Requests
+
+1. Fork the repository and create your branch from `main`.
+2. If you've added code, write tests for it and make sure existing tests pass.
+3. Ensure your code adheres to the project's coding conventions.
+4. Update documentation as necessary.
+5. Submit your pull request with a detailed description of your changes.
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests to us.
+
+### Getting Help
+
+Should you have any questions or encounter issues, feel free to open an issue on the repository, and we'll do our best to address it.
+
+---
+
+Make sure to adjust the content to reflect your project's specific requirements, such as the main script name, the use of a different test framework, or additional setup steps.

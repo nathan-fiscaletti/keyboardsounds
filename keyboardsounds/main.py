@@ -1,17 +1,36 @@
 import argparse
 import os
+import sys
+import time
+
+from sys import platform
+
+LINUX=platform.lower().startswith("linux")
+WIN32=platform.lower().startswith("win")
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 from importlib.metadata import version
 
-from keyboardsounds.daemon_manager import DaemonManager
-from keyboardsounds.profile import Profile
-from keyboardsounds.profile_builder import CliProfileBuilder
 from keyboardsounds.root import ROOT
 
+from keyboardsounds.daemon_manager import DaemonManager
+
+from keyboardsounds.profile import Profile
+from keyboardsounds.profile_builder import CliProfileBuilder
+
+from keyboardsounds.app_rules import Action, GlobalAction
+from keyboardsounds.app_rules import get_rules
+
 def main():
+    if LINUX:
+        if os.geteuid() != 0:
+            print(
+                "warning: it is recommended that you run this program " +
+                "as root on Linux systems."
+            )
+
     LOCK_FILE = f"{ROOT}/.lock"
 
     # Work around to get pygame to load mp3 files on windows
@@ -25,6 +44,17 @@ def main():
 
     version_number = version("keyboardsounds")
 
+    win_messages = []
+    if WIN32:
+        win_messages = (
+            f"  manage rules:{os.linesep * 2}"
+            f"    %(prog)s <ar|add-rule> -r <rule> -a <app>{os.linesep}"
+            f"    %(prog)s <rr|remove-rule> -a <app>{os.linesep}"
+            f"    %(prog)s <lr|list-rules>{os.linesep}"
+            f"    %(prog)s <sr|set-global-rule> -r <rule>{os.linesep}"
+            f"    %(prog)s <gr|get-global-rule>{os.linesep * 2}"
+        )
+
     usage = (
         f"usage: %(prog)s <action> [params]{os.linesep *2}"
         f"  manage daemon:{os.linesep * 2}"
@@ -36,6 +66,7 @@ def main():
         f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
         f"    %(prog)s <lp|list-profiles>{os.linesep}"
         f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
+    ) + win_messages + (
         f"  other:{os.linesep * 2}"
         f"    %(prog)s [--version|-V]{os.linesep}"
     )
@@ -62,6 +93,11 @@ def main():
     parser.add_argument("-d", "--directory", type=str, default=None, metavar="directory", help="path to the directory containing the sounds to use for the profile")
     parser.add_argument("-o", "--output", type=str, default=None, metavar="file", help="path to the zip file to create")
 
+    # Rules
+    if WIN32:
+        parser.add_argument("-a", "--app", type=str, default=None, metavar="app", help="absolute path to the application to add the rule for")
+        parser.add_argument("-r", "--rule", type=str, default=None, metavar="rule", help="rule to apply. must be one of 'enable', 'disable', or 'exclusive'")
+
     args = parser.parse_args()
 
     if args.action == "start":
@@ -72,7 +108,7 @@ def main():
             print("Starting Keyboard Sounds daemon...")
         if not dm.try_start(volume=args.volume, profile=args.profile):
             print("Failed to start.")
-            return;
+            return
         print(f"Started Keyboard Sounds.")
     elif args.action == "stop":
         stopped = dm.try_stop()
@@ -120,6 +156,97 @@ def main():
         
         builder = CliProfileBuilder(args.directory, args.output)
         builder.start()
+
+    # Rules are only available on windows
+    elif WIN32 and (args.action == "list-rules" or args.action == "lr"):
+        print(f"Keyboard Sounds v{version_number} - Application Rules{os.linesep}")
+
+        print(f"Use 'keyboardsounds add-rule' to add a rule for a specific application.")
+        print(f"Use 'keyboardsounds remove-rule' to remove a rule for a specific application.")
+        print(f"Use 'keyboardsounds set-global-rule' to set the global rule.")
+
+        rules = get_rules()
+
+        print(f"{os.linesep}Configured Rules:{os.linesep}")
+
+        print(f" - Application : Global")
+        print(f"   Action      : {rules.global_action.value.upper()}")
+
+        
+        for rule in rules.rules:
+            print("")
+            print(f" - Application : {rule.app_path}")
+            print(f"   Action      : {rule.action.value.upper()}")
+        print("")
+    elif WIN32 and (args.action == "add-rule" or args.action == "ar"):
+        if args.app is None:
+            print("Please specify an application to add the rule for.")
+            return
+        if args.rule is None:
+            print("Please specify a rule to apply. Must be one of 'enable', 'disable', or 'exclusive'.")
+            return
+        
+        args.rule = args.rule.lower()
+
+        rules = get_rules()
+        if args.rule.lower() not in [Action.ENABLE.value, Action.DISABLE.value, Action.EXCLUSIVE.value]:
+            print("Invalid rule. Must be one of 'enable', 'disable', or 'exclusive'.")
+            return
+        if args.rule.lower() == Action.EXCLUSIVE.value:
+            if rules.has_exclusive_rule():
+                print("Exclusive rule already exists. Only one exclusive rule can be set.")
+                return
+        rules.set_rule(args.app, Action(args.rule))
+        try:
+            rules.save()
+            print(f"Rule '{args.rule.upper()}' added for {args.app}.")
+        except Exception as e:
+            print(f"Failed to save rules: {e}")
+    elif WIN32 and (args.action == "remove-rule" or args.action == "rr"):
+        if args.app is None:
+            print("Please specify an application to remove the rule for.")
+            return
+
+        rules = get_rules()
+        if not rules.has_rule(args.app):
+            print(f"No rule exists for {args.app}.")
+            return
+
+        rules.remove_rule(args.app)
+        try:
+            rules.save()
+            print(f"Rule removed for {args.app}.")
+        except Exception as e:
+            print(f"Failed to save rules: {e}")
+    elif WIN32 and (args.action == "set-global-rule" or args.action == "sr"):
+        if args.rule is None:
+            print("Please specify a rule to apply. Must be one of 'enable' or 'disable'.")
+            return
+
+        args.rule = args.rule.lower()
+
+        if args.rule not in [Action.ENABLE.value, Action.DISABLE.value]:
+            print("Invalid rule. Must be one of 'enable' or 'disable'.")
+            return
+
+        if args.rule == "exclusive":
+            print("Global rule cannot be set to 'exclusive'.")
+            return
+
+        rules = get_rules()
+        rules.set_global_action(GlobalAction(args.rule))
+
+        try:
+            rules.save()
+        except Exception as e:
+            print(f"Failed to save rules: {e}")
+            return
+
+        print(f"Global rule set to '{args.rule.upper()}'.")
+    elif WIN32 and (args.action == "get-global-rule" or args.action == "gr"):
+        rules = get_rules()
+        print(f"Global rule is set to '{rules.global_action.value.upper()}'.")
+
     else:
         parser.print_usage()
 

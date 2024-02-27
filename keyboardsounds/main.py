@@ -26,7 +26,10 @@ from keyboardsounds.app_rules import get_rules
 def main():
     if LINUX:
         if os.geteuid() != 0:
-            print("keyboardsounds: this program must be run as root on Linux.")
+            print(
+                "warning: it is recommended that you run this program " +
+                "as root on Linux systems."
+            )
 
     LOCK_FILE = f"{ROOT}/.lock"
 

@@ -283,16 +283,6 @@ keys:
 
 ## Development
 
-To install the package in development mode, run the following commands.
-
-```bash
-$ git clone git@github.com:nathan-fiscaletti/keyboardsounds.git
-$ cd keyboardsounds
-$ pip install -e .
-```
-
-## Development
-
 This section is intended for developers who wish to contribute to this project. Follow the steps below to set up your development environment and start contributing.
 
 ### Prerequisites
@@ -309,7 +299,7 @@ This section is intended for developers who wish to contribute to this project. 
    Begin by cloning the repository to your local machine using Git:
 
    ```bash
-   git clone https://github.com/yourusername/yourprojectname.git
+   git clone https://github.com/nathan-fiscaletti/keyboardsounds.git
    ```
 
 2. **Navigate to the Project Directory**
@@ -317,7 +307,7 @@ This section is intended for developers who wish to contribute to this project. 
    Change to the project directory:
 
    ```bash
-   cd yourprojectname
+   cd keyboardsounds
    ```
 
 3. **Create a Virtual Environment (Optional)**
@@ -349,27 +339,15 @@ This section is intended for developers who wish to contribute to this project. 
 
 ### Running the Project Locally
 
-- To run the project, use the following command:
+It is recommended that you install the package in editable mode to allow you to make changes to the code and see the changes reflected in the application.
+
+- To install the package in editable mode, use the following command:
 
   ```bash
-  python main.py
+  pip install -e .
   ```
 
-  Replace `main.py` with the script you wish to run. This command will execute the script and start your application.
-
-### Running Tests
-
-- Ensure that your changes do not break any existing functionality by running the tests. If the project uses a test framework (like `pytest`), you can run tests using:
-
-  ```bash
-  pytest
-  ```
-
-  or if tests are set up with `unittest`:
-
-  ```bash
-  python -m unittest discover
-  ```
+  This command will install the package in editable mode, allowing you to make changes to the code and see the changes reflected in the application.
 
 ### Contributing
 
@@ -377,18 +355,11 @@ Contributions are what make the open-source community an amazing place to learn,
 
 #### Submitting Pull Requests
 
-1. Fork the repository and create your branch from `main`.
-2. If you've added code, write tests for it and make sure existing tests pass.
-3. Ensure your code adheres to the project's coding conventions.
+1. Fork the repository and create your branch from `master`.
+2. If you've added code, ensure your code adheres to the project's coding conventions.
 4. Update documentation as necessary.
 5. Submit your pull request with a detailed description of your changes.
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests to us.
-
 ### Getting Help
 
-Should you have any questions or encounter issues, feel free to open an issue on the repository, and we'll do our best to address it.
-
----
-
-Make sure to adjust the content to reflect your project's specific requirements, such as the main script name, the use of a different test framework, or additional setup steps.
+Should you have any questions or encounter issues, feel free to open an issue on the repository, and I'll do my best to address it.

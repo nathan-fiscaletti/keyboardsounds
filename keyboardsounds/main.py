@@ -5,7 +5,7 @@ import time
 
 from sys import platform
 
-DARWIN=platform.lower().startswith("darwin")
+LINUX=platform.lower().startswith("linux")
 WIN32=platform.lower().startswith("win")
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -24,9 +24,9 @@ from keyboardsounds.app_rules import Action, GlobalAction
 from keyboardsounds.app_rules import get_rules
 
 def main():
-    if DARWIN:
+    if LINUX:
         if os.geteuid() != 0:
-            print("keyboardsounds: this program must be run as root on macOS.")
+            print("keyboardsounds: this program must be run as root on Linux.")
 
     LOCK_FILE = f"{ROOT}/.lock"
 

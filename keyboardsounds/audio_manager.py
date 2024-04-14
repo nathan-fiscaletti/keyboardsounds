@@ -11,6 +11,7 @@ from pynput.keyboard import Key, KeyCode
 
 from keyboardsounds.profile import Profile
 
+
 class AudioManager:
     def __init__(self, profile: Profile) -> None:
         """
@@ -28,6 +29,21 @@ class AudioManager:
         self.__prime_audio_clips()
         self.__enabled = True
 
+    def set_profile(self, profile: Profile):
+        """
+        Sets a new profile for the AudioManager.
+
+        Parameters:
+        - profile (Profile): The new profile to be set for the AudioManager.
+
+        This method allows for changing the profile associated with the
+        AudioManager instance, updating the sound clips and key mappings
+        accordingly.
+        """
+        self.sounds = {}
+        self.profile = profile
+        self.__prime_audio_clips()
+
     def __prime_audio_clips(self):
         """
         Primes audio clips based on the profile configuration.
@@ -41,22 +57,20 @@ class AudioManager:
         No parameters or return values as it modifies the internal state of the
         AudioManager instance.
         """
-        if self.profile.value('profile.type') == "video-extract":
+        if self.profile.value("profile.type") == "video-extract":
             ffmpeg_exe = get_ffmpeg_exe()
-            V_FILE = self.profile.get_file_path(
-                self.profile.value('profile.video')
-            )
+            V_FILE = self.profile.get_file_path(self.profile.value("profile.video"))
             A_FILE = f"{V_FILE}.wav"
             subprocess.run(
                 [ffmpeg_exe, "-y", "-i", V_FILE, "-f", "wav", "-vn", A_FILE],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
             )
-            for source in self.profile.value('sources'):
-                self.__extract(source["id"], A_FILE,
-                               source["start"], source["end"])
+            for source in self.profile.value("sources"):
+                self.__extract(source["id"], A_FILE, source["start"], source["end"])
             os.unlink(A_FILE)
-        elif self.profile.value('profile.type') == "files":
-            for source in self.profile.value('sources'):
+        elif self.profile.value("profile.type") == "files":
+            for source in self.profile.value("sources"):
                 if isinstance(source["source"], dict):
                     source_id = source["id"]
                     press_loc = source["source"]["press"]
@@ -74,7 +88,7 @@ class AudioManager:
 
                     self.sounds[source_id] = {
                         "press": io.BytesIO(press_snd),
-                        "release": io.BytesIO(release_snd)
+                        "release": io.BytesIO(release_snd),
                     }
                     del self.sounds[press_id]
                     del self.sounds[release_id]
@@ -101,18 +115,18 @@ class AudioManager:
         segment and storing it in memory for quick access. The extracted audio
         clip is associated with the provided id.
         """
-        if input.endswith(('mp3', 'MP3')):
-            source = open(input, 'rb')
+        if input.endswith(("mp3", "MP3")):
+            source = open(input, "rb")
             data = source.read()
             source.close()
             self.sounds[id] = io.BytesIO(data)
         else:
-            source = wave.open(input, 'rb')
+            source = wave.open(input, "rb")
             source.setpos(int(start * source.getframerate()))
             end = end or source.getnframes() / source.getframerate()
             frames = int((end - start) * source.getframerate())
             self.sounds[id] = io.BytesIO()
-            dest = wave.open(self.sounds[id], 'wb')
+            dest = wave.open(self.sounds[id], "wb")
             dest.setparams(source.getparams())
             dest.writeframes(source.readframes(frames))
             source.close()
@@ -143,17 +157,17 @@ class AudioManager:
         if not self.__enabled:
             return None
 
-        if self.profile.value('keys') is not None:
-            if self.profile.value('keys.other') is not None:
-                for mapping in self.profile.value('keys.other'):
+        if self.profile.value("keys") is not None:
+            if self.profile.value("keys.other") is not None:
+                for mapping in self.profile.value("keys.other"):
                     k_val = key.name if isinstance(key, Key) else key.char
                     if k_val in mapping["keys"]:
                         return self.__get_sound(mapping["sound"], action)
-            if self.profile.value('keys.default') is not None:
-                default_key = self.profile.value('keys.default')
+            if self.profile.value("keys.default") is not None:
+                default_key = self.profile.value("keys.default")
                 return self.__get_sound(default_key, action)
         return self.__get_sound(key=None, action=action)
-    
+
     def set_enabled(self, enabled: bool) -> None:
         """
         Enables or disables the AudioManager.
@@ -190,7 +204,7 @@ class AudioManager:
         if type(key) is list:
             return self.__parse_sound(self.sounds[random.choice(key)], action)
         return self.__parse_sound(self.sounds[key], action)
-    
+
     def __parse_sound(self, sound, action: str = "press") -> io.BytesIO:
         """
         Converts a sound clip into a BytesIO object suitable for playback.

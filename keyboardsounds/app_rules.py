@@ -9,14 +9,17 @@ from keyboardsounds.root import ROOT
 
 RULES_PATH = f"{ROOT}/rules.json"
 
+
 class Action(Enum):
     EXCLUSIVE = "exclusive"
     DISABLE = "disable"
     ENABLE = "enable"
 
+
 class GlobalAction(Enum):
     DISABLE = "disable"
     ENABLE = "enable"
+
 
 class Rule:
     def __init__(self, app_path: str, action: Action) -> None:
@@ -28,6 +31,7 @@ class Rule:
         """
         self.app_path = app_path
         self.action = action
+
 
 class Rules:
     def __init__(self, global_action: GlobalAction, rules: List[Rule]) -> None:
@@ -63,7 +67,7 @@ class Rules:
             if rule.app_path == app_path:
                 existing_rule = rule
                 break
-        
+
         # If the rule exists, update its action
         if existing_rule:
             existing_rule.action = action
@@ -87,7 +91,7 @@ class Rules:
         :return: True if a rule exists for the application, False otherwise.
         """
         return any(r.app_path == app_path for r in self.rules)
-    
+
     def has_exclusive_rule(self) -> bool:
         """
         Checks if there is an exclusive rule in the rules.
@@ -95,7 +99,7 @@ class Rules:
         :return: True if an exclusive rule exists, False otherwise.
         """
         return any(r.action == Action.EXCLUSIVE for r in self.rules)
-    
+
     def get_exclusive_rule(self) -> Optional[Rule]:
         """
         Retrieves the exclusive rule from the rules.
@@ -118,7 +122,7 @@ class Rules:
             if r.app_path == app_path:
                 return r.action
         return Action(self.global_action.value)
-    
+
     def save(self) -> None:
         """
         Saves the current rules to the database.
@@ -132,12 +136,18 @@ class Rules:
         - PermissionError: If there are insufficient permissions.
         - FileNotFoundError: If the rules file does not exist.
         """
-        with open(RULES_PATH, 'w') as f:
-            json.dump({
-                "global_action": self.global_action.value,
-                "rules": [{"app_path": r.app_path, "action": r.action.value}
-                      for r in self.rules]
-            }, f)
+        with open(RULES_PATH, "w") as f:
+            json.dump(
+                {
+                    "global_action": self.global_action.value,
+                    "rules": [
+                        {"app_path": r.app_path, "action": r.action.value}
+                        for r in self.rules
+                    ],
+                },
+                f,
+            )
+
 
 def get_rules() -> Rules:
     """
@@ -154,13 +164,13 @@ def get_rules() -> Rules:
     """
     __safe_create_rules()
 
-    with open(RULES_PATH, 'r') as f:
+    with open(RULES_PATH, "r") as f:
         data = json.load(f)
         return Rules(
             global_action=GlobalAction(data["global_action"]),
-            rules=[Rule(r["app_path"], Action(r["action"]))
-                   for r in data["rules"]]
+            rules=[Rule(r["app_path"], Action(r["action"])) for r in data["rules"]],
         )
+
 
 def __safe_create_rules() -> None:
     """
@@ -169,8 +179,11 @@ def __safe_create_rules() -> None:
     Used internally to avoid errors when file is absent.
     """
     if not os.path.exists(RULES_PATH):
-        with open(RULES_PATH, 'w') as f:
-            json.dump({
-                "global_action": GlobalAction.ENABLE.value,
-                "rules": [],
-            }, f)
+        with open(RULES_PATH, "w") as f:
+            json.dump(
+                {
+                    "global_action": GlobalAction.ENABLE.value,
+                    "rules": [],
+                },
+                f,
+            )

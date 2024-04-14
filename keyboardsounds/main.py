@@ -1,14 +1,13 @@
 import argparse
 import os
-import sys
-import time
+import json
 
 from sys import platform
 
-LINUX=platform.lower().startswith("linux")
-WIN32=platform.lower().startswith("win")
+LINUX = platform.lower().startswith("linux")
+WIN32 = platform.lower().startswith("win")
 
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 
 from importlib.metadata import version
@@ -23,12 +22,13 @@ from keyboardsounds.profile_builder import CliProfileBuilder
 from keyboardsounds.app_rules import Action, GlobalAction
 from keyboardsounds.app_rules import get_rules
 
+
 def main():
     if LINUX:
         if os.geteuid() != 0:
             print(
-                "warning: it is recommended that you run this program " +
-                "as root on Linux systems."
+                "warning: it is recommended that you run this program "
+                + "as root on Linux systems."
             )
 
     LOCK_FILE = f"{ROOT}/.lock"
@@ -56,47 +56,112 @@ def main():
         )
 
     usage = (
-        f"usage: %(prog)s <action> [params]{os.linesep *2}"
-        f"  manage daemon:{os.linesep * 2}"
-        f"    %(prog)s start [-v <volume>] [-p <profile>]{os.linesep}"
-        f"    %(prog)s stop{os.linesep}"
-        f"    %(prog)s status{os.linesep * 2}"
-        f"  manage profiles:{os.linesep * 2}"
-        f"    %(prog)s <ap|add-profile> -z <zipfile>{os.linesep}"
-        f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
-        f"    %(prog)s <lp|list-profiles>{os.linesep}"
-        f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
-    ) + win_messages + (
-        f"  other:{os.linesep * 2}"
-        f"    %(prog)s [--version|-V]{os.linesep}"
+        (
+            f"usage: %(prog)s <action> [params]{os.linesep *2}"
+            f"  manage daemon:{os.linesep * 2}"
+            f"    %(prog)s start [-v <volume>] [-p <profile>]{os.linesep}"
+            f"    %(prog)s stop{os.linesep}"
+            f"    %(prog)s status [-s]{os.linesep * 2}"
+            f"  manage profiles:{os.linesep * 2}"
+            f"    %(prog)s <ap|add-profile> -z <zipfile>{os.linesep}"
+            f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
+            f"    %(prog)s <lp|list-profiles>{os.linesep}"
+            f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
+        )
+        + win_messages
+        + (f"  other:{os.linesep * 2}" f"    %(prog)s [--version|-V]{os.linesep}")
     )
 
     parser = argparse.ArgumentParser(
         prog=f"<keyboardsounds|kbs>",
         usage=argparse.SUPPRESS,
         description=f"Keyboard Sounds v{version_number}{os.linesep * 2}{usage}{os.linesep}",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     parser.add_argument("action", help="The action to perform")
-    
+
     # Start Action
-    parser.add_argument("-v", "--volume", type=int, default=100, metavar="volume", help="volume of the sound effects (0-100), default 100")
-    parser.add_argument("-p", "--profile", type=str, default="ios", metavar="profile", help="sound profile to use, default 'ios'")
+    parser.add_argument(
+        "-v",
+        "--volume",
+        type=int,
+        default=100,
+        metavar="volume",
+        help="volume of the sound effects (0-100), default 100",
+    )
+    parser.add_argument(
+        "-p",
+        "--profile",
+        type=str,
+        default="ios",
+        metavar="profile",
+        help="sound profile to use, default 'ios'",
+    )
+
+    # Status Action
+    parser.add_argument(
+        "-s",
+        "--short",
+        action="store_true",
+        help="consolidate output to a single line for scripting",
+    )
 
     # Profiles
-    parser.add_argument("-n", "--name", type=str, default=None, metavar="name", help="name of the profile remove")
-    parser.add_argument("-z", "--zip", type=str, default=None, metavar="file", help="path to the zip file containing the profile to add")
+    parser.add_argument(
+        "-n",
+        "--name",
+        type=str,
+        default=None,
+        metavar="name",
+        help="name of the profile remove",
+    )
+    parser.add_argument(
+        "-z",
+        "--zip",
+        type=str,
+        default=None,
+        metavar="file",
+        help="path to the zip file containing the profile to add",
+    )
     parser.add_argument("-V", "--version", action="version", version=version_number)
 
     # Profile Builder
-    parser.add_argument("-d", "--directory", type=str, default=None, metavar="directory", help="path to the directory containing the sounds to use for the profile")
-    parser.add_argument("-o", "--output", type=str, default=None, metavar="file", help="path to the zip file to create")
+    parser.add_argument(
+        "-d",
+        "--directory",
+        type=str,
+        default=None,
+        metavar="directory",
+        help="path to the directory containing the sounds to use for the profile",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default=None,
+        metavar="file",
+        help="path to the zip file to create",
+    )
 
     # Rules
     if WIN32:
-        parser.add_argument("-a", "--app", type=str, default=None, metavar="app", help="absolute path to the application to add the rule for")
-        parser.add_argument("-r", "--rule", type=str, default=None, metavar="rule", help="rule to apply. must be one of 'enable', 'disable', or 'exclusive'")
+        parser.add_argument(
+            "-a",
+            "--app",
+            type=str,
+            default=None,
+            metavar="app",
+            help="absolute path to the application to add the rule for",
+        )
+        parser.add_argument(
+            "-r",
+            "--rule",
+            type=str,
+            default=None,
+            metavar="rule",
+            help="rule to apply. must be one of 'enable', 'disable', or 'exclusive'",
+        )
 
     args = parser.parse_args()
 
@@ -112,9 +177,13 @@ def main():
         print(f"Started Keyboard Sounds.")
     elif args.action == "stop":
         stopped = dm.try_stop()
-        print("Stopped Keyboard Sounds daemon." if stopped else "Failed to stop Keyboard Sounds daemon. Is it running?")
+        print(
+            "Stopped Keyboard Sounds daemon."
+            if stopped
+            else "Failed to stop Keyboard Sounds daemon. Is it running?"
+        )
     elif args.action == "status":
-        status = dm.status(full=True)
+        status = dm.status(full=not args.short, short=args.short)
         print(f"{status}")
     elif args.action == "add-profile" or args.action == "ap":
         if args.zip is None:
@@ -131,10 +200,25 @@ def main():
     elif args.action == "list-profiles" or args.action == "lp":
         profiles = [profile.metadata() for profile in Profile.list()]
 
+        if args.short:
+            print(
+                json.dumps(
+                    [
+                        {
+                            "name": profile["name"],
+                            "author": profile["author"],
+                            "description": profile["description"],
+                        }
+                        for profile in profiles
+                    ]
+                )
+            )
+            return
+
         names = [profile["name"] for profile in profiles]
-        names.append('Name')
+        names.append("Name")
         authors = [profile["author"] for profile in profiles]
-        authors.append('Author')
+        authors.append("Author")
         name_len = len(max(names, key=len))
         auth_len = len(max(authors, key=len))
 
@@ -142,37 +226,54 @@ def main():
         print(f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | Description")
         print(f" {'-' * name_len} | {'-' * auth_len} | -----------")
         for profile in profiles:
-            print(f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}")
+            print(
+                f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}"
+            )
         print(os.linesep)
-
         return
     elif args.action == "build-profile" or args.action == "bp":
         if args.directory is None:
-            print("Please specify a directory containing the sounds to use for the profile.")
+            print(
+                "Please specify a directory containing the sounds to use for the profile."
+            )
             return
         if args.output is None:
             print("Please specify a zip file to create.")
             return
-        
+
         builder = CliProfileBuilder(args.directory, args.output)
         builder.start()
 
     # Rules are only available on windows
     elif WIN32 and (args.action == "list-rules" or args.action == "lr"):
+        rules = get_rules()
+
+        if args.short:
+            print(
+                json.dumps(
+                    [
+                        {"app_path": rule.app_path, "action": rule.action.value}
+                        for rule in rules.rules
+                    ]
+                )
+            )
+            return
+
         print(f"Keyboard Sounds v{version_number} - Application Rules{os.linesep}")
 
-        print(f"Use 'keyboardsounds add-rule' to add a rule for a specific application.")
-        print(f"Use 'keyboardsounds remove-rule' to remove a rule for a specific application.")
+        print(
+            f"Use 'keyboardsounds add-rule' to add a rule for a specific application."
+        )
+        print(
+            f"Use 'keyboardsounds remove-rule' to remove a rule for a specific application."
+        )
         print(f"Use 'keyboardsounds set-global-rule' to set the global rule.")
-
-        rules = get_rules()
 
         print(f"{os.linesep}Configured Rules:{os.linesep}")
 
         print(f" - Application : Global")
         print(f"   Action      : {rules.global_action.value.upper()}")
 
-        
         for rule in rules.rules:
             print("")
             print(f" - Application : {rule.app_path}")
@@ -183,18 +284,26 @@ def main():
             print("Please specify an application to add the rule for.")
             return
         if args.rule is None:
-            print("Please specify a rule to apply. Must be one of 'enable', 'disable', or 'exclusive'.")
+            print(
+                "Please specify a rule to apply. Must be one of 'enable', 'disable', or 'exclusive'."
+            )
             return
-        
+
         args.rule = args.rule.lower()
 
         rules = get_rules()
-        if args.rule.lower() not in [Action.ENABLE.value, Action.DISABLE.value, Action.EXCLUSIVE.value]:
+        if args.rule.lower() not in [
+            Action.ENABLE.value,
+            Action.DISABLE.value,
+            Action.EXCLUSIVE.value,
+        ]:
             print("Invalid rule. Must be one of 'enable', 'disable', or 'exclusive'.")
             return
         if args.rule.lower() == Action.EXCLUSIVE.value:
             if rules.has_exclusive_rule():
-                print("Exclusive rule already exists. Only one exclusive rule can be set.")
+                print(
+                    "Exclusive rule already exists. Only one exclusive rule can be set."
+                )
                 return
         rules.set_rule(args.app, Action(args.rule))
         try:
@@ -220,7 +329,9 @@ def main():
             print(f"Failed to save rules: {e}")
     elif WIN32 and (args.action == "set-global-rule" or args.action == "sr"):
         if args.rule is None:
-            print("Please specify a rule to apply. Must be one of 'enable' or 'disable'.")
+            print(
+                "Please specify a rule to apply. Must be one of 'enable' or 'disable'."
+            )
             return
 
         args.rule = args.rule.lower()
@@ -245,10 +356,14 @@ def main():
         print(f"Global rule set to '{args.rule.upper()}'.")
     elif WIN32 and (args.action == "get-global-rule" or args.action == "gr"):
         rules = get_rules()
+        if args.short:
+            print(json.dumps({"global_action": rules.global_action.value}))
+            return
         print(f"Global rule is set to '{rules.global_action.value.upper()}'.")
 
     else:
         parser.print_usage()
+
 
 if __name__ == "__main__":
     main()

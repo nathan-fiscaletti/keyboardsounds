@@ -50,9 +50,9 @@ def main():
             f"  manage rules:{os.linesep * 2}"
             f"    %(prog)s <ar|add-rule> -r <rule> -a <app>{os.linesep}"
             f"    %(prog)s <rr|remove-rule> -a <app>{os.linesep}"
-            f"    %(prog)s <lr|list-rules>{os.linesep}"
+            f"    %(prog)s <lr|list-rules> [-s]{os.linesep}"
             f"    %(prog)s <sr|set-global-rule> -r <rule>{os.linesep}"
-            f"    %(prog)s <gr|get-global-rule>{os.linesep * 2}"
+            f"    %(prog)s <gr|get-global-rule> [-s]{os.linesep * 2}"
         )
 
     usage = (
@@ -65,7 +65,7 @@ def main():
             f"  manage profiles:{os.linesep * 2}"
             f"    %(prog)s <ap|add-profile> -z <zipfile>{os.linesep}"
             f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
-            f"    %(prog)s <lp|list-profiles>{os.linesep}"
+            f"    %(prog)s <lp|list-profiles> [-s]{os.linesep}"
             f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
         )
         + win_messages

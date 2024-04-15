@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="keyboardsounds",
-    version="5.7.1",
+    version="5.7.2",
     description="Adds the ability to play sounds while typing on any system.",
     author="Nathan Fiscaletti",
     author_email="nate.fiscaletti@gmail.com",
@@ -21,6 +21,7 @@ setup(
             "profiles/mx-speed-silver/*",
             "profiles/telios-v2/*",
             "profiles/typewriter/*",
+            "external_api/*",
         ],
     },
     entry_points={

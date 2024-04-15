@@ -8,6 +8,8 @@
 
 This python package will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
 
+[Work in Progress Desktop Application](https://github.com/nathan-fiscaletti/keyboardsounds-desktop)
+
 ## Preview Video
 
 > Click to view a preview of the application.

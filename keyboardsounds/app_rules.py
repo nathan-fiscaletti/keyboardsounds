@@ -118,6 +118,13 @@ class Rules:
         :param app_path: Application path to retrieve the action for.
         :return: Action applicable to the application.
         """
+        if self.global_action == GlobalAction.DISABLE.value:
+            for r in self.rules:
+                if r.app_path == app_path:
+                    if r.action == Action.ENABLE:
+                        return Action.ENABLE
+            return Action.DISABLE
+
         for r in self.rules:
             if r.app_path == app_path:
                 return r.action

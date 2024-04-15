@@ -8,15 +8,17 @@
 
 This python package will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
 
-[Work in Progress Desktop Application](https://github.com/nathan-fiscaletti/keyboardsounds-desktop)
-
-## Preview Video
-
-> Click to view a preview of the application.
-
-[![Preview Video](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/video-preview.png?raw=true)](https://www.youtube.com/watch?v=sWAj8zEk7sQ)
-
 ## Installation
+
+### Desktop Application
+
+There is a work-in-progress desktop application available for Keyboard Sounds. You can find information on how to get it up and running on the [Keyboard Sounds Desktop repository](https://github.com/nathan-fiscaletti/keyboardsounds-desktop).
+
+The desktop application still requires the Python package to be installed on your system.
+
+![Desktop App Preview](https://github.com/nathan-fiscaletti/keyboardsounds-desktop/blob/main/preview.png?raw=true)
+
+### Python Package
 
 **Python 3.7** or higher is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
 

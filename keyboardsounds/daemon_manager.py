@@ -4,9 +4,12 @@ import psutil
 import subprocess
 import time
 import json
+import socket
 
 import keyboardsounds.daemon as daemon
 from keyboardsounds.profile import Profile
+from keyboardsounds.external_api import ExternalAPI
+
 
 class DaemonManager:
     def __init__(self, lock_file) -> None:
@@ -25,6 +28,7 @@ class DaemonManager:
         self.__lock_exists = False
         self.__is_daemon_process = False
         self.__proc = None
+        self.__api = None
         self.__load_status()
 
     def __load_status(self):
@@ -70,7 +74,7 @@ class DaemonManager:
         else:
             self.__is_daemon_process = False
 
-    def status(self, full=False) -> str:
+    def status(self, full=False, short=False) -> str:
         """
         Returns the current status of the daemon process. Can provide a simple
         status or a full status with additional details.
@@ -79,11 +83,12 @@ class DaemonManager:
         - full (bool): If True, returns a detailed status string including
                        volume, PID, and profile. If False, returns a simple
                        status string.
+        - short (bool): If True, returns a JSON string with the status details.
 
         Returns:
         - str: The status of the daemon, which can be 'running', 'stale', or
-               'free'. If 'full' is True, additional details are included in the
-               returned string.
+               'free'. If 'full' or 'short' is True, returns a detailed status
+                string or JSON string, respectively.
         """
         if full:
             volume = self.get_volume()
@@ -97,6 +102,32 @@ class DaemonManager:
             )
             status = f"{status_text}{volume_status}{pid_status}{profile_status}"
             return f"Status: {status}"
+        elif short:
+            volume = self.get_volume()
+            pid = self.get_pid()
+            prof = self.get_profile()
+            daemon_status = self.status()
+            api_port = self.get_api_port()
+
+            user_status = None
+            if daemon_status == "running":
+                user_status = "Running"
+            else:
+                user_status = "Not running"
+
+            status = {
+                "status": daemon_status,
+                "user_status": user_status,
+                "volume": volume,
+                "pid": pid,
+                "profile": prof,
+                "api_port": api_port,
+                "lock": {
+                    "active": self.__lock_exists,
+                    "file": os.path.abspath(self.__lock_file),
+                },
+            }
+            return json.dumps(status)
         else:
             self.__load_status()
             if self.__lock_exists:
@@ -157,6 +188,22 @@ class DaemonManager:
             return self.__proc_info["profile"]
         return None
 
+    def get_api_port(self) -> int | None:
+        """
+        Retrieves the API port used by the daemon if it is running.
+
+        Parameters:
+        - None
+
+        Returns:
+        - str or None: The API port, or None if the daemon is not running.
+        """
+        self.__load_status()
+        status = self.status()
+        if status == "running":
+            return int(self.__proc_info["api_port"])
+        return None
+
     def try_stop(self) -> None:
         """
         Attempts to stop the daemon process if it is running or stale. Cleans up
@@ -203,7 +250,7 @@ class DaemonManager:
         try:
             Profile(profile)
         except ValueError as err:
-            print(F"Error: {err}")
+            print(f"Error: {err}")
             return False
 
         status = self.status()
@@ -217,10 +264,22 @@ class DaemonManager:
         subprocess.Popen(
             [sys.argv[0], "start-daemon", str(volume), profile],
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-            start_new_session=True
+            start_new_session=True,
         )
         time.sleep(1.0)
         return True
+
+    def update_lock_file(self, volume: int, profile: str):
+        with open(self.__lock_file, "w") as f:
+            json.dump(
+                {
+                    "pid": os.getpid(),
+                    "volume": volume,
+                    "profile": profile,
+                    "api_port": self.__api.port(),
+                },
+                f,
+            )
 
     def capture_daemon_initialization(self):
         """
@@ -251,18 +310,17 @@ class DaemonManager:
             except:
                 pass
 
-            with open(self.__lock_file, 'w') as f:
-                json.dump({
-                    "pid": os.getpid(),
-                    "volume": volume,
-                    "profile": profile,
-                }, f)
+            api_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            api_socket.bind(("localhost", 0))
+            self.__api = ExternalAPI(api_socket, daemon.on_command)
+            self.__api.listen()
+
+            self.update_lock_file(volume, profile)
 
             LINE_BUFFERED = 1
-            f = open(os.devnull, 'w', buffering=LINE_BUFFERED)
+            f = open(os.devnull, "w", buffering=LINE_BUFFERED)
             sys.stdout = f
             sys.stderr = f
-            daemon.run(volume, profile)
+            daemon.run(self, volume, profile)
             return True
         return False
-        

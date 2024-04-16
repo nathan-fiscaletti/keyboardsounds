@@ -1,6 +1,6 @@
 [project]
 name = "keyboardsounds"
-version = "5.7.3"
+version = "5.7.4"
 authors = [
   { name="Nathan Fiscaletti", email="nate.fiscaletti@gmail.com" },
 ]
@@ -11,6 +11,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies=[
+  "pygame==2.5.2",
+  "pynput==1.7.6",
+  "psutil==5.9.4",
+  "imageio-ffmpeg==0.4.6",
+  "pyyaml==6.0"
 ]
 
 [project.urls]

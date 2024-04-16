@@ -1,4 +1,4 @@
-pygame==2.1.2
+pygame==2.5.2
 pynput==1.7.6
 psutil==5.9.4
 imageio-ffmpeg==0.4.6

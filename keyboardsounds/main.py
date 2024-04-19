@@ -65,7 +65,8 @@ def main():
             f"  manage profiles:{os.linesep * 2}"
             f"    %(prog)s <ap|add-profile> -z <zipfile>{os.linesep}"
             f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
-            f"    %(prog)s <lp|list-profiles> [-s]{os.linesep}"
+            f"    %(prog)s <lp|list-profiles> [-s] [--remote]{os.linesep}"
+            f"    %(prog)s <dp|download-profile> -n <profile>{os.linesep}"
             f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
         )
         + win_messages
@@ -104,7 +105,7 @@ def main():
         "-s",
         "--short",
         action="store_true",
-        help="consolidate output to a single line for scripting",
+        help="consolidate output to a single line of json for scripting",
     )
 
     # Profiles
@@ -123,6 +124,11 @@ def main():
         default=None,
         metavar="file",
         help="path to the zip file containing the profile to add",
+    )
+    parser.add_argument(
+        "--remote",
+        action="store_true",
+        help="used with the list-profiles action to list remote profiles",
     )
     parser.add_argument("-V", "--version", action="version", version=version_number)
 
@@ -198,39 +204,68 @@ def main():
         Profile.remove_profile(args.name)
         return
     elif args.action == "list-profiles" or args.action == "lp":
-        profiles = [profile.metadata() for profile in Profile.list()]
+        if args.remote:
+            profiles = Profile.list_remote_profiles()
 
-        if args.short:
-            print(
-                json.dumps(
-                    [
-                        {
-                            "name": profile["name"],
-                            "author": profile["author"],
-                            "description": profile["description"],
-                        }
-                        for profile in profiles
-                    ]
+            if args.short:
+                print(json.dumps(profiles))
+                return
+            else:
+                print(f"{os.linesep} Fetching remote profiles...{os.linesep}")
+
+                names = [profile["name"] for profile in profiles]
+                names.append("Name")
+                authors = [profile["author"] for profile in profiles]
+                authors.append("Author")
+                name_len = len(max(names, key=len))
+                auth_len = len(max(authors, key=len))
+
+                print(f" Downloadable profiles{os.linesep}")
+                print(
+                    f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | Description"
                 )
-            )
-            return
+                print(f" {'-' * name_len} | {'-' * auth_len} | -----------")
+                for profile in profiles:
+                    print(
+                        f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}"
+                    )
+                print(os.linesep)
+        else:
+            profiles = [profile.metadata() for profile in Profile.list()]
 
-        names = [profile["name"] for profile in profiles]
-        names.append("Name")
-        authors = [profile["author"] for profile in profiles]
-        authors.append("Author")
-        name_len = len(max(names, key=len))
-        auth_len = len(max(authors, key=len))
+            if args.short:
+                print(
+                    json.dumps(
+                        [
+                            {
+                                "name": profile["name"],
+                                "author": profile["author"],
+                                "description": profile["description"],
+                            }
+                            for profile in profiles
+                        ]
+                    )
+                )
+                return
 
-        print(f"{os.linesep} Available profiles{os.linesep}")
-        print(f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | Description")
-        print(f" {'-' * name_len} | {'-' * auth_len} | -----------")
-        for profile in profiles:
+            names = [profile["name"] for profile in profiles]
+            names.append("Name")
+            authors = [profile["author"] for profile in profiles]
+            authors.append("Author")
+            name_len = len(max(names, key=len))
+            auth_len = len(max(authors, key=len))
+
+            print(f"{os.linesep} Available profiles{os.linesep}")
             print(
-                f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}"
+                f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | Description"
             )
-        print(os.linesep)
-        return
+            print(f" {'-' * name_len} | {'-' * auth_len} | -----------")
+            for profile in profiles:
+                print(
+                    f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}"
+                )
+            print(os.linesep)
+            return
     elif args.action == "build-profile" or args.action == "bp":
         if args.directory is None:
             print(
@@ -243,6 +278,21 @@ def main():
 
         builder = CliProfileBuilder(args.directory, args.output)
         builder.start()
+    elif args.action == "download-profile" or args.action == "dp":
+        if args.name is None:
+            print("Please specify a name for the remote profile to download.")
+            return
+
+        existing = Profile.list()
+        for profile in existing:
+            if profile.metadata()["name"] == args.name:
+                print(f"Profile '{args.name}' already exists.")
+                return
+
+        try:
+            Profile.download_profile(args.name)
+        except Exception as e:
+            print(e)
 
     # Rules are only available on windows
     elif WIN32 and (args.action == "list-rules" or args.action == "lr"):

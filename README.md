@@ -68,22 +68,23 @@ usage: <keyboardsounds|kbs> <action> [params]
 
     <keyboardsounds|kbs> start [-v <volume>] [-p <profile>]
     <keyboardsounds|kbs> stop
-    <keyboardsounds|kbs> status
+    <keyboardsounds|kbs> status [-s]
 
   manage profiles:
 
     <keyboardsounds|kbs> <ap|add-profile> -z <zipfile>
     <keyboardsounds|kbs> <rp|remove-profile> -n <profile>
-    <keyboardsounds|kbs> <lp|list-profiles>
+    <keyboardsounds|kbs> <lp|list-profiles> [-s] [--remote]
+    <keyboardsounds|kbs> <dp|download-profile> -n <profile>
     <keyboardsounds|kbs> <bp|build-profile> -d <sound_dir> -o <zip_file>
 
   manage rules:
 
     <keyboardsounds|kbs> <ar|add-rule> -r <rule> -a <app>
     <keyboardsounds|kbs> <rr|remove-rule> -a <app>
-    <keyboardsounds|kbs> <lr|list-rules>
+    <keyboardsounds|kbs> <lr|list-rules> [-s]
     <keyboardsounds|kbs> <sr|set-global-rule> -r <rule>
-    <keyboardsounds|kbs> <gr|get-global-rule>
+    <keyboardsounds|kbs> <gr|get-global-rule> [-s]
 
   other:
 
@@ -99,8 +100,10 @@ options:
                         volume of the sound effects (0-100), default 100
   -p profile, --profile profile
                         sound profile to use, default 'ios'
+  -s, --short           consolidate output to a single line of json for scripting
   -n name, --name name  name of the profile remove
   -z file, --zip file   path to the zip file containing the profile to add
+  --remote              used with the list-profiles action to list remote profiles
   -V, --version         show program's version number and exit
   -d directory, --directory directory
                         path to the directory containing the sounds to use for the profile
@@ -191,6 +194,24 @@ $ kbs get-global-rule
 
 ### Manage Profiles
 
+**List downloadable profiles.**
+
+```bash
+$ kbs list-profiles --remote
+```
+
+**Lists the currently installed profiles.**
+
+```bash
+$ kbs list-profiles
+```
+
+**Download a profile.**
+
+```bash
+$ kbs download-profile -n myprofile
+```
+
 **Add a new profile to the application.**
 
 ```bash
@@ -201,12 +222,6 @@ $ kbs add-profile -z ./my-profile.zip
 
 ```bash
 $ kbs remove-profile -n myprofile
-```
-
-**Lists the currently loaded profiles.**
-
-```bash
-$ kbs list-profiles
 ```
 
 ## Custom Profiles
@@ -223,6 +238,14 @@ This application supports custom profiles in which you can provide your own WAV 
 You can then load this profile into the application using the `add-profile` action.
 
 > Note: Alternately you can use the `build-profile` action for an environment with built in validation when creating a new profile.
+
+### Adding a profile to the official repository
+
+If you have created a profile that you think others would enjoy, you can submit it to the official repository. To do this, you will need to create a pull request.
+
+1. Fork the repository.
+2. Add your profile to the `profiles` directory.
+3. Create a pull request.
 
 ### Example Profile
 

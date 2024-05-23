@@ -1,6 +1,6 @@
 [project]
 name = "keyboardsounds"
-version = "5.7.6"
+version = "5.7.7"
 authors = [
   { name="Nathan Fiscaletti", email="nate.fiscaletti@gmail.com" },
 ]
@@ -17,7 +17,8 @@ dependencies=[
   "pynput==1.7.6",
   "psutil==5.9.4",
   "imageio-ffmpeg==0.4.6",
-  "pyyaml==6.0.1"
+  "pyyaml==6.0.1",
+  "setuptools==70.0.0"
 ]
 
 [project.urls]

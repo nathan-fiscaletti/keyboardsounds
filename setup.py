@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="keyboardsounds",
-    version="5.7.5",
+    version="5.7.6",
     description="Adds the ability to play sounds while typing on any system.",
     author="Nathan Fiscaletti",
     author_email="nate.fiscaletti@gmail.com",
@@ -12,7 +12,7 @@ setup(
         "pynput==1.7.6",
         "psutil==5.9.4",
         "imageio-ffmpeg==0.4.6",
-        "pyyaml==6.0",
+        "pyyaml==6.0.1",
     ],
     package_data={
         "keyboardsounds": [

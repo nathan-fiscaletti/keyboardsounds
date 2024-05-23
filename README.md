@@ -20,7 +20,7 @@ The desktop application still requires the Python package to be installed on you
 
 ### Python Package
 
-**Python 3.7** or higher is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
+**Python** is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
 
 Once you have Python installed, you can install this application by running the following command.
 

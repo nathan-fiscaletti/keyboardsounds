@@ -70,7 +70,7 @@ const AppRule = ({ rule }) => {
             sx={{
               mr: 1,
               borderRadius: 1,
-              width: 80,
+              width: 90,
               cursor: "default",
               "& .MuiChip-label": {
                 textTransform: "capitalize",

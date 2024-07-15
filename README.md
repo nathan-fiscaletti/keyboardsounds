@@ -1,4 +1,4 @@
-# Keyboard Sounds
+![Desktop App Preview](./application/preview.png)
 
 [![Sponsor Me!](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
 [![PyPI version](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
@@ -6,15 +6,13 @@
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds/month)](https://pepy.tech/project/keyboardsounds)
 
-This python package will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
+This application will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
 
 ## Installation
 
 Download the latest version of the application from the [Releases Page](https://github.com/nathan-fiscaletti/keyboardsounds/releases).
 
 The desktop application still requires the Python package to be installed on your system. On first launch, it will check that both Python and the package are installed and prompt you to install them if they are not.
-
-![Desktop App Preview](./application/preview.png)
 
 ### Python Package
 

@@ -44,7 +44,7 @@ def main():
 
     version_number = version("keyboardsounds")
 
-    win_messages = []
+    win_messages = ""
     if WIN32:
         win_messages = (
             f"  manage rules:{os.linesep * 2}"

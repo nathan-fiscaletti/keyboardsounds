@@ -14,6 +14,7 @@ setup(
         "imageio-ffmpeg==0.4.6",
         "pyyaml==6.0.1",
         "setuptools==70.0.0",
+        "requests==2.32.2",
     ],
     package_data={
         "keyboardsounds": [

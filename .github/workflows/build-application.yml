@@ -1,0 +1,38 @@
+name: Package Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '18'
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./application
+    - name: Package Webpack
+      run: npm run package
+      working-directory: ./application
+    - name: Build Installer
+      run: npm run make-installer:win
+      working-directory: ./application
+      env:
+        GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - name: Rename Installer
+      run: mv "dist/Keyboard Sounds Setup *.exe" "dist/Keyboard-Sounds-Setup-windows-x64.exe"
+      working-directory: ./application
+    - name: Rename Blockmap
+      run: mv "dist/Keyboard Sounds Setup *.exe.blockmap" "dist/Keyboard-Sounds-Setup-windows-x64.exe.blockmap"
+      working-directory: ./application
+    - name: Upload Artifacts
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          application/dist/Keyboard-Sounds-Setup-windows-x64.exe
+          application/dist/Keyboard-Sounds-Setup-windows-x64.exe.blockmap

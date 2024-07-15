@@ -1,4 +1,4 @@
-# Keyboard Sounds
+![Desktop App Preview](./application/preview.png)
 
 [![Sponsor Me!](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
 [![PyPI version](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
@@ -6,23 +6,21 @@
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds/month)](https://pepy.tech/project/keyboardsounds)
 
-This python package will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
+This application will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
 
 ## Installation
 
 ### Desktop Application
 
-There is a work-in-progress desktop application available for Keyboard Sounds. You can find information on how to get it up and running on the [Keyboard Sounds Desktop repository](https://github.com/nathan-fiscaletti/keyboardsounds-desktop).
+Download the latest version of the application from the [Releases Page](https://github.com/nathan-fiscaletti/keyboardsounds/releases).
 
-The desktop application still requires the Python package to be installed on your system.
-
-![Desktop App Preview](https://github.com/nathan-fiscaletti/keyboardsounds-desktop/blob/main/preview.png?raw=true)
+The desktop application still requires the Python package to be installed on your system. On first launch, it will check that both Python and the package are installed and prompt you to install them if they are not.
 
 ### Python Package
 
 **Python** is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
 
-Once you have Python installed, you can install this application by running the following command.
+Once you have Python installed, you can install the keyboardsounds backend Python package by running the following command.
 
 ```sh
 $ pip install keyboardsounds
@@ -30,9 +28,7 @@ $ pip install keyboardsounds
 
 ## Platform Support
 
-|Windows|Linux|macOS|
-|---|---|---|
-|✅ Supported|✅ Supported|❓ Not Tested|
+Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
 ## Default Sound Profiles
 
@@ -52,7 +48,7 @@ By default, Keyboard Sounds comes with the following profiles pre-loaded.
 |telios-v2         | Mechvibes Community   | Sample audio of Telios V2 linear key switches           |
 |typewriter        | Mechvibes Community   | Sample audio of an antique typewriter                   |
 
-## Usage
+## Backend Usage
 
 - [Managing the Daemon](#manage-the-daemon)
 - [Managing Application Rules](#managing-application-rules)
@@ -317,7 +313,6 @@ This section is intended for developers who wish to contribute to this project. 
 - [Git](https://git-scm.com/downloads)
 - [Python](https://www.python.org/) (version 3.7 or higher)
 - [pip](https://pip.pypa.io/en/stable/installing/) (Python package installer)
-- [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html) (optional, but recommended)
 
 ### Setting Up the Development Environment
 
@@ -337,32 +332,22 @@ This section is intended for developers who wish to contribute to this project. 
    cd keyboardsounds
    ```
 
-3. **Create a Virtual Environment (Optional)**
-
-   It's recommended to create a virtual environment to keep dependencies required by different projects separate. If you have `virtualenv` installed, create a virtual environment:
-
-   ```bash
-   virtualenv venv
-   ```
-
-   Activate the virtual environment:
-
-   - On Windows:
-     ```cmd
-     .\venv\Scripts\activate
-     ```
-   - On Unix or MacOS:
-     ```bash
-     source venv/bin/activate
-     ```
-
-4. **Install Dependencies**
+4. **Install Dependencies: Python**
 
    Install the project dependencies using `pip`:
 
    ```bash
    pip install -r requirements.txt
    ```
+
+5. **Install Dependencies: Node.js**
+
+    Install the project dependencies using `yarn`:
+  
+    ```bash
+    cd application
+    yarn
+    ```
 
 ### Running the Project Locally
 
@@ -375,6 +360,14 @@ It is recommended that you install the package in editable mode to allow you to 
   ```
 
   This command will install the package in editable mode, allowing you to make changes to the code and see the changes reflected in the application.
+
+### Running the Desktop Application
+
+To run the desktop application, navigate to the `application` directory and run the following command:
+
+```bash
+yarn start
+```
 
 ### Contributing
 

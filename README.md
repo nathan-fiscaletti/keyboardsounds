@@ -10,6 +10,8 @@ This application will add the ability to play sounds while typing anywhere on yo
 
 ## Installation
 
+### Desktop Application
+
 Download the latest version of the application from the [Releases Page](https://github.com/nathan-fiscaletti/keyboardsounds/releases).
 
 The desktop application still requires the Python package to be installed on your system. On first launch, it will check that both Python and the package are installed and prompt you to install them if they are not.

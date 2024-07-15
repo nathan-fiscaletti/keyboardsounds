@@ -313,7 +313,6 @@ This section is intended for developers who wish to contribute to this project. 
 - [Git](https://git-scm.com/downloads)
 - [Python](https://www.python.org/) (version 3.7 or higher)
 - [pip](https://pip.pypa.io/en/stable/installing/) (Python package installer)
-- [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html) (optional, but recommended)
 
 ### Setting Up the Development Environment
 
@@ -333,32 +332,22 @@ This section is intended for developers who wish to contribute to this project. 
    cd keyboardsounds
    ```
 
-3. **Create a Virtual Environment (Optional)**
-
-   It's recommended to create a virtual environment to keep dependencies required by different projects separate. If you have `virtualenv` installed, create a virtual environment:
-
-   ```bash
-   virtualenv venv
-   ```
-
-   Activate the virtual environment:
-
-   - On Windows:
-     ```cmd
-     .\venv\Scripts\activate
-     ```
-   - On Unix or MacOS:
-     ```bash
-     source venv/bin/activate
-     ```
-
-4. **Install Dependencies**
+4. **Install Dependencies: Python**
 
    Install the project dependencies using `pip`:
 
    ```bash
    pip install -r requirements.txt
    ```
+
+5. **Install Dependencies: Node.js**
+
+    Install the project dependencies using `yarn`:
+  
+    ```bash
+    cd application
+    yarn
+    ```
 
 ### Running the Project Locally
 
@@ -371,6 +360,14 @@ It is recommended that you install the package in editable mode to allow you to 
   ```
 
   This command will install the package in editable mode, allowing you to make changes to the code and see the changes reflected in the application.
+
+### Running the Desktop Application
+
+To run the desktop application, navigate to the `application` directory and run the following command:
+
+```bash
+yarn start
+```
 
 ### Contributing
 

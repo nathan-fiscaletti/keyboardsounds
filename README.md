@@ -10,19 +10,17 @@ This python package will add the ability to play sounds while typing anywhere on
 
 ## Installation
 
-### Desktop Application
+Download the latest version of the application from the [Releases Page](https://github.com/nathan-fiscaletti/keyboardsounds/releases).
 
-There is a work-in-progress desktop application available for Keyboard Sounds. You can find information on how to get it up and running on the [Keyboard Sounds Desktop repository](https://github.com/nathan-fiscaletti/keyboardsounds-desktop).
+The desktop application still requires the Python package to be installed on your system. On first launch, it will check that both Python and the package are installed and prompt you to install them if they are not.
 
-The desktop application still requires the Python package to be installed on your system.
-
-![Desktop App Preview](https://github.com/nathan-fiscaletti/keyboardsounds-desktop/blob/main/preview.png?raw=true)
+![Desktop App Preview](./application/preview.png)
 
 ### Python Package
 
 **Python** is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
 
-Once you have Python installed, you can install this application by running the following command.
+Once you have Python installed, you can install the keyboardsounds backend Python package by running the following command.
 
 ```sh
 $ pip install keyboardsounds
@@ -30,9 +28,7 @@ $ pip install keyboardsounds
 
 ## Platform Support
 
-|Windows|Linux|macOS|
-|---|---|---|
-|✅ Supported|✅ Supported|❓ Not Tested|
+Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
 ## Default Sound Profiles
 
@@ -52,7 +48,7 @@ By default, Keyboard Sounds comes with the following profiles pre-loaded.
 |telios-v2         | Mechvibes Community   | Sample audio of Telios V2 linear key switches           |
 |typewriter        | Mechvibes Community   | Sample audio of an antique typewriter                   |
 
-## Usage
+## Backend Usage
 
 - [Managing the Daemon](#manage-the-daemon)
 - [Managing Application Rules](#managing-application-rules)

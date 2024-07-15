@@ -1,12 +1,35 @@
-name: Package Release
+name: Build & Deploy
 
 on:
   release:
     types: [published]
 
 jobs:
-  build-and-deploy:
+  build-and-deploy-python-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          python -m pip install twine
+          pip install -r requirements.txt
+      - name: Build Package
+        run: python -m build
+      - name: Publish Package
+        run: python3 -m twine upload dist/* --verbose
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{secrets.PYPI_API_TOKEN}}
+
+  build-desktop-app:
     runs-on: windows-latest
+    needs: build-and-deploy-python-package
     steps:
     - uses: actions/checkout@v2
     - name: Install Node.js

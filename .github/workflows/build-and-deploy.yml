@@ -22,7 +22,7 @@ jobs:
       - name: Build Package
         run: python -m build
       - name: Publish Package
-        run: python3 -m twine upload dist/*
+        run: python3 -m twine upload dist/* --verbose
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{secrets.PYPI_API_TOKEN}}

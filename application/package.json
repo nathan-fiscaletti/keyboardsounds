@@ -4,6 +4,10 @@
   "version": "1.0.3",
   "description": "https://keyboardsounds.net/",
   "main": ".webpack/main",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nathan-fiscaletti/keyboardsounds.git"
+  },
   "build": {
     "appId": "com.github.nathan_fiscaletti.keyboardsounds",
     "productName": "Keyboard Sounds",

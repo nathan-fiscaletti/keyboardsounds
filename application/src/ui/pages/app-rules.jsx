@@ -432,21 +432,6 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
 
             return null;
           })}
-
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
-        <AppRule rule={appRules[0]} />
         </List>
       )}
       {(!appRulesLoaded || appRules.length < 1) && (

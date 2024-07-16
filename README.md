@@ -151,21 +151,15 @@ Keyboard Sounds has a comprehensive backend that can be used to manage the daemo
 
 ### Manage the Daemon
 
-**Start the daemon**
-
-Can also be used to re-start the daemon with an adjusted configuration.
+**Start or reconfigure the daemon**
 
 ```bash
 # Start with default volume of 100%
 $ kbs start
-```
 
-```bash
 # Start or reconfigure with a volume of 50%
 $ kbs start -v 50
-```
 
-```bash
 # Start or reconfigure with a specific profile
 $ kbs start -p typewriter
 ```
@@ -196,71 +190,49 @@ Keyboard Sounds supports the ability to enable or disable the typing sound effec
 
 > The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
 
-**Add a new rule for an application**
+#### Examples
 
 ```bash
-$ kbs add-rule -r enable -a "C:\Program Files\MyApp\MyApp.exe" 
-```
+# Add a rule to disable sound effects for an application
+$ kbs add-rule -r disable -a "C:\Program Files\MyApp\MyApp.exe" 
 
-**Remove a rule for an application**
-
-```bash
+# Remove a rule for an application
 $ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
-```
 
-**Lists the currently loaded rules**
-
-```bash
+# List the currently loaded rules
 $ kbs list-rules
 ```
 
-**Set the global rule**
+#### Set the global rule
 
 > The global rule is used as the fallback for any application that does not have a specific rule set. By default, it is set to `enable`.
 
 ```bash
+# Set the global rule to disable
 $ kbs set-global-rule -r disable
-```
 
-**Get the current global rule**
-
-```bash
+# Retrieve the current global rule
 $ kbs get-global-rule
 ```
 
 ### Manage Profiles
 
-**List downloadable profiles**
-
 ```bash
+# List downloadable profiles
 $ kbs list-profiles --remote
-```
 
-**Lists the currently installed profiles**
-
-```bash
+# List installed profiles
 $ kbs list-profiles
-```
 
-**Download a profile**
-
-```bash
+# Download a profile
 $ kbs download-profile -n myprofile
-```
 
-**Add a new profile to the application**
-
-```bash
+# Import a profile
 $ kbs add-profile -z ./my-profile.zip
-```
 
-**Removes a profile from the application**
-
-```bash
+# Remove a profile
 $ kbs remove-profile -n myprofile
 ```
-
-
 
 ## Development
 

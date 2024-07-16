@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logos/rounded-icon-centered.png" width="150" height="150">
+  <img src="./application/src/app_icon.png" width="150" height="150">
   <h1 align="center">Keyboard Sounds</h1>
   <p align="center">Add sound effects to your typing experience.</p>
 </p>

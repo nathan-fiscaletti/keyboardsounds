@@ -1,36 +1,51 @@
-# Keyboard Sounds
+<p align="center">
+  <img src="./logos/rounded-icon-centered.png" width="100" height="100">
+  <h1 align="center">Keyboard Sounds</h1>
+  <p align="center">Add sound effects to your typing experience.</p>
+</p>
+
+<div align="center">
 
 [![Sponsor Me!](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
 [![PyPI version](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
 [![GitHub license](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
-[![Downloads](https://static.pepy.tech/badge/keyboardsounds/month)](https://pepy.tech/project/keyboardsounds)
 
-This application will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
+</div>
 
-![Desktop App Preview](./application/preview.png)
+---
+
+![Preview](./application/preview.png)
+
+Keyboard Sounds is a tool that runs in your system tray and plays sound effects when you type on your keyboard. It comes with a variety of sound profiles to choose from, and you can even create your own custom profiles.
 
 ## Installation
+
+Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
+
+> Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
 ### Desktop Application
 
 Download the latest version of the application from the [Releases Page](https://github.com/nathan-fiscaletti/keyboardsounds/releases).
 
-The desktop application still requires the Python package to be installed on your system. On first launch, it will check that both Python and the package are installed and prompt you to install them if they are not.
+The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
+
+Make sure when you install Python that you check the box that says "Add Python to PATH". This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
+
+> You may need to restart the application after doing this for the changes to take effect.
 
 ### Python Package
 
-**Python** is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
+To install this application as a CLI utility via the Python package, you will need to have Python installed on your system. You can download Python from the [official website](https://www.python.org/).
 
-Once you have Python installed, you can install the keyboardsounds backend Python package by running the following command.
+> Make sure when you install Python that you check the box that says "Add Python to PATH". This will allow you to run Python from the command line.
+
+After you have installed Python, you can install the Keyboard Sounds CLI by running the following command in your terminal.
 
 ```sh
 $ pip install keyboardsounds
 ```
-
-## Platform Support
-
-Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
 ## Default Sound Profiles
 

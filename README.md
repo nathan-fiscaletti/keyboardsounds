@@ -13,8 +13,6 @@
 
 </div>
 
----
-
 ![Preview](./application/preview.png)
 
 Keyboard Sounds is a tool that runs in your system tray and plays sound effects when you type on your keyboard. It comes with a variety of sound profiles to choose from, and you can even create your own custom profiles.

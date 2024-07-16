@@ -13,9 +13,11 @@
 
 </div>
 
-![Preview](./application/preview.png)
-
+<p align="center">
 Keyboard Sounds is a tool that runs in your system tray and plays sound effects when you type on your keyboard. It comes with a variety of sound profiles to choose from, and you can even create your own custom profiles.
+</p>
+
+![Preview](./application/preview.png)
 
 ## Installation
 
@@ -44,6 +46,10 @@ After you have installed Python, you can install the Keyboard Sounds CLI by runn
 ```sh
 $ pip install keyboardsounds
 ```
+
+## Uninstalling
+
+You can uninstall the Keyboard Sounds Desktop Application by running the uninstaller located in the installation directory. By default, this is located in `C:\Program Files\Keyboard Sounds`.
 
 ## Default Sound Profiles
 

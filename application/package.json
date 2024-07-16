@@ -23,7 +23,7 @@
     },
     "win": {
       "target": "nsis",
-      "icon": "app_icon.ico"
+      "icon": "../logos/rounded-icon-centered.ico"
     },
     "linux": {
       "target": "deb",

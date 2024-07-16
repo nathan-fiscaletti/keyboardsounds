@@ -271,6 +271,7 @@ This section is intended for developers who wish to contribute to this project. 
 - [Git](https://git-scm.com/downloads)
 - [Python](https://www.python.org/) (version 3.7 or higher)
 - [pip](https://pip.pypa.io/en/stable/installing/) (Python package installer)
+- [yarn](https://yarnpkg.com/getting-started/install) (Node.js package installer)
 
 ### Setting Up the Development Environment
 

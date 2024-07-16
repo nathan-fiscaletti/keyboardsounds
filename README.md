@@ -23,7 +23,7 @@ Keyboard Sounds is a tool that runs in your system tray and plays sound effects 
 
 Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
 
-> Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
+- Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
 ### Desktop Application
 
@@ -48,7 +48,13 @@ To install this application as a CLI utility via the Python package, you will ne
 
 ## Uninstalling
 
-You can uninstall the Keyboard Sounds Desktop Application by running the uninstaller located in the installation directory. By default, this is located in `C:\Program Files\Keyboard Sounds`.
+You can uninstall the Keyboard Sounds Desktop Application from the "Apps" section of your system Settings application. 
+
+- Uninstalling the desktop app will **not** remove the Python package from your system, you will need to do this manually if you no longer wish to use the Python package using the following command:
+
+  ```sh
+  $ pip uninstall keyboardsounds
+  ```
 
 ## Default Sound Profiles
 

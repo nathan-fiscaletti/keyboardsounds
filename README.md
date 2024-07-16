@@ -23,17 +23,17 @@ Keyboard Sounds is a tool that runs in your system tray and plays sound effects 
 
 Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
 
-- Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
-
 ### Desktop Application
 
 Download the latest version of the application from the [Releases Page](https://github.com/nathan-fiscaletti/keyboardsounds/releases).
+
+- Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
 The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
 
 - Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
 
-  > You may need to restart the application after doing this for the changes to take effect.
+You may need to restart the application after doing this for the changes to take effect.
 
 ### Python Package
 
@@ -56,196 +56,6 @@ You can uninstall the Keyboard Sounds Desktop Application from the "Apps" sectio
   ```sh
   $ pip uninstall keyboardsounds
   ```
-
-## Default Sound Profiles
-
-By default, Keyboard Sounds comes with the following profiles pre-loaded.
-
-|Name              | Author                | Description                                             |
-|----------------- | --------------------- | ------------------------------------------------------- |
-|alpaca            | kbsim                 | Sample of an Alpaca Mechanical Keyboard                 |
-|gateron-black-ink | kbsim                 | Sample of Gateron Black Ink key switches                |
-|gateron-red-ink   | kbsim                 | Sample of Gateron Red Ink key switches                  |
-|holy-panda        | kbsim                 | Sample of Holy Panda key switches                       |
-|ios               | Apple, Inc. (Sampled) | Simulates the sounds made by an iPhone or iPad keyboard.|
-|mx-black          | kbsim                 | Sample of Cherry MX Black key switches                  |
-|mx-blue           | kbsim                 | Sample of Cherry MX Blue key switches                   |
-|mx-brown          | kbsim                 | Sample of Cherry MX Brown key switches                  |
-|mx-speed-silver   | Mechvibes Community   | Sample audio of MX Speed Silver key switches            |
-|telios-v2         | Mechvibes Community   | Sample audio of Telios V2 linear key switches           |
-|typewriter        | Mechvibes Community   | Sample audio of an antique typewriter                   |
-
-## Backend Usage
-
-- [Managing the Daemon](#manage-the-daemon)
-- [Managing Application Rules](#managing-application-rules)
-- [Manage Profiles](#manage-profiles)
-- [Custom Profiles](#custom-profiles)
-
-```yaml
-Keyboard Sounds vX.X.X
-
-usage: <keyboardsounds|kbs> <action> [params]
-
-  manage daemon:
-
-    <keyboardsounds|kbs> start [-v <volume>] [-p <profile>]
-    <keyboardsounds|kbs> stop
-    <keyboardsounds|kbs> status [-s]
-
-  manage profiles:
-
-    <keyboardsounds|kbs> <ap|add-profile> -z <zipfile>
-    <keyboardsounds|kbs> <rp|remove-profile> -n <profile>
-    <keyboardsounds|kbs> <lp|list-profiles> [-s] [--remote]
-    <keyboardsounds|kbs> <dp|download-profile> -n <profile>
-    <keyboardsounds|kbs> <bp|build-profile> -d <sound_dir> -o <zip_file>
-
-  manage rules:
-
-    <keyboardsounds|kbs> <ar|add-rule> -r <rule> -a <app>
-    <keyboardsounds|kbs> <rr|remove-rule> -a <app>
-    <keyboardsounds|kbs> <lr|list-rules> [-s]
-    <keyboardsounds|kbs> <sr|set-global-rule> -r <rule>
-    <keyboardsounds|kbs> <gr|get-global-rule> [-s]
-
-  other:
-
-    <keyboardsounds|kbs> [--version|-V]
-
-
-positional arguments:
-  action                The action to perform
-
-options:
-  -h, --help            show this help message and exit
-  -v volume, --volume volume
-                        volume of the sound effects (0-100), default 100
-  -p profile, --profile profile
-                        sound profile to use, default 'ios'
-  -s, --short           consolidate output to a single line of json for scripting
-  -n name, --name name  name of the profile remove
-  -z file, --zip file   path to the zip file containing the profile to add
-  --remote              used with the list-profiles action to list remote profiles
-  -V, --version         show program's version number and exit
-  -d directory, --directory directory
-                        path to the directory containing the sounds to use for the profile
-  -o file, --output file
-                        path to the zip file to create
-  -a app, --app app     absolute path to the application to add the rule for
-  -r rule, --rule rule  rule to apply. must be one of 'enable', 'disable', or 'exclusive'
-```
-
-### Manage the Daemon
-
-**Start the daemon.**
-
-Can also be used to re-start the daemon with an adjusted configuration.
-
-```bash
-# Start with default volume of 100%
-$ kbs start
-```
-
-```bash
-# Start or reconfigure with a volume of 50%
-$ kbs start -v 50
-```
-
-```bash
-# Start or reconfigure with a specific profile
-$ kbs start -p typewriter
-```
-
-**Check the current status of the daemon.**
-
-```bash
-$ kbs status
-```
-
-**Stop the daemon if it is running.**
-
-```bash
-$ kbs stop
-```
-
-### Managing Application Rules
-
-Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
-
-**⚠️ Application Rules are only available on Windows.**
-
-#### Rule Types
-
-- `enable` - Enable sound effects for the application.
-- `disable` - Disable sound effects for the application.
-- `exclusive` - Only play sound effects for the application.
-
-> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
-
-**Add a new rule for an application.**
-
-```bash
-$ kbs add-rule -r enable -a "C:\Program Files\MyApp\MyApp.exe" 
-```
-
-**Remove a rule for an application.**
-
-```bash
-$ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
-```
-
-**Lists the currently loaded rules.**
-
-```bash
-$ kbs list-rules
-```
-
-**Set the global rule.**
-
-> The global rule is used as the fallback for any application that does not have a specific rule set. By default, it is set to `enable`.
-
-```bash
-$ kbs set-global-rule -r disable
-```
-
-**Get the current global rule.**
-
-```bash
-$ kbs get-global-rule
-```
-
-### Manage Profiles
-
-**List downloadable profiles.**
-
-```bash
-$ kbs list-profiles --remote
-```
-
-**Lists the currently installed profiles.**
-
-```bash
-$ kbs list-profiles
-```
-
-**Download a profile.**
-
-```bash
-$ kbs download-profile -n myprofile
-```
-
-**Add a new profile to the application.**
-
-```bash
-$ kbs add-profile -z ./my-profile.zip
-```
-
-**Removes a profile from the application.**
-
-```bash
-$ kbs remove-profile -n myprofile
-```
 
 ## Custom Profiles
 
@@ -330,6 +140,127 @@ keys:
       keys: [ backspace, delete ]
 
 ```
+
+## Backend Usage
+
+Keyboard Sounds has a comprehensive backend that can be used to manage the daemon, application rules, and profiles. This backend can be accessed via the command line interface (CLI) in your terminal application.
+
+- [Managing the Daemon](#manage-the-daemon)
+- [Managing Application Rules](#managing-application-rules)
+- [Manage Profiles](#manage-profiles)
+
+### Manage the Daemon
+
+**Start the daemon**
+
+Can also be used to re-start the daemon with an adjusted configuration.
+
+```bash
+# Start with default volume of 100%
+$ kbs start
+```
+
+```bash
+# Start or reconfigure with a volume of 50%
+$ kbs start -v 50
+```
+
+```bash
+# Start or reconfigure with a specific profile
+$ kbs start -p typewriter
+```
+
+**Check the current status of the daemon**
+
+```bash
+$ kbs status
+```
+
+**Stop the daemon if it is running**
+
+```bash
+$ kbs stop
+```
+
+### Managing Application Rules
+
+Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
+
+**⚠️ Application Rules are only available on Windows**
+
+#### Rule Types
+
+- `enable` - Enable sound effects for the application.
+- `disable` - Disable sound effects for the application.
+- `exclusive` - Only play sound effects for the application.
+
+> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
+
+**Add a new rule for an application**
+
+```bash
+$ kbs add-rule -r enable -a "C:\Program Files\MyApp\MyApp.exe" 
+```
+
+**Remove a rule for an application**
+
+```bash
+$ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
+```
+
+**Lists the currently loaded rules**
+
+```bash
+$ kbs list-rules
+```
+
+**Set the global rule**
+
+> The global rule is used as the fallback for any application that does not have a specific rule set. By default, it is set to `enable`.
+
+```bash
+$ kbs set-global-rule -r disable
+```
+
+**Get the current global rule**
+
+```bash
+$ kbs get-global-rule
+```
+
+### Manage Profiles
+
+**List downloadable profiles**
+
+```bash
+$ kbs list-profiles --remote
+```
+
+**Lists the currently installed profiles**
+
+```bash
+$ kbs list-profiles
+```
+
+**Download a profile**
+
+```bash
+$ kbs download-profile -n myprofile
+```
+
+**Add a new profile to the application**
+
+```bash
+$ kbs add-profile -z ./my-profile.zip
+```
+
+**Removes a profile from the application**
+
+```bash
+$ kbs remove-profile -n myprofile
+```
+
+
 
 ## Development
 

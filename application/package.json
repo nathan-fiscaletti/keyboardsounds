@@ -22,7 +22,8 @@
       "target": "dmg"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "./app_icon.ico"
     },
     "linux": {
       "target": "deb",

@@ -1,226 +1,61 @@
-# Keyboard Sounds
+<p align="center">
+  <img src="./application/src/app_icon.png" width="150" height="150">
+  <h1 align="center">Keyboard Sounds</h1>
+  <p align="center">Add sound effects to your typing experience.</p>
+</p>
+
+<div align="center">
 
 [![Sponsor Me!](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
 [![PyPI version](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
 [![GitHub license](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
-[![Downloads](https://static.pepy.tech/badge/keyboardsounds/month)](https://pepy.tech/project/keyboardsounds)
 
-This application will add the ability to play sounds while typing anywhere on your system. You can also create [Custom Profiles](#custom-profiles) for customized audio when typing.
+</div>
 
-![Desktop App Preview](./application/preview.png)
+<p align="center">
+Keyboard Sounds is a tool that runs in your system tray and plays sound effects when you type on your keyboard. It comes with a variety of sound profiles to choose from, and you can even create your own custom profiles.
+</p>
+
+![Preview](./application/preview.png)
 
 ## Installation
+
+Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
 
 ### Desktop Application
 
 Download the latest version of the application from the [Releases Page](https://github.com/nathan-fiscaletti/keyboardsounds/releases).
 
-The desktop application still requires the Python package to be installed on your system. On first launch, it will check that both Python and the package are installed and prompt you to install them if they are not.
+- Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
+
+The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
+
+- Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
+
+You may need to restart the application after doing this for the changes to take effect.
 
 ### Python Package
 
-**Python** is required for this application to function. See [Download Python](https://www.python.org/downloads/) for more information on installing Python on your system.
+To install this application as a CLI utility via the Python package, you will need to have Python installed on your system. You can download Python from the [official website](https://www.python.org/).
 
-Once you have Python installed, you can install the keyboardsounds backend Python package by running the following command.
+- Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line.
 
-```sh
-$ pip install keyboardsounds
-```
+- After you have installed Python, you can install the Keyboard Sounds CLI by running the following command in your terminal.
 
-## Platform Support
+  ```sh
+  $ pip install keyboardsounds
+  ```
 
-Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
+## Uninstalling
 
-## Default Sound Profiles
+You can uninstall the Keyboard Sounds Desktop Application from the "Apps" section of your system Settings application. 
 
-By default, Keyboard Sounds comes with the following profiles pre-loaded.
+- Uninstalling the desktop app will **not** remove the Python package from your system, you will need to do this manually if you no longer wish to use the Python package using the following command:
 
-|Name              | Author                | Description                                             |
-|----------------- | --------------------- | ------------------------------------------------------- |
-|alpaca            | kbsim                 | Sample of an Alpaca Mechanical Keyboard                 |
-|gateron-black-ink | kbsim                 | Sample of Gateron Black Ink key switches                |
-|gateron-red-ink   | kbsim                 | Sample of Gateron Red Ink key switches                  |
-|holy-panda        | kbsim                 | Sample of Holy Panda key switches                       |
-|ios               | Apple, Inc. (Sampled) | Simulates the sounds made by an iPhone or iPad keyboard.|
-|mx-black          | kbsim                 | Sample of Cherry MX Black key switches                  |
-|mx-blue           | kbsim                 | Sample of Cherry MX Blue key switches                   |
-|mx-brown          | kbsim                 | Sample of Cherry MX Brown key switches                  |
-|mx-speed-silver   | Mechvibes Community   | Sample audio of MX Speed Silver key switches            |
-|telios-v2         | Mechvibes Community   | Sample audio of Telios V2 linear key switches           |
-|typewriter        | Mechvibes Community   | Sample audio of an antique typewriter                   |
-
-## Backend Usage
-
-- [Managing the Daemon](#manage-the-daemon)
-- [Managing Application Rules](#managing-application-rules)
-- [Manage Profiles](#manage-profiles)
-- [Custom Profiles](#custom-profiles)
-
-```yaml
-Keyboard Sounds vX.X.X
-
-usage: <keyboardsounds|kbs> <action> [params]
-
-  manage daemon:
-
-    <keyboardsounds|kbs> start [-v <volume>] [-p <profile>]
-    <keyboardsounds|kbs> stop
-    <keyboardsounds|kbs> status [-s]
-
-  manage profiles:
-
-    <keyboardsounds|kbs> <ap|add-profile> -z <zipfile>
-    <keyboardsounds|kbs> <rp|remove-profile> -n <profile>
-    <keyboardsounds|kbs> <lp|list-profiles> [-s] [--remote]
-    <keyboardsounds|kbs> <dp|download-profile> -n <profile>
-    <keyboardsounds|kbs> <bp|build-profile> -d <sound_dir> -o <zip_file>
-
-  manage rules:
-
-    <keyboardsounds|kbs> <ar|add-rule> -r <rule> -a <app>
-    <keyboardsounds|kbs> <rr|remove-rule> -a <app>
-    <keyboardsounds|kbs> <lr|list-rules> [-s]
-    <keyboardsounds|kbs> <sr|set-global-rule> -r <rule>
-    <keyboardsounds|kbs> <gr|get-global-rule> [-s]
-
-  other:
-
-    <keyboardsounds|kbs> [--version|-V]
-
-
-positional arguments:
-  action                The action to perform
-
-options:
-  -h, --help            show this help message and exit
-  -v volume, --volume volume
-                        volume of the sound effects (0-100), default 100
-  -p profile, --profile profile
-                        sound profile to use, default 'ios'
-  -s, --short           consolidate output to a single line of json for scripting
-  -n name, --name name  name of the profile remove
-  -z file, --zip file   path to the zip file containing the profile to add
-  --remote              used with the list-profiles action to list remote profiles
-  -V, --version         show program's version number and exit
-  -d directory, --directory directory
-                        path to the directory containing the sounds to use for the profile
-  -o file, --output file
-                        path to the zip file to create
-  -a app, --app app     absolute path to the application to add the rule for
-  -r rule, --rule rule  rule to apply. must be one of 'enable', 'disable', or 'exclusive'
-```
-
-### Manage the Daemon
-
-**Start the daemon.**
-
-Can also be used to re-start the daemon with an adjusted configuration.
-
-```bash
-# Start with default volume of 100%
-$ kbs start
-```
-
-```bash
-# Start or reconfigure with a volume of 50%
-$ kbs start -v 50
-```
-
-```bash
-# Start or reconfigure with a specific profile
-$ kbs start -p typewriter
-```
-
-**Check the current status of the daemon.**
-
-```bash
-$ kbs status
-```
-
-**Stop the daemon if it is running.**
-
-```bash
-$ kbs stop
-```
-
-### Managing Application Rules
-
-Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
-
-**⚠️ Application Rules are only available on Windows.**
-
-#### Rule Types
-
-- `enable` - Enable sound effects for the application.
-- `disable` - Disable sound effects for the application.
-- `exclusive` - Only play sound effects for the application.
-
-> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
-
-**Add a new rule for an application.**
-
-```bash
-$ kbs add-rule -r enable -a "C:\Program Files\MyApp\MyApp.exe" 
-```
-
-**Remove a rule for an application.**
-
-```bash
-$ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
-```
-
-**Lists the currently loaded rules.**
-
-```bash
-$ kbs list-rules
-```
-
-**Set the global rule.**
-
-> The global rule is used as the fallback for any application that does not have a specific rule set. By default, it is set to `enable`.
-
-```bash
-$ kbs set-global-rule -r disable
-```
-
-**Get the current global rule.**
-
-```bash
-$ kbs get-global-rule
-```
-
-### Manage Profiles
-
-**List downloadable profiles.**
-
-```bash
-$ kbs list-profiles --remote
-```
-
-**Lists the currently installed profiles.**
-
-```bash
-$ kbs list-profiles
-```
-
-**Download a profile.**
-
-```bash
-$ kbs download-profile -n myprofile
-```
-
-**Add a new profile to the application.**
-
-```bash
-$ kbs add-profile -z ./my-profile.zip
-```
-
-**Removes a profile from the application.**
-
-```bash
-$ kbs remove-profile -n myprofile
-```
+  ```sh
+  $ pip uninstall keyboardsounds
+  ```
 
 ## Custom Profiles
 
@@ -306,6 +141,99 @@ keys:
 
 ```
 
+## Backend Usage
+
+Keyboard Sounds has a comprehensive backend that can be used to manage the daemon, application rules, and profiles. This backend can be accessed via the command line interface (CLI) in your terminal application.
+
+- [Managing the Daemon](#manage-the-daemon)
+- [Managing Application Rules](#managing-application-rules)
+- [Manage Profiles](#manage-profiles)
+
+### Manage the Daemon
+
+**Start or reconfigure the daemon**
+
+```bash
+# Start with default volume of 100%
+$ kbs start
+
+# Start or reconfigure with a volume of 50%
+$ kbs start -v 50
+
+# Start or reconfigure with a specific profile
+$ kbs start -p typewriter
+```
+
+**Check the current status of the daemon**
+
+```bash
+$ kbs status
+```
+
+**Stop the daemon if it is running**
+
+```bash
+$ kbs stop
+```
+
+### Managing Application Rules
+
+Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
+
+**⚠️ Application Rules are only available on Windows**
+
+#### Rule Types
+
+- `enable` - Enable sound effects for the application.
+- `disable` - Disable sound effects for the application.
+- `exclusive` - Only play sound effects for the application.
+
+> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
+
+#### Examples
+
+```bash
+# Add a rule to disable sound effects for an application
+$ kbs add-rule -r disable -a "C:\Program Files\MyApp\MyApp.exe" 
+
+# Remove a rule for an application
+$ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
+
+# List the currently loaded rules
+$ kbs list-rules
+```
+
+#### Set the global rule
+
+> The global rule is used as the fallback for any application that does not have a specific rule set. By default, it is set to `enable`.
+
+```bash
+# Set the global rule to disable
+$ kbs set-global-rule -r disable
+
+# Retrieve the current global rule
+$ kbs get-global-rule
+```
+
+### Manage Profiles
+
+```bash
+# List downloadable profiles
+$ kbs list-profiles --remote
+
+# List installed profiles
+$ kbs list-profiles
+
+# Download a profile
+$ kbs download-profile -n myprofile
+
+# Import a profile
+$ kbs add-profile -z ./my-profile.zip
+
+# Remove a profile
+$ kbs remove-profile -n myprofile
+```
+
 ## Development
 
 This section is intended for developers who wish to contribute to this project. Follow the steps below to set up your development environment and start contributing.
@@ -315,6 +243,7 @@ This section is intended for developers who wish to contribute to this project. 
 - [Git](https://git-scm.com/downloads)
 - [Python](https://www.python.org/) (version 3.7 or higher)
 - [pip](https://pip.pypa.io/en/stable/installing/) (Python package installer)
+- [yarn](https://yarnpkg.com/getting-started/install) (Node.js package installer)
 
 ### Setting Up the Development Environment
 

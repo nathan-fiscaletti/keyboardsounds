@@ -32,6 +32,7 @@ Download the latest version of the application from the [Releases Page](https://
 The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
 
 - Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
+
   > You may need to restart the application after doing this for the changes to take effect.
 
 ### Python Package

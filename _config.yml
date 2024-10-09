@@ -1,6 +1,6 @@
 title: Keyboard Sounds
 description: Adds the ability to play sounds while typing anywhere on your system
-remote_theme: pages-themes/slate@v0.2.0
+remote_theme: pages-themes/cayman@v0.2.0
 show_downloads: false
 plugins:
 - jekyll-remote-theme # add this line to the plugins list if you already have one

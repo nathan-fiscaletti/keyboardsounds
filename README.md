@@ -6,10 +6,10 @@
 
 <div align="center">
 
-[![Sponsor Me!](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
-[![PyPI version](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
-[![GitHub license](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
-[![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
+<a href="https://github.com/sponsors/nathan-fiscaletti"><img src="https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue"></a>
+<a href="https://badge.fury.io/py/keyboardsounds"><img src="https://badge.fury.io/py/keyboardsounds.svg"></a>
+<a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE"><img src="https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg"></a>
+<a href="https://pepy.tech/project/keyboardsounds"><img src="https://static.pepy.tech/badge/keyboardsounds"></a>
 
 </div>
 

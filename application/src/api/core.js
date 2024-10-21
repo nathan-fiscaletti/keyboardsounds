@@ -284,7 +284,8 @@ const kbs = {
         this.mainWindow = mainWindow;
     },
 
-    registerKbsIpcHandler: function (ipcMain) {
+    registerKbsIpcHandler: function (ipcMain, shouldNotify=()=>true) {
+        // Listen for incoming IPC messages.
         ipcMain.on('kbs', async (event, data) => {
             const { command, channelId } = data;
 
@@ -307,53 +308,75 @@ const kbs = {
                 });
             }
         });
-    },
 
-    registerStatusMonitor: function (ipcMain) {
-        // Watch the status and notify the renderer process when it changes
+       let lastKnownStatus = null;
+       let lastKnownGlobalAction = null;
+       let lastKnownAppRules = null;
+       let lastKnownProfiles = null;
+
         setInterval(() => {
-            this.status().then((status) => {
-                BrowserWindow.getAllWindows().forEach(window => {
-                    window.webContents.send('kbs-status', status);
+            // Watch the status and notify the renderer process when it changes
+            if (shouldNotify()) {
+                this.status().then((status) => {
+                    const stringifiedStatus = JSON.stringify(status);
+                    if (lastKnownStatus === null || stringifiedStatus !== lastKnownStatus) {
+                        console.log('notifying status change');
+                        BrowserWindow.getAllWindows().forEach(window => {
+                            window.webContents.send('kbs-status', status);
+                        });
+                        // Update the last known status
+                        lastKnownStatus = stringifiedStatus;
+                    }
+                }).catch((err) => {
+                    console.error('Failed to fetch status:', err);
                 });
-            }).catch((err) => {
-                console.error('Failed to fetch status:', err);
-            });
+
+                // Watch the app rules and notify the renderer process when they change
+                this.getGlobalAction().then((action) => {
+                    if (lastKnownGlobalAction === null || action !== lastKnownGlobalAction) {
+                        console.log('notifying global action change');
+                        BrowserWindow.getAllWindows().forEach(window => {
+                            window.webContents.send('kbs-global-action', action);
+                        });
+                        // Update the last known global action
+                        lastKnownGlobalAction = action;
+                    }
+                }).catch((err) => {
+                    console.error('Failed to fetch global action:', err);
+                });
+
+                // Watch the profiles and notify the renderer process when they change
+                this.rules().then((rules) => {
+                    const stringifiedRules = JSON.stringify(rules)
+                    if (lastKnownAppRules === null || stringifiedRules !== lastKnownAppRules) {
+                        console.log('notifying app rules change');
+                        BrowserWindow.getAllWindows().forEach(window => {
+                            window.webContents.send('kbs-app-rules', rules);
+                        });
+                        // Update the last known app rules
+                        lastKnownAppRules = stringifiedRules;
+                    }
+                }).catch((err) => {
+                    console.error('Failed to fetch app rules:', err);
+                });
+
+                // Watch the profiles and notify the renderer process when they change
+                this.profiles().then((profiles) => {
+                    const stringifiedProfiles = JSON.stringify(profiles);
+                    if (lastKnownProfiles === null || stringifiedProfiles !== lastKnownProfiles) {
+                        console.log('notifying profiles change');
+                        BrowserWindow.getAllWindows().forEach(window => {
+                            window.webContents.send('kbs-profiles', profiles);
+                        });
+                        // Update the last known profiles
+                        lastKnownProfiles = stringifiedProfiles;
+                    }
+                }).catch((err) => {
+                    console.error('Failed to fetch profiles:', err);
+                });
+            }
         }, 1000);
     },
-
-    registerAppRulesMonitor: function (ipcMain) {
-        // Watch the app rules and notify the renderer process when they change
-        setInterval(() => {
-            this.getGlobalAction().then((action) => {
-                BrowserWindow.getAllWindows().forEach(window => {
-                    window.webContents.send('kbs-global-action', action);
-                });
-            }).catch((err) => {
-                console.error('Failed to fetch global action:', err);
-            });
-
-            this.rules().then((rules) => {
-                BrowserWindow.getAllWindows().forEach(window => {
-                    window.webContents.send('kbs-app-rules', rules);
-                });
-            }).catch((err) => {
-                console.error('Failed to fetch app rules:', err);
-            });
-        }, 1000);
-    },
-
-    registerProfilesMonitor: function (ipcMain) {
-        setInterval(() => {
-            this.profiles().then((profiles) => {
-                BrowserWindow.getAllWindows().forEach(window => {
-                    window.webContents.send('kbs-profiles', profiles);
-                });
-            }).catch((err) => {
-                console.error('Failed to fetch profiles:', err);
-            });
-        }, 1000);
-    }
 }
 
 export { 

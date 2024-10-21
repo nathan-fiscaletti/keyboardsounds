@@ -99,11 +99,7 @@ const toggleWindow = () => {
   kbs.setMainWindow(mainWindow);
 
   // Load IPC handlers
-  kbs.registerKbsIpcHandler(ipcMain);
-  kbs.registerStatusMonitor(ipcMain);
-  kbs.registerAppRulesMonitor(ipcMain);
-  kbs.registerProfilesMonitor(ipcMain);
-
+  kbs.registerKbsIpcHandler(ipcMain, () => mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible());
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);

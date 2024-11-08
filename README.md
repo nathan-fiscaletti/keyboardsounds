@@ -44,9 +44,7 @@ Keyboard Sounds can be installed as a desktop application or as a Python package
 
 Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
-> ⚠️ The desktop application still requires the Python package to be installed on your system. 
-> 
-On first launch, the application will check that both Python and the required Python packages are installed.
+The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
 
   - Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
 

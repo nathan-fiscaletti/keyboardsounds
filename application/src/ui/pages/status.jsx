@@ -56,7 +56,7 @@ const Status = ({
           pr: 1,
           bgcolor: 
             !statusLoaded
-                ? "HighlightText"
+                ? "orange"
                 : status.status === "running"
                   ? green[500]
                   : "red" 
@@ -70,7 +70,7 @@ const Status = ({
               statusLoaded 
                 ? (
                   status.user_status === "Not running" ? "disabled" : "enabled"
-                ) : "Loading..."
+                ) : "Loading"
             }
           </Typography>
         </Box>

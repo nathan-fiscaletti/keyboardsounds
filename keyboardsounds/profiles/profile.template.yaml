@@ -1,0 +1,55 @@
+# General information about your profile, this includes
+# name, author and description.
+#
+# You are only required to provide the "name" field.
+profile:
+  name: {{ name }}
+  author: Your Name
+  description: Describe your profile
+
+# A list of all audio sources used by this profile each
+# containing an identifier and a source.
+#
+# The source can either be the name of an audio file
+# packaged with this profile OR a dictionary with two
+# keys, one 'press' and one 'release', who's
+# corresponding values are names of audio files
+# packaged with this profile.
+sources:
+  - id: key1
+    source: sound1.wav
+  - id: key2
+    source:
+      press: sound2.wav
+      release: sound3.wav
+
+# An optional mappings of audio sources to
+# particular keys on the keyboard.
+#
+# If you chose to omit the keys section, each time
+# a key is pressed on the keyboard a random sound
+# from the list of audio sources will be used.
+keys:
+  # The default value to use for any key not
+  # mapped elsewhere in the keys object.
+  #
+  # If you provide the keys object, you MUST
+  # provide a value for the default property.
+  #
+  # The value for this property can either be
+  # the ID of one of the sources you defined
+  # above, or an array of IDs.
+  default: [ key1, key2 ]
+
+  # A list of mappings of sources to keyboard keys.
+  other:
+      # The sound to play when one of the keys listed
+      # in the keys array is pressed.
+      #
+      # The value for this property can either be
+      # the ID of one of the sources you defined
+      # above, or an array of IDs.
+    - sound: key1
+      # An array of keys that you can press that this
+      # sound will be mapped to.
+      keys: [ backspace, delete ]

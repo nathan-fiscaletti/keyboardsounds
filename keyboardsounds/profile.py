@@ -169,3 +169,54 @@ class Profile(PathResolver):
             shutil.rmtree(output_path)
             print(f"Error: {e}")
             return
+
+    @classmethod
+    def create_profile(cls, path: str, name: str):
+        if name is None:
+            print("Please specify a name for the profile to create.")
+            return
+
+        # If no directory is provided, use the current directory and the name
+        if path is None:
+            dirNameSafeName = name.replace(" ", "_").lower()
+            path = os.path.join(os.getcwd(), dirNameSafeName)
+
+        # Make sure the directory doesn't already exist
+        if os.path.isdir(path):
+            print(f"Directory '{path}' already exists.")
+            return
+
+        # Create the directory
+        try:
+            os.makedirs(path)
+        except Exception as e:
+            raise ValueError(f"Failed to create directory '{path}'. Error: {e}")
+
+        # Create the profile.yaml file using the template
+        profile_file = os.path.join(path, "profile.yaml")
+        with open(profile_file, "w") as f:
+            with open(
+                os.path.join(ROOT, "profiles", "profile.template.yaml"), "r"
+            ) as template_file:
+                template = template_file.read()
+                template = template.replace("{{ name }}", name)
+                f.write(template)
+
+        print("")
+        print(f"Profile '{name}' created successfully.")
+        print("")
+        print(f"    Profile Directory: {path}")
+        print("")
+        print("      - Edit the profile.yaml file to customize the profile.")
+        print("      - Add audio files to the directory.")
+        print("")
+        print(
+            "    Use the interactive builder to add sources, keys, and default key mappings."
+        )
+        print("")
+        print(f"        kbs build-profile -path {path}")
+        print("")
+        print("    Build your profile using the following command:")
+        print("")
+        print(f"        kbs build-profile -path {path} -o {name}.zip")
+        print("")

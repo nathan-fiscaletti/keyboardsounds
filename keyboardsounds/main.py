@@ -63,6 +63,7 @@ def main():
             f"    %(prog)s stop{os.linesep}"
             f"    %(prog)s status [-s]{os.linesep * 2}"
             f"  manage profiles:{os.linesep * 2}"
+            f"    %(prog)s <new|create-profile> [-d <path>] -n <name>{os.linesep}"
             f"    %(prog)s <ap|add-profile> -z <zipfile>{os.linesep}"
             f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
             f"    %(prog)s <lp|list-profiles> [-s] [--remote]{os.linesep}"
@@ -115,7 +116,7 @@ def main():
         type=str,
         default=None,
         metavar="name",
-        help="name of the profile remove",
+        help="name of the profile",
     )
     parser.add_argument(
         "-z",
@@ -138,8 +139,8 @@ def main():
         "--directory",
         type=str,
         default=None,
-        metavar="directory",
-        help="path to the directory containing the sounds to use for the profile",
+        metavar="path",
+        help="path to the directory",
     )
     parser.add_argument(
         "-o",
@@ -272,9 +273,6 @@ def main():
                 "Please specify a directory containing the sounds to use for the profile."
             )
             return
-        if args.output is None:
-            print("Please specify a zip file to create.")
-            return
 
         builder = CliProfileBuilder(args.directory, args.output)
         builder.start()
@@ -293,6 +291,10 @@ def main():
             Profile.download_profile(args.name)
         except Exception as e:
             print(e)
+
+    elif args.action == "create-profile" or args.action == "new":
+        Profile.create_profile(args.directory, args.name)
+        return
 
     # Rules are only available on windows
     elif WIN32 and (args.action == "list-rules" or args.action == "lr"):

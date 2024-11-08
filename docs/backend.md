@@ -38,6 +38,12 @@ $ kbs stop
 ## Manage Profiles
 
 ```bash
+# Create a new profile
+$ kbs new -n "My Profile"
+
+# Export an existing profile
+$ kbs export-profile -n "My Profile" -o "My Profile.zip"
+
 # List downloadable profiles
 $ kbs list-profiles --remote
 

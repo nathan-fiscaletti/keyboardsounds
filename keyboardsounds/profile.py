@@ -8,6 +8,7 @@ import requests
 from keyboardsounds.root import ROOT
 from keyboardsounds.path_resolver import PathResolver
 from keyboardsounds.profile_validation import validate_profile
+from keyboardsounds.profile_builder import CliProfileBuilder
 
 PROFILES_REMOTE_URL = "https://api.github.com/repos/nathan-fiscaletti/keyboardsounds/contents/keyboardsounds/profiles?ref=master"
 PROFILE_REMOTE_URL = "https://api.github.com/repos/nathan-fiscaletti/keyboardsounds/contents/keyboardsounds/profiles/{name}?ref=master"
@@ -59,6 +60,10 @@ class Profile(PathResolver):
             else None
         )
         return {"name": name, "author": author, "description": description}
+
+    def export(self, output: str):
+        # export profile to zip file
+        CliProfileBuilder(self.root, output).save()
 
     @classmethod
     def list(cls):
@@ -220,3 +225,17 @@ class Profile(PathResolver):
         print("")
         print(f"        kbs build-profile -path {path} -o {name}.zip")
         print("")
+
+    @classmethod
+    def export_profile(cls, name: str, output: str):
+        if name is None:
+            print("Please specify a name for the profile to export.")
+            return
+
+        try:
+            profile = Profile(name)
+        except Exception as e:
+            print(f"Failed to find profile '{name}'. Error: {e}")
+            return
+
+        profile.export(output)

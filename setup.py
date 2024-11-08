@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="keyboardsounds",
-    version="5.8.4",
+    version="5.8.5",
     description="Adds the ability to play sounds while typing on any system.",
     author="Nathan Fiscaletti",
     author_email="nate.fiscaletti@gmail.com",

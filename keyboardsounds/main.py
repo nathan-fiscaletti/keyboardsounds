@@ -68,6 +68,7 @@ def main():
             f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
             f"    %(prog)s <lp|list-profiles> [-s] [--remote]{os.linesep}"
             f"    %(prog)s <dp|download-profile> -n <profile>{os.linesep}"
+            f"    %(prog)s <ex|export-profile> -n <profile> -o <zip_file>{os.linesep * 2}"
             f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
         )
         + win_messages
@@ -291,11 +292,12 @@ def main():
             Profile.download_profile(args.name)
         except Exception as e:
             print(e)
-
     elif args.action == "create-profile" or args.action == "new":
         Profile.create_profile(args.directory, args.name)
         return
-
+    elif args.action == "export-profile" or args.action == "ex":
+        Profile.export_profile(args.name, args.output)
+        return
     # Rules are only available on windows
     elif WIN32 and (args.action == "list-rules" or args.action == "lr"):
         rules = get_rules()

@@ -5,6 +5,7 @@ This application supports custom profiles in which you can provide your own WAV 
 ## Index
 
 - [Importing a profile](#importing-a-profile)
+- [Exporting an existing profile](#exporting-an-existing-profile)
 - [Creating a new Profile](#creating-a-new-profile)
 - [Editing a Profile](#editing-a-profile)
 - [Compiling a Profile](#compiling-a-profile)
@@ -16,6 +17,14 @@ Profiles can be imported from a ZIP file using the [`add-profile`](./backend.md#
 
 ```bash
 $ kbs add-profile -z "./my-profile.zip"
+```
+
+## Exporting an existing profile
+
+Profiles can be exported from the command line using the [`export-profile`](./backend.md#manage-profiles) action.
+
+```bash
+$ kbs export-profile -n my-profile -o "./my-profile.zip"
 ```
 
 ## Creating a new Profile

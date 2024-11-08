@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
@@ -10,16 +10,19 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import InputAdornment from '@mui/material/InputAdornment';
+import Dialog from '@mui/material/Dialog';
 
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import FileOpenIcon from '@mui/icons-material/FileOpenOutlined';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
 import { Chip, CircularProgress } from "@mui/material";
 import { execute } from "../execute";
 
-function ProfileListItem({ statusLoaded, status, profile: { name, author, description } }) {  
+function ProfileListItem({ statusLoaded, status, profile: { name, author, description }, onExport }) {  
   const [isDeleting, setIsDeleting] = useState(false);
 
   return (
@@ -31,7 +34,7 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
             <Chip sx={{ mr: 1 }} size="small" label="Active" variant="filled" color="success" />
           )}
           <Tooltip title="Export & Share" placement="top" arrow>
-            <IconButton color="primary" sx={{ mr: 1 }}>
+            <IconButton color="primary" sx={{ mr: 1 }} onClick={onExport}>
               <IosShareIcon />
             </IconButton>
           </Tooltip>
@@ -102,12 +105,123 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
 
 const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
   const [profileSearchValue, setProfileSearchValue] = useState('');
+  const [exportProfileDialogOpen, setExportProfileDialogOpen] = useState(false);
+  const [exportPath, setExportPath] = useState("");
+  const [exportingProfile, setExportingProfile] = useState(false);
+  const [profileToExport, setProfileToExport] = useState("");
+
+  useEffect(() => {
+    if (!exportProfileDialogOpen) {
+      setExportPath("");
+    }
+  }, [exportProfileDialogOpen]);
+
+  const selectExportPath = () => {
+    execute(`selectExportPath ${profileToExport}`).then((path) => {
+      if (path) {
+        setExportPath(path);
+      }
+    });
+  };
+
+  const exportProfile = () => {
+    if (exportPath === "") {
+      return;
+    }
+
+    setExportingProfile(true);
+    execute(`export-profile --name "${profileToExport}" --output "${exportPath}"`)
+      .then(() => {
+        setExportingProfile(false);
+        setExportProfileDialogOpen(false);
+        setProfileToExport("");
+      });
+  };
 
   return (
     <Box sx={{
       ml: 2,
       mt: 2,
     }}>
+      <Dialog open={exportProfileDialogOpen} fullWidth>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          p: 2,
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <Typography variant="h6">Export Profile</Typography>
+            <IconButton onClick={() => setExportProfileDialogOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Typography variant="body" sx={{ mt: 2 }}>
+            Export To
+          </Typography>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 1,
+            alignItems: 'center',
+            mt: 1,
+            p: 1,
+          }}>
+            {exportPath !== "" && (
+              <Tooltip title={exportPath} followCursor>
+                <Typography variant="body2" color="GrayText" noWrap sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "calc(100vw - 250px)",
+                }}>
+                  {exportPath}
+                </Typography>
+              </Tooltip>
+            )}
+            {exportPath === "" && (
+              <Typography variant="body2" color="GrayText">
+                Specify an export path...
+              </Typography>
+            )}
+
+            <Button
+              startIcon={<FileOpenIcon />}
+              variant="outlined"
+              size="small"
+              sx={{ ml: 1 }}
+              onClick={selectExportPath}
+            >
+              Select
+            </Button>
+          </Box>
+
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={
+              exportingProfile ? (
+                <CircularProgress size={18} />
+              ) : (
+                <SaveIcon />
+              )
+            }
+            sx={{ mt: 3, }}
+            disabled={exportPath === "" || exportingProfile}
+            onClick={exportProfile}
+          >
+            Save
+          </Button>
+        </Box>
+      </Dialog>
+
       <Box
         sx={{
           display: "flex",
@@ -164,7 +278,15 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
         },
       }}>
         {profilesLoaded && profiles.filter(p => profileSearchValue === "" || p.name.toLowerCase().includes(profileSearchValue.toLowerCase())).map((profile) => (
-          <ProfileListItem statusLoaded={statusLoaded} status={status} key={profile.name} profile={profile} />
+          <ProfileListItem 
+            statusLoaded={statusLoaded}
+            status={status}
+            key={profile.name}
+            profile={profile}
+            onExport={() => {
+              setProfileToExport(profile.name);
+              setExportProfileDialogOpen(true);
+            }} />
         ))}
       </List>
     </Box>

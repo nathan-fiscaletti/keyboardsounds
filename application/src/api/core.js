@@ -170,6 +170,28 @@ const kbs = {
         return "";
     },
 
+    selectExportPath: async function(profileToExport) {
+        if (this.openFileDialogIsOpen) {
+            return;
+        }
+
+        this.openFileDialogIsOpen = true;
+        const res = await dialog.showSaveDialog(this.mainWindow, {
+            title: `Export Profile '${profileToExport}'`,
+            defaultPath: `${profileToExport}.zip`,
+            filters: [
+                { name: 'Zip Archive', extensions: ['zip'] }
+            ]
+        });
+        this.openFileDialogIsOpen = false;
+        this.mainWindow.show();
+        this.mainWindow.focus();
+        if (!res.canceled) {
+            return res.filePath
+        }
+        return "";
+    },
+
     executeDaemonCommand: async function(command) {
         const status = await this.status();
         if (status.status !== 'running') {

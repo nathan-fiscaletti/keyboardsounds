@@ -185,8 +185,8 @@ class ProfileBuilder(PathResolver):
             print(f"Writing '{file}'...")
             source = self.get_file_path(file)
             destination = intermediate.get_file_path(file)
-            if not os.path.isfile(destination):
-                raise ValueError(f"Missing audio file '{file}'.")
+            if not os.path.isfile(source):
+                raise ValueError(f"Missing intermediate audio file '{file}'.")
             shutil.copy(source, destination)
 
         print(f"Writing archive to '{output}'...")
@@ -276,7 +276,7 @@ class CliProfileBuilder:
             self.__collect_metadata()
         else:
             if self.__output is not None:
-                self.__save()
+                self.save()
             else:
                 self.__open_command_interface()
 
@@ -313,7 +313,7 @@ class CliProfileBuilder:
         elif self.__cmd == "remove":
             return self.__remove()
         elif self.__cmd == "save":
-            return self.__save()
+            return self.save()
         elif self.__cmd == "cancel":
             return False
 
@@ -546,7 +546,7 @@ class CliProfileBuilder:
         print(self.__builder.preview())
         return True
 
-    def __save(self) -> bool:
+    def save(self) -> bool:
         if len(self.__args) < 1:
             output = self.__output
         else:

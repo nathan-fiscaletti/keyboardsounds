@@ -4,11 +4,19 @@ This application supports custom profiles in which you can provide your own WAV 
 
 ## Index
 
+- [Importing a profile](#importing-a-profile)
 - [Creating a new Profile](#creating-a-new-profile)
 - [Editing a Profile](#editing-a-profile)
 - [Compiling a Profile](#compiling-a-profile)
-- [Importing a profile](#importing-a-profile)
 - [Adding a profile to the official repository](#adding-a-profile-to-the-official-repository)
+
+## Importing a profile
+
+Profiles can be imported from a ZIP file using the [`add-profile`](./backend.md#manage-profiles) action.
+
+```bash
+$ kbs add-profile -z "./my-profile.zip"
+```
 
 ## Creating a new Profile
 
@@ -62,14 +70,6 @@ $ kbs bp -d "./my-profile"
   ```
   
   > Using the `build-profile (bp)` action is recommended instead of creating your own ZIP file as it has built-in validation to ensure the profile is valid.
-
-## Importing a profile
-
-Profiles can be imported from a ZIP file using the [`add-profile`](./backend.md#manage-profiles) action.
-
-```bash
-$ kbs add-profile -z "./my-profile.zip"
-```
 
 ## Adding a profile to the official repository
 

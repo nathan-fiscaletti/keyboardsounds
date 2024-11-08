@@ -12,9 +12,11 @@ from pynput.keyboard import Listener, Key
 from keyboardsounds.profile_validation import SUPPORTED_AUDIO_FORMATS
 from keyboardsounds.path_resolver import PathResolver
 
+
 class SourceEvent(Enum):
     PRESS = "press"
     RELEASE = "release"
+
 
 class AudioFile:
     def __init__(self, resolver: PathResolver, value: str):
@@ -27,15 +29,26 @@ class AudioFile:
     def __str__(self) -> str:
         return self.value
 
+
 class ProfileBuilder(PathResolver):
     def __init__(self, path):
         super().__init__(path)
         self.__audio_files = []
         self.__data = {}
+        self.__load_profile_data()
         self.__load_audio_files()
-        
+
+    def exists(self):
+        return os.path.isfile(self.get_file_path("profile.yaml"))
+
+    def __load_profile_data(self):
+        if self.exists():
+            self.__data = yaml.load(
+                open(self.get_file_path("profile.yaml"), "r"), Loader=yaml.FullLoader
+            )
+
     def __load_audio_files(self):
-        for path, dirs, files in os.walk(self.root):
+        for _, _, files in os.walk(self.root):
             for file in files:
                 if file.endswith(tuple(SUPPORTED_AUDIO_FORMATS)):
                     self.__audio_files.append(AudioFile(self, file))
@@ -44,7 +57,7 @@ class ProfileBuilder(PathResolver):
         self.__data["profile"] = {
             "name": name,
             "author": author,
-            "description": description
+            "description": description,
         }
         self.__data["sources"] = []
 
@@ -60,16 +73,17 @@ class ProfileBuilder(PathResolver):
     def has_audio_file(self, audio_file) -> bool:
         return audio_file in [str(audio_file) for audio_file in self.__audio_files]
 
-    def add_source(self, id: str, audio_file: AudioFile, event: SourceEvent = SourceEvent.PRESS):
+    def add_source(
+        self, id: str, audio_file: AudioFile, event: SourceEvent = SourceEvent.PRESS
+    ):
         if "sources" not in self.__data:
             raise ValueError("You must set meta-data before adding sources.")
 
-        existing_source = {
-            "id": id,
-            "source": str(audio_file)
-        }
+        existing_source = {"id": id, "source": str(audio_file)}
 
-        existing_sources = [source for source in self.__data["sources"] if source["id"] == id]
+        existing_sources = [
+            source for source in self.__data["sources"] if source["id"] == id
+        ]
         if len(existing_sources) > 0:
             existing_source = existing_sources[0]
 
@@ -80,7 +94,7 @@ class ProfileBuilder(PathResolver):
                 existing_press = existing_source["source"]
                 existing_source["source"] = {
                     SourceEvent.PRESS.value: existing_press,
-                    SourceEvent.RELEASE.value: str(audio_file)
+                    SourceEvent.RELEASE.value: str(audio_file),
                 }
         elif type(existing_source["source"]) == dict:
             if event == SourceEvent.PRESS:
@@ -88,7 +102,9 @@ class ProfileBuilder(PathResolver):
             elif event == SourceEvent.RELEASE:
                 existing_source["source"][SourceEvent.RELEASE.value] = str(audio_file)
 
-        self.__data["sources"] = [source for source in self.__data["sources"] if source["id"] != id]
+        self.__data["sources"] = [
+            source for source in self.__data["sources"] if source["id"] != id
+        ]
         self.__data["sources"].append(existing_source)
 
     def get_sources(self) -> List[dict]:
@@ -120,11 +136,7 @@ class ProfileBuilder(PathResolver):
         if "other" not in self.__data["keys"]:
             self.__data["keys"]["other"] = []
         other = list(self.__data["keys"]["other"])
-        other.append({
-            "id": id,
-            "sound": source,
-            "keys": keys
-        })
+        other.append({"id": id, "sound": source, "keys": keys})
         self.__data["keys"]["other"] = other
 
     def has_key_mapping(self, id: str) -> bool:
@@ -139,7 +151,9 @@ class ProfileBuilder(PathResolver):
             return
         if "other" not in self.__data["keys"]:
             return
-        self.__data["keys"]["other"] = [mapping for mapping in self.__data["keys"]["other"] if mapping["id"] != id]
+        self.__data["keys"]["other"] = [
+            mapping for mapping in self.__data["keys"]["other"] if mapping["id"] != id
+        ]
 
     def preview_keys_mappings(self) -> str:
         return yaml.dump(self.__data["keys"] if "keys" in self.__data else {})
@@ -151,10 +165,11 @@ class ProfileBuilder(PathResolver):
         intermediate_dir = tempfile.mkdtemp()
         intermediate = PathResolver(intermediate_dir)
 
+        print("Writing profile.yaml...")
         profile_file = intermediate.get_file_path("profile.yaml")
         with open(profile_file, "w") as file:
             yaml.dump(self.__data, file)
-        
+
         used_files = []
         for source in self.__data["sources"]:
             if type(source["source"]) == str:
@@ -167,12 +182,18 @@ class ProfileBuilder(PathResolver):
         used_files = list(set(used_files))
 
         for file in used_files:
+            print(f"Writing '{file}'...")
             source = self.get_file_path(file)
             destination = intermediate.get_file_path(file)
+            if not os.path.isfile(destination):
+                raise ValueError(f"Missing audio file '{file}'.")
             shutil.copy(source, destination)
 
+        print(f"Writing archive to '{output}'...")
         shutil.make_archive(output, "zip", intermediate_dir)
+        print("Cleaning up...")
         shutil.rmtree(intermediate_dir)
+
 
 class KeyCollector:
     def __init__(self):
@@ -188,18 +209,24 @@ class KeyCollector:
 
     def __on_press(self, key):
         key_name = key.name if type(key) == Key else key.char
-        if ('ctrl' in self.__pressed or 'ctrl_l' in self.__pressed or 'ctrl_r' in self.__pressed) and 'shift' in self.__pressed:
-            if key_name == 'delete':
+        if (
+            "ctrl" in self.__pressed
+            or "ctrl_l" in self.__pressed
+            or "ctrl_r" in self.__pressed
+        ) and "shift" in self.__pressed:
+            if key_name == "delete":
                 self.__keys = []
                 return False
-            if key_name == 'enter':
+            if key_name == "enter":
                 return False
         self.__pressed.append(key_name)
 
     def __on_release(self, key):
         key_name = key.name if type(key) == Key else key.char
         if key_name in self.__pressed:
-            self.__pressed = [pressed for pressed in self.__pressed if pressed != key_name]
+            self.__pressed = [
+                pressed for pressed in self.__pressed if pressed != key_name
+            ]
             self.__keys.append(key_name)
         self.__report_keys()
 
@@ -216,32 +243,42 @@ class KeyCollector:
 
     def get_keys(self):
         self.__report_keys()
-        with Listener(on_press=self.__on_press, on_release=self.__on_release) as listener:
+        with Listener(
+            on_press=self.__on_press, on_release=self.__on_release
+        ) as listener:
             listener.join()
         print(os.linesep, end="")
         try:
             import termios
+
             termios.tcflush(sys.stdin, termios.TCIOFLUSH)
         except ImportError:
             import msvcrt
+
             while msvcrt.kbhit():
                 msvcrt.getch()
         return self.__unique_keys()
 
+
 class CliProfileBuilder:
     def __init__(self, path: str, output: str):
-        if not output.endswith(".zip"):
+        if output is not None and not output.endswith(".zip"):
             print("Error: Output file must be a zip file.")
             exit(1)
 
         self.__builder = ProfileBuilder(path)
-        self.__output = output[:-4]
+        self.__output = output[:-4] if output is not None else None
         self.__cmd = None
         self.__args = []
 
     def start(self):
-        self.__collect_metadata()
-        self.__open_command_interface()
+        if not self.__builder.exists():
+            self.__collect_metadata()
+        else:
+            if self.__output is not None:
+                self.__save()
+            else:
+                self.__open_command_interface()
 
     def __collect_metadata(self):
         print(f"{os.linesep}Meta Data{os.linesep}")
@@ -283,10 +320,12 @@ class CliProfileBuilder:
     def __add(self) -> bool:
         if len(self.__args) < 1:
             return self.__print_help("Error: Missing arguments.")
-        
+
         add_type = self.__args[0]
         if add_type not in ["source", "keys", "default-key"]:
-            return self.__print_help("Error: Invalid type. Must be one of 'source', 'keys' or 'default-key'.")
+            return self.__print_help(
+                "Error: Invalid type. Must be one of 'source', 'keys' or 'default-key'."
+            )
 
         if add_type == "keys":
             return self.__add_keys()
@@ -297,21 +336,23 @@ class CliProfileBuilder:
     def __remove(self) -> bool:
         if len(self.__args) < 1:
             return self.__print_help("Error: Missing arguments.")
-        
+
         remove_type = self.__args[0]
         if remove_type not in ["source", "keys", "default-key"]:
-            return self.__print_help("Error: Invalid type. Must be one of 'source', 'keys' or 'default-key'.")
+            return self.__print_help(
+                "Error: Invalid type. Must be one of 'source', 'keys' or 'default-key'."
+            )
 
         if remove_type == "keys":
             return self.__remove_key_mapping()
         if remove_type == "default-key":
             return self.__remove_default_key()
         return self.__remove_source()
-    
+
     def __add_source(self) -> bool:
         print("Add Source")
         print("")
-        
+
         id = None
         while True:
             id = input("Enter Source ID: ")
@@ -321,7 +362,7 @@ class CliProfileBuilder:
             if not self.__builder.has_source(id):
                 break
             print("Error: Source ID already in use.")
-            
+
         press = None
         release = None
 
@@ -334,7 +375,7 @@ class CliProfileBuilder:
                 continue
             press = AudioFile(self.__builder, in_press)
             break
-        
+
         while True:
             in_release = input("Release Sound (leave empty for none): ")
             if in_release == "":
@@ -370,7 +411,9 @@ class CliProfileBuilder:
     def __add_default_key(self):
         print("Add Default Key Mapping")
         print("")
-        print("Enter a source ID to include in the default key mapping. Leave empty to finish.")
+        print(
+            "Enter a source ID to include in the default key mapping. Leave empty to finish."
+        )
         print("")
         source_ids = []
         source = input("Source ID: ")
@@ -380,7 +423,7 @@ class CliProfileBuilder:
             else:
                 source_ids.append(source)
             source = input("Source ID: ")
-        
+
         if len(source_ids) < 1:
             print("")
             print("Error: No source IDs entered. Default key mapping not set.")
@@ -409,7 +452,7 @@ class CliProfileBuilder:
     def __add_keys(self):
         print("Add Key Mappings")
         print("")
-        
+
         id = None
         while True:
             id = input("Enter Key Mapping ID: ")
@@ -422,7 +465,9 @@ class CliProfileBuilder:
 
         print("")
         print(" - Press the keys you wish to map to a source.")
-        print(" - Press 'Control + Shift + DELETE' to cancel. Press 'Control + Shift + Enter' when finished.")
+        print(
+            " - Press 'Control + Shift + DELETE' to cancel. Press 'Control + Shift + Enter' when finished."
+        )
         print("")
 
         key_names = KeyCollector().get_keys()
@@ -445,7 +490,7 @@ class CliProfileBuilder:
             else:
                 source_ids.append(source_id)
             source_id = input("Source ID: ")
-        
+
         if len(source_ids) < 1:
             print("")
             print("Error: No source IDs entered. Key mapping not set.")
@@ -477,11 +522,13 @@ class CliProfileBuilder:
     def __list(self) -> bool:
         if len(self.__args) < 1:
             return self.__print_help("Error: Missing arguments.")
-        
+
         list_type = self.__args[0]
         if list_type not in ["sources", "keys", "sounds"]:
-            return self.__print_help("Error: Invalid type. Must be one of 'sources', 'keys' or 'sounds'.")
-        
+            return self.__print_help(
+                "Error: Invalid type. Must be one of 'sources', 'keys' or 'sounds'."
+            )
+
         if list_type == "sources":
             print(self.__builder.preview_sources())
         elif list_type == "keys":
@@ -500,9 +547,25 @@ class CliProfileBuilder:
         return True
 
     def __save(self) -> bool:
+        if len(self.__args) < 1:
+            output = self.__output
+        else:
+            if not self.__args[0].endswith(".zip"):
+                print("Error: Output file must be a zip file.")
+                return True
+            output = self.__args[0][:-4]
+
+        if output is None:
+            print("Error: Output file must be a zip file.")
+            return True
+
         print("")
-        print(f"Compressing to ZIP file at '{self.__output}'...")
-        self.__builder.build(self.__output)
+        try:
+            self.__builder.build(output)
+        except Exception as e:
+            print("Error:", e)
+            print("")
+            return True
         print("Done.")
         return False
 
@@ -522,5 +585,3 @@ class CliProfileBuilder:
         print(" save - saves the profile to the output file")
         print("")
         return True
-            
-        

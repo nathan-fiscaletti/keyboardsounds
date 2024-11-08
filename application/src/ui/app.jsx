@@ -62,36 +62,56 @@ function ControlButton({
       )}
 
       {statusLoaded && status.status !== "running" && (
-        <Button
-          variant="contained"
-          startIcon={
-            isLoading ? (
-              <CircularProgress sx={{ color: "#000000de" }} size={18} />
-            ) : (
-              <PlayArrowIcon />
-            )
-          }
-          onClick={handleCommand(`start -p ${selectedProfile} -v ${volume}`)}
-        >
-          Enable
-        </Button>
+        <Tooltip placement="bottom-end" title="Start Daemon" arrow>
+          <Button
+            sx={{
+              pr: 0,
+              pl: 0,
+              minWidth: '32px',
+              borderRadius: '16px',
+              '.MuiButton-icon': {
+                marginRight: '4px',
+                marginLeft: '4px',
+              }
+            }}
+            variant="contained"
+            startIcon={
+              isLoading ? (
+                <CircularProgress sx={{ color: "#000000de" }} size={18} />
+              ) : (
+                <PlayArrowIcon />
+              )
+            }
+            onClick={handleCommand(`start -p ${selectedProfile} -v ${volume}`)}
+          />
+        </Tooltip>
       )}
 
       {statusLoaded && status.status === "running" && (
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={
-            isLoading ? (
-              <CircularProgress sx={{ color: "#fff" }} size={18} />
-            ) : (
-              <StopIcon />
-            )
-          }
-          onClick={handleCommand("stop")}
-        >
-          Disable
-        </Button>
+        <Tooltip placement="bottom-end" title="Stop Daemon" arrow>
+          <Button
+            sx={{
+              pr: 0,
+              pl: 0,
+              minWidth: '32px',
+              borderRadius: '16px',
+              '.MuiButton-icon': {
+                marginRight: '4px',
+                marginLeft: '4px',
+              }
+            }}
+            variant="contained"
+            color="error"
+            startIcon={
+              isLoading ? (
+                <CircularProgress sx={{ color: "#fff" }} size={18} />
+              ) : (
+                <StopIcon />
+              )
+            }
+            onClick={handleCommand("stop")}
+          />
+        </Tooltip>
       )}
     </Box>
   );

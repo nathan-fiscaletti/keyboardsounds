@@ -23,6 +23,17 @@ Keyboard Sounds is a tool that runs in your system tray and plays sound effects 
 
 </p>
 
+### Getting Started
+
+- [Install Keyboard Sounds](#installation)
+- [Create Custom Profiles](#custom-profiles)
+- [Command Line Usage](#command-line)
+
+### Helpful Links
+
+- [Uninstall Keyboard Sounds](#uninstalling)
+- [Developer Documentation](#development)
+
 ## Installation
 
 Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
@@ -51,6 +62,18 @@ To install this application as a CLI utility via the Python package, you will ne
   $ pip install keyboardsounds
   ```
 
+## Custom Profiles
+
+This application supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
+
+Read more about creating and editing profiles [here](./docs/custom-profiles.md).
+
+## Command Line
+
+Keyboard Sounds has a comprehensive backend that can be used to manage the daemon, application rules, and profiles. This backend can be accessed via the command line interface (CLI) in your terminal application.
+
+Read more about backend usage [here](./docs/backend.md).
+
 ## Uninstalling
 
 You can uninstall the Keyboard Sounds Desktop Application from the "Apps" section of your system Settings application. 
@@ -61,260 +84,6 @@ You can uninstall the Keyboard Sounds Desktop Application from the "Apps" sectio
   $ pip uninstall keyboardsounds
   ```
 
-## Custom Profiles
-
-This application supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
-
-### Creating a Profile
-
-1. Create a new directory containing the sounds you wish to use.
-2. Add a new file to the directory called `profile.yaml`.
-3. Follow the example format below to fill the file in.
-4. Combine the files into a ZIP file. The files must be at the root of the zip file.
-
-You can then load this profile into the application using the `add-profile` action.
-
-> Note: Alternately you can use the `build-profile` action for an environment with built in validation when creating a new profile.
-
-### Adding a profile to the official repository
-
-If you have created a profile that you think others would enjoy, you can submit it to the official repository. To do this, you will need to create a pull request.
-
-1. Fork the repository.
-2. Add your profile to the `profiles` directory.
-3. Create a pull request.
-
-### Example Profile
-
-```yaml
-# General information about your profile, this includes
-# name, author and description.
-#
-# You are only required to provide the "name" field.
-profile:
-  name: my-profile
-  author: Nathan Fiscaletti
-  description: Describe the sounds packaged in this profile
-
-# A list of all audio sources used by this profile each
-# containing an identifier and a source.
-#
-# The source can either be the name of an audio file
-# packaged with this profile OR a dictionary with two
-# keys, one 'press' and one 'release', who's
-# corresponding values are names of audio files
-# packaged with this profile.
-sources:
-  - id: key1
-    source: sound1.wav
-  - id: key2
-    source:
-      press: sound2.wav
-      release: sound3.wav
-
-# An optional mappings of audio sources to
-# particular keys on the keyboard.
-#
-# If you chose to omit the keys section, each time
-# a key is pressed on the keyboard a random sound
-# from the list of audio sources will be used.
-keys:
-  # The default value to use for any key not
-  # mapped elsewhere in the keys object.
-  #
-  # If you provide the keys object, you MUST
-  # provide a value for the default property.
-  #
-  # The value for this property can either be
-  # the ID of one of the sources you defined
-  # above, or an array of IDs.
-  default: [ key1, key2 ]
-
-  # A list of mappings of sources to keyboard keys.
-  other:
-      # The sound to play when one of the keys listed
-      # in the keys array is pressed.
-      #
-      # The value for this property can either be
-      # the ID of one of the sources you defined
-      # above, or an array of IDs.
-    - sound: key1
-      # An array of keys that you can press that this
-      # sound will be mapped to.
-      keys: [ backspace, delete ]
-
-```
-
-## Backend Usage
-
-Keyboard Sounds has a comprehensive backend that can be used to manage the daemon, application rules, and profiles. This backend can be accessed via the command line interface (CLI) in your terminal application.
-
-- [Managing the Daemon](#manage-the-daemon)
-- [Managing Application Rules](#managing-application-rules)
-- [Manage Profiles](#manage-profiles)
-
-### Manage the Daemon
-
-**Start or reconfigure the daemon**
-
-```bash
-# Start with default volume of 100%
-$ kbs start
-
-# Start or reconfigure with a volume of 50%
-$ kbs start -v 50
-
-# Start or reconfigure with a specific profile
-$ kbs start -p typewriter
-```
-
-**Check the current status of the daemon**
-
-```bash
-$ kbs status
-```
-
-**Stop the daemon if it is running**
-
-```bash
-$ kbs stop
-```
-
-### Managing Application Rules
-
-Keyboard Sounds supports the ability to enable or disable the typing sound effects for specific applications. You can also set a global rule that will be used for all applications that do not have a specific rule set.
-
-**⚠️ Application Rules are only available on Windows**
-
-#### Rule Types
-
-- `enable` - Enable sound effects for the application.
-- `disable` - Disable sound effects for the application.
-- `exclusive` - Only play sound effects for the application.
-
-> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
-
-#### Examples
-
-```bash
-# Add a rule to disable sound effects for an application
-$ kbs add-rule -r disable -a "C:\Program Files\MyApp\MyApp.exe" 
-
-# Remove a rule for an application
-$ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
-
-# List the currently loaded rules
-$ kbs list-rules
-```
-
-#### Set the global rule
-
-> The global rule is used as the fallback for any application that does not have a specific rule set. By default, it is set to `enable`.
-
-```bash
-# Set the global rule to disable
-$ kbs set-global-rule -r disable
-
-# Retrieve the current global rule
-$ kbs get-global-rule
-```
-
-### Manage Profiles
-
-```bash
-# List downloadable profiles
-$ kbs list-profiles --remote
-
-# List installed profiles
-$ kbs list-profiles
-
-# Download a profile
-$ kbs download-profile -n myprofile
-
-# Import a profile
-$ kbs add-profile -z ./my-profile.zip
-
-# Remove a profile
-$ kbs remove-profile -n myprofile
-```
-
 ## Development
 
-This section is intended for developers who wish to contribute to this project. Follow the steps below to set up your development environment and start contributing.
-
-### Prerequisites
-
-- [Git](https://git-scm.com/downloads)
-- [Python](https://www.python.org/) (version 3.7 or higher)
-- [pip](https://pip.pypa.io/en/stable/installing/) (Python package installer)
-- [yarn](https://yarnpkg.com/getting-started/install) (Node.js package installer)
-
-### Setting Up the Development Environment
-
-1. **Clone the Repository**
-
-   Begin by cloning the repository to your local machine using Git:
-
-   ```bash
-   git clone https://github.com/nathan-fiscaletti/keyboardsounds.git
-   ```
-
-2. **Navigate to the Project Directory**
-
-   Change to the project directory:
-
-   ```bash
-   cd keyboardsounds
-   ```
-
-4. **Install Dependencies: Python**
-
-   Install the project dependencies using `pip`:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. **Install Dependencies: Node.js**
-
-    Install the project dependencies using `yarn`:
-  
-    ```bash
-    cd application
-    yarn
-    ```
-
-### Running the Project Locally
-
-It is recommended that you install the package in editable mode to allow you to make changes to the code and see the changes reflected in the application.
-
-- To install the package in editable mode, use the following command:
-
-  ```bash
-  pip install -e .
-  ```
-
-  This command will install the package in editable mode, allowing you to make changes to the code and see the changes reflected in the application.
-
-### Running the Desktop Application
-
-To run the desktop application, navigate to the `application` directory and run the following command:
-
-```bash
-yarn start
-```
-
-### Contributing
-
-Contributions are what make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-#### Submitting Pull Requests
-
-1. Fork the repository and create your branch from `master`.
-2. If you've added code, ensure your code adheres to the project's coding conventions.
-4. Update documentation as necessary.
-5. Submit your pull request with a detailed description of your changes.
-
-### Getting Help
-
-Should you have any questions or encounter issues, feel free to open an issue on the repository, and I'll do my best to address it.
+Documentation for developers who wish to contribute to this project can be found [here](./docs/development.md).

@@ -1,1 +1,185 @@
 body {}
+
+
+/*
+  Keyboard Theme
+*/
+.hg-button.hg-functionBtn.hg-button-space {
+    width: 350px;
+}
+
+.hg-button.hg-functionBtn.hg-button-capslock {
+    width: 50px;
+}
+
+.hg-button.hg-functionBtn.hg-button-enter {
+    width: 100px;
+}
+
+.hg-button.hg-functionBtn.hg-button-controlleft {
+    width: 20px;
+}
+
+.hg-button.hg-functionBtn.hg-button-altleft {
+    width: 20px;
+}
+
+.hg-button.hg-functionBtn.hg-button-metaleft {
+    width: 20px;
+}
+
+.hg-button.hg-functionBtn.hg-button-controlright {
+    width: 20px;
+}
+
+.hg-button.hg-functionBtn.hg-button-altright {
+    width: 20px;
+}
+
+.hg-button.hg-functionBtn.hg-button-metaright {
+    width: 20px;
+}
+
+.hg-button.hg-functionBtn.hg-button-shiftright {
+    width: 75px;
+}
+
+.hg-button.hg-functionBtn.hg-button-shiftleft {
+    width: 75px;
+}
+
+.hg-button.hg-functionBtn.hg-button-backslash {
+    width: 50px;
+}
+
+.simple-keyboard-main.simple-keyboard .hg-row:first-child {
+    margin-bottom: 10px;
+}
+
+.keyboardContainer {
+    display: flex;
+    justify-content: center;
+    border-radius: 5px;
+    width: 1120px;
+}
+
+.simple-keyboard-arrows.simple-keyboard {
+    align-self: flex-end;
+    background: none;
+}
+
+.simple-keyboard-arrows .hg-row {
+    justify-content: center !important;
+}
+
+.simple-keyboard-arrows .hg-button {
+    width: 50px;
+    flex-grow: 0 !important;
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.controlArrows {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-flow: column;
+    margin-left: 16px;
+}
+
+.simple-keyboard-control.simple-keyboard {
+    background: none;
+}
+
+.simple-keyboard-control.simple-keyboard .hg-row:first-child {
+    margin-bottom: 10px;
+}
+
+.simple-keyboard-control .hg-button {
+    width: 50px;
+    flex-grow: 0;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.numPad {
+    display: flex;
+    align-items: flex-end;
+    margin-left: 16px;
+}
+
+.simple-keyboard-numpad.simple-keyboard {
+    background: none;
+}
+
+.simple-keyboard-numpad.simple-keyboard {
+    width: 160px;
+}
+
+.simple-keyboard-numpad.simple-keyboard .hg-button {
+    width: 50px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.simple-keyboard-numpadEnd {
+    margin-left: 5px !important;
+}
+
+.simple-keyboard-numpadEnd.simple-keyboard {
+    width: 50px;
+    background: none;
+    margin: 0;
+    padding: 5px 5px 5px 0;
+}
+
+.simple-keyboard-numpadEnd.simple-keyboard .hg-button {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.simple-keyboard-numpadEnd .hg-button.hg-standardBtn.hg-button-numpadadd {
+    height: 150px;
+}
+
+.simple-keyboard-numpadEnd.simple-keyboard .hg-button.hg-button-numpadenter {
+    height: 125px;
+}
+
+.simple-keyboard.myTheme1 {
+    background-color: #1e1e1e;
+    border-radius: 0;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    padding: 0px;
+}
+
+.simple-keyboard.myTheme1 .hg-button {
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #121212;
+    color: white;
+    font-size: 12px;
+    border-bottom: 0px;
+    /* make all text caps */
+    text-transform: uppercase;
+}
+
+.simple-keyboard.myTheme1 .hg-button:active {
+    background: #212121;
+    color: white;
+}
+
+.simple-keyboard.myTheme1 .hg-button:hover {
+    background: #212121;    
+}
+
+#root .simple-keyboard.myTheme1 + .simple-keyboard-preview {
+    background: #1c4995;
+}

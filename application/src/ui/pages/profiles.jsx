@@ -233,14 +233,28 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
         }}
       >
         <Typography variant="h6">Profiles</Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<FileOpenIcon />}
-          onClick={() => execute("importProfile")}
-        >
-          Import
-        </Button>
+        <Box sx={{
+          display: "flex",
+          flexDirection: "row",
+        }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => execute("showEditorWindow")}
+            sx={{ mr: 1 }}
+          >
+            New
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<FileOpenIcon />}
+            onClick={() => execute("importProfile")}
+          >
+            Import
+          </Button>
+        </Box>
       </Box>
       <Typography variant="body2" color="GrayText" sx={{ mb: 0.5, mt: 0.5, mr: 2 }}>
         Manage your keyboard sound profiles here. You can import, export, and delete profiles.

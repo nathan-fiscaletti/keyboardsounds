@@ -114,6 +114,22 @@ const toggleWindow = () => {
   });
 };
 
+const createEditorWindow = () => {
+  // Create the browser window.
+  const editorWindow = new BrowserWindow({
+    width: 1300,
+    height: 800,
+    title: "Keyboard Sounds - Profile Editor",
+    webPreferences: {
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    },
+  });
+
+  editorWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY + "?editor=true");
+
+  return editorWindow;
+};
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -259,6 +275,7 @@ app.whenReady().then(() => {
   });
 
   toggleWindow();
+  kbs.setEditorWindowCreateHandler(createEditorWindow);
 
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.

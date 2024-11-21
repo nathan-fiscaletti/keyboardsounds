@@ -18,6 +18,8 @@ const MinimumPythonPackageVersion = '5.7.2';
 
 const kbs = {
     mainWindow: null,
+    editorWindowCreateHandler: null,
+    editorWindow: null,
     openFileDialogIsOpen: false,
     appVersion: '1.0.0',
 
@@ -306,7 +308,32 @@ const kbs = {
         this.mainWindow = mainWindow;
     },
 
-    registerKbsIpcHandler: function (ipcMain, shouldNotify=()=>true) {
+    setEditorWindowCreateHandler: function (handler) {
+        this.editorWindowCreateHandler = handler;
+    },
+
+    showEditorWindow: function() {
+        if (!this.editorWindow) {
+            this.editorWindow = this.editorWindowCreateHandler();
+            // Make links open in browser.
+            this.editorWindow.webContents.setWindowOpenHandler(({ url }) => {
+                shell.openExternal(url);
+                return { action: 'deny' };
+            });
+
+            // When the window is closed, set this.editorWindow to null
+            this.editorWindow.on('closed', () => {
+                this.editorWindow = null;
+            });
+
+            // Open developer tools
+            this.editorWindow.webContents.openDevTools();
+        }
+        this.editorWindow.show();
+        this.editorWindow.focus();
+    },
+
+    registerKbsIpcHandler: function (ipcMain, shouldNotify=()=>false) {
         // Listen for incoming IPC messages.
         ipcMain.on('kbs', async (event, data) => {
             const { command, channelId } = data;

@@ -26,7 +26,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FileOpenIcon from '@mui/icons-material/FileOpen';
 
 import Card from "@mui/material/Card";
-import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip } from "@mui/material";
+import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip, Paper, Checkbox, FormControlLabel } from "@mui/material";
 
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
@@ -145,7 +145,7 @@ const keyboardNumPadEndOptions = {
 // Sources
 // Keys
 
-function SourceListItem({ name, press, release }) {
+function SourceListItem({ name, press, release, isDefault }) {
   const secondaryText = (press && release) ? `${press}, ${release}` : `${press}` || `${release}`;
 
   const typeVariant = press && release ? "filled" : "outlined";
@@ -184,7 +184,7 @@ function SourceListItem({ name, press, release }) {
       <ListItemText
         primary={(
           <Typography variant="body1">
-            {name}
+            {name} {isDefault && <Typography variant="caption" color="text.secondary">(default)</Typography>}
           </Typography>
         )}
         secondary={secondaryText}
@@ -207,6 +207,7 @@ function Editor() {
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
   const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   return (
     <ThemeProvider theme={theme}>
@@ -290,9 +291,10 @@ function Editor() {
                 const isPressAndRelease = Math.random() > 0.5;
                 const press = `press${i}.mp3`;
                 const release = isPressAndRelease ? `release${i}.mp3` : null;
+                const isDefault = Math.random() > 0.5;
 
                 return (
-                  <SourceListItem key={i} name={name} press={press} release={release} />
+                  <SourceListItem key={i} name={name} press={press} release={release} isDefault={isDefault} />
                 )
               }))}
             </List>
@@ -376,6 +378,20 @@ function Editor() {
               </Button>
             </Box>
           </Box>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            mt: 1,
+            alignItems: 'center',
+          }}>
+            <Tooltip title="This source will be included in the default sources used for keys that do not have a specific source set." placement="top" arrow followCursor>
+              <Typography variant="body">
+                Add to default sources
+              </Typography>
+            </Tooltip>
+            <Checkbox defaultChecked />
+          </Box>
           <Button
             fullWidth
             variant="contained"
@@ -384,6 +400,42 @@ function Editor() {
           >
             Save
           </Button>
+        </Box>
+      </Dialog>
+
+      <Dialog open={helpOpen}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          p: 2,
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}>
+            <Typography variant="h6">Keyboar Sounds Editor - Help</Typography>
+            <IconButton onClick={() => setHelpOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Typography variant="body1">
+              Keyboard Sounds Editor is a tool for creating and editing keyboard sound profiles. It allows you to easily add and manage audio sources, as well as apply them to different keys on the keyboard.
+            </Typography>
+          </Paper>
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Typography variant="body1">
+              To get started, click the "Manage Sources" button in the top right corner of the editor. This will open a dialog where you can add, edit, and manage audio sources.
+            </Typography>
+          </Paper>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="body1">
+              Once you have added sources, you can apply them to different keys on the keyboard. To do this, select the keys you want to apply the sources to, select the audio source you want to apply to them, and click the "Apply" button. This will apply the selected sources to the selected keys.
+            </Typography>
+          </Paper>
         </Box>
       </Dialog>
 
@@ -426,7 +478,7 @@ function Editor() {
                 </IconButton>
               </Tooltip>
               <Tooltip placement="bottom-start" title="Help" arrow>
-                <IconButton onClick={() => {}}>
+                <IconButton onClick={() => setHelpOpen(true)}>
                   <HelpIcon />
                 </IconButton>
               </Tooltip>

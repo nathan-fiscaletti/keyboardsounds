@@ -244,7 +244,7 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
             onClick={() => execute("showEditorWindow")}
             sx={{ mr: 1 }}
           >
-            New
+            Create
           </Button>
           <Button
             variant="outlined"

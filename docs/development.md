@@ -35,7 +35,7 @@ cd keyboardsounds
 
 5. **Install Dependencies: Node.js**
 
-    Install the project dependencies using `yarn`:
+    Install the project dependencies using `npm`:
   
     ```bash
     cd application

@@ -23,6 +23,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import FileOpenIcon from '@mui/icons-material/FileOpen';
 
 import Card from "@mui/material/Card";
 import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip } from "@mui/material";
@@ -299,7 +300,7 @@ function Editor() {
         </Box>
       </Dialog>
 
-      <Dialog open={addSourceOpen} fullWidth>
+      <Dialog open={addSourceOpen}>
         <Box sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -317,9 +318,64 @@ function Editor() {
               <CloseIcon />
             </IconButton>
           </Box>
-          <TextField label="Name" size="small" sx={{ mb: 2 }} />
-          <TextField label="Press Sound" size="small" sx={{ mb: 2 }} />
-          <TextField label="Release Sound" size="small" sx={{ mb: 2 }} />
+          <TextField placeholder="Name" size="small" />
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 1,
+            alignItems: 'center',
+            mt: 1,
+            p: 1,
+          }}>
+            <Typography variant="body2" color="GrayText">
+              Select a press sound...
+            </Typography>
+
+            <Button
+              startIcon={<FileOpenIcon />}
+              variant="outlined"
+              size="small"
+              sx={{ ml: 1 }}
+            >
+              Select
+            </Button>
+          </Box>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '400px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 1,
+            alignItems: 'center',
+            mt: 1,
+            p: 1,
+          }}>
+            <Typography variant="body2" color="GrayText">
+              Select a release sound...
+            </Typography>
+
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+              <Typography variant="body2" color="GrayText">
+                (optional)
+              </Typography>
+              <Button
+                startIcon={<FileOpenIcon />}
+                variant="outlined"
+                size="small"
+                sx={{ ml: 1 }}
+              >
+                Select
+              </Button>
+            </Box>
+          </Box>
           <Button
             fullWidth
             variant="contained"

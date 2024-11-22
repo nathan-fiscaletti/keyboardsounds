@@ -140,6 +140,7 @@ const keyboardNumPadEndOptions = {
 
 function Editor() {
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
+  const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
 
   return (
     <ThemeProvider theme={theme}>
@@ -166,6 +167,38 @@ function Editor() {
           <TextField label="Profile Name" size="small" sx={{ mb: 2 }} />
           <TextField label="Author" size="small" sx={{ mb: 2 }} />
           <TextField label="Description" size="small" multiline rows={5} />
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<SaveIcon />}
+            sx={{ mt: 3, }}
+          >
+            Save
+          </Button>
+        </Box>
+      </Dialog>
+
+      <Dialog open={manageSourcesOpen} fullWidth>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          p: 2,
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}>
+            <Typography variant="h6">Manage Sources</Typography>
+            <IconButton onClick={() => setManageSourcesOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <List>
+            
+          </List>
           <Button
             fullWidth
             variant="contained"
@@ -270,7 +303,7 @@ function Editor() {
             flexDirection: 'row',
             alignItems: 'center',
           }}>
-            <Button variant="outlined" sx={{ mr: 1 }} startIcon={<GraphicEqIcon />} color="info">
+            <Button variant="outlined" sx={{ mr: 1 }} startIcon={<GraphicEqIcon />} color="info" onClick={() => setManageSourcesOpen(true)}>
               Manage Sources
             </Button>
             <Button variant="outlined" startIcon={<SettingsIcon />} color="info" onClick={() => setProfileDetailsOpen(true)}>

@@ -336,6 +336,7 @@ const kbs = {
     registerKbsIpcHandler: function (ipcMain, shouldNotify=()=>false) {
         // Listen for incoming IPC messages.
         ipcMain.on('kbs', async (event, data) => {
+            console.log('ipcMain.on kbs');
             const { command, channelId } = data;
 
             const [commandName, ...commandArgs] = command.split(' ');
@@ -348,6 +349,12 @@ const kbs = {
                 } catch (err) {
                     event.reply(`kbs_execute_result_${channelId}`, err);
                 }
+            } else if (commandName == "reset_last_known") {
+                lastKnownStatus = null;
+                lastKnownGlobalAction = null;
+                lastKnownAppRules = null;
+                lastKnownProfiles = null;
+                lastKnownPerformNotify = null;
             } else {
                 // attempt to execute the command directly
                 this.exec(command).then((result) => {
@@ -362,17 +369,29 @@ const kbs = {
        let lastKnownGlobalAction = null;
        let lastKnownAppRules = null;
        let lastKnownProfiles = null;
+       let lastKnownPerformNotify = null;
+
+        const notify = (key, val) => {
+            console.log(`notify ${key} ${val}`);
+            BrowserWindow.getAllWindows().forEach(window => {
+                console.log(`window ${window.id}`);
+                window.webContents.send(key, val);
+            });
+        };
 
         setInterval(() => {
             // Watch the status and notify the renderer process when it changes
-            if (shouldNotify()) {
+            const performNotify = shouldNotify()
+            if (lastKnownPerformNotify !== performNotify) {
+                console.log('performNotify', performNotify);
+                lastKnownPerformNotify = performNotify;
+            }
+            if (performNotify) {
                 this.status().then((status) => {
                     const stringifiedStatus = JSON.stringify(status);
                     if (lastKnownStatus === null || stringifiedStatus !== lastKnownStatus) {
                         console.log('notifying status change');
-                        BrowserWindow.getAllWindows().forEach(window => {
-                            window.webContents.send('kbs-status', status);
-                        });
+                        notify('kbs-status', status);
                         // Update the last known status
                         lastKnownStatus = stringifiedStatus;
                     }
@@ -384,9 +403,7 @@ const kbs = {
                 this.getGlobalAction().then((action) => {
                     if (lastKnownGlobalAction === null || action !== lastKnownGlobalAction) {
                         console.log('notifying global action change');
-                        BrowserWindow.getAllWindows().forEach(window => {
-                            window.webContents.send('kbs-global-action', action);
-                        });
+                        notify('kbs-global-action', action);
                         // Update the last known global action
                         lastKnownGlobalAction = action;
                     }
@@ -399,9 +416,7 @@ const kbs = {
                     const stringifiedRules = JSON.stringify(rules)
                     if (lastKnownAppRules === null || stringifiedRules !== lastKnownAppRules) {
                         console.log('notifying app rules change');
-                        BrowserWindow.getAllWindows().forEach(window => {
-                            window.webContents.send('kbs-app-rules', rules);
-                        });
+                        notify('kbs-app-rules', rules);
                         // Update the last known app rules
                         lastKnownAppRules = stringifiedRules;
                     }
@@ -414,9 +429,7 @@ const kbs = {
                     const stringifiedProfiles = JSON.stringify(profiles);
                     if (lastKnownProfiles === null || stringifiedProfiles !== lastKnownProfiles) {
                         console.log('notifying profiles change');
-                        BrowserWindow.getAllWindows().forEach(window => {
-                            window.webContents.send('kbs-profiles', profiles);
-                        });
+                        notify('kbs-profiles', profiles);
                         // Update the last known profiles
                         lastKnownProfiles = stringifiedProfiles;
                     }

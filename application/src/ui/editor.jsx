@@ -25,6 +25,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FileOpenIcon from '@mui/icons-material/FileOpen';
 import WarningIcon from '@mui/icons-material/Warning';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 
 import Card from "@mui/material/Card";
 import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip, Paper, Checkbox, FormControlLabel } from "@mui/material";
@@ -88,10 +89,13 @@ const keyboardOptions = {
     "{altright}": "alt",
     "{metaleft}": "cmd",
     "{metaright}": "cmd"
-  }
+  },
+  buttonTheme: [],
 };
 
 const keyboardControlPadOptions = {
+  syncInstanceInputs: true,
+  mergeDisplay: true,
   layout: {
     default: [
       "{prtscr} {scrolllock} {pause}",
@@ -109,16 +113,23 @@ const keyboardControlPadOptions = {
     "{delete}": "del",
     "{end}": "end",
     "{pagedown}": "pgd"
-  }
+  },
+  buttonTheme: [],
 };
 
 const keyboardArrowsOptions = {
+  syncInstanceInputs: true,
+  mergeDisplay: true,
+  buttonTheme: [],
   layout: {
     default: ["{arrowup}", "{arrowleft} {arrowdown} {arrowright}"]
   }
 };
 
 const keyboardNumPadOptions = {
+  syncInstanceInputs: true,
+  mergeDisplay: true,
+  buttonTheme: [],
   layout: {
     default: [
       "{numlock} {numpaddivide} {numpadmultiply}",
@@ -131,6 +142,9 @@ const keyboardNumPadOptions = {
 };
 
 const keyboardNumPadEndOptions = {
+  syncInstanceInputs: true,
+  mergeDisplay: true,
+  buttonTheme: [],
   layout: {
     default: ["{numpadsubtract}", "{numpadadd}", "{numpadenter}"]
   },
@@ -209,6 +223,70 @@ function Editor() {
   const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+
+  const [keyboardOptionsFinal, setKeyboardOptionsFinal] = useState(keyboardOptions);
+  const [keyboardControlPadOptionsFinal, setKeyboardControlPadOptionsFinal] = useState(keyboardControlPadOptions);
+  const [keyboardArrowsOptionsFinal, setKeyboardArrowsOptionsFinal] = useState(keyboardArrowsOptions);
+  const [keyboardNumPadOptionsFinal, setKeyboardNumPadOptionsFinal] = useState(keyboardNumPadOptions);
+  const [keyboardNumPadEndOptionsFinal, setKeyboardNumPadEndOptionsFinal] = useState(keyboardNumPadEndOptions);
+
+  const [selectedKeys, setSelectedKeys] = useState([]);
+
+  const toggleKeySelected = (key) => {
+    if (selectedKeys.includes(key)) {
+      setSelectedKeys(selectedKeys.filter(k => k !== key));
+    } else {
+      setSelectedKeys([...selectedKeys, key]);
+    }
+  };
+
+  const clearSelectedKeys = () => {
+    setSelectedKeys([]);
+  };
+
+  useEffect(() => {
+    console.log(selectedKeys);
+
+    const themes = {};
+
+    if(selectedKeys.length > 0) {
+      themes.buttonTheme = [
+        {
+          class: "keySelected",
+          buttons: selectedKeys.join(" "),
+        }
+      ];
+    }
+
+    setKeyboardOptionsFinal({
+      ...keyboardOptions,
+      ...themes,
+    });
+
+    setKeyboardControlPadOptionsFinal({
+      ...keyboardControlPadOptions,
+      ...themes,
+    });
+
+    setKeyboardArrowsOptionsFinal({
+      ...keyboardArrowsOptions,
+      ...themes,
+    });
+
+    setKeyboardNumPadOptionsFinal({
+      ...keyboardNumPadOptions,
+      ...themes,
+    });
+
+    setKeyboardNumPadEndOptionsFinal({
+      ...keyboardNumPadEndOptions,
+      ...themes,
+    });
+  }, [selectedKeys]);
+
+  const onKeyPress = (key) => {
+    toggleKeySelected(key);
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -510,16 +588,17 @@ function Editor() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 backgroundColor: 'background.default',
-                px: 1.5,
+                pl: 1.5,
+                pr: 1,
                 py: 0.5,
-                borderRadius: 4,
+                borderRadius: 3,
               }}>
                 <Typography variant="body1" sx={{ mr: 1, color: '#388e3c', fontWeight: 'bold' }}>
                   MX Brown*
                 </Typography>
                 <Tooltip placement="bottom-start" title="Edit profile name" arrow>
                   <IconButton size="small" onClick={() => setProfileDetailsOpen(true)}>
-                    <EditIcon />
+                    <EditNoteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -535,7 +614,7 @@ function Editor() {
               <Tooltip placement="bottom-start" title="Unsaved Changes" arrow>
                 <WarningIcon color="warning" sx={{ mr: 1 }} />
               </Tooltip>
-              <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 1 }} />
+              <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 1 }} variant="middle" />
               <Tooltip placement="bottom-start" title="View Profile YAML" arrow>
                 <IconButton onClick={() => {}}>
                   <CodeIcon />
@@ -546,7 +625,7 @@ function Editor() {
                   <HelpIcon />
                 </IconButton>
               </Tooltip>
-              <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 2 }} />
+              <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 2 }} variant="middle" />
               <Button
                 variant="contained"
                 size="small"
@@ -578,7 +657,6 @@ function Editor() {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            px: 1,
             mb: 1,
             width: '100%',
             maxWidth: '1120px',
@@ -596,10 +674,17 @@ function Editor() {
               <Button variant="outlined" startIcon={<CheckCircleIcon />}>
                 Apply
               </Button>
-              <Divider orientation="vertical" flexItem sx={{ ml: 2, mr: 2 }} variant="middle" />
-              <Button variant="text" color="warning">
-                Clear Selection
-              </Button>
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                visibility: selectedKeys.length > 0 ? 'visible' : 'hidden',
+              }}>
+                <Divider orientation="vertical" flexItem sx={{ ml: 2, mr: 2 }} variant="middle" />
+                <Button variant="text" color="warning" onClick={() => clearSelectedKeys()}>
+                  Clear Selection
+                </Button>
+              </Box>
             </Box>
             <Box sx={{
               display: 'flex',
@@ -614,35 +699,40 @@ function Editor() {
               </Button>
             </Box>
           </Box>
-          <Divider sx={{ mt: 1, mb: 2, ml: 1, mr: 1 }} flexItem />
+          <Divider sx={{ mt: 1, mb: 2 }} flexItem />
           <div className={"keyboardContainer"}>
             <Keyboard 
+            onKeyPress={onKeyPress}
             baseClass={"simple-keyboard-main"}
-              {...keyboardOptions} 
+              {...keyboardOptionsFinal} 
               theme={"hg-theme-default myTheme1"} 
             />
             <div className="controlArrows">
               <Keyboard
+                {...keyboardControlPadOptionsFinal}
+                onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-control"}
                 theme={"hg-theme-default myTheme1"}
-                {...keyboardControlPadOptions}
               />
               <Keyboard
+                {...keyboardArrowsOptionsFinal}
+                onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-arrows"}
                 theme={"hg-theme-default myTheme1"}
-                {...keyboardArrowsOptions}
               />
             </div>
             <div className="numPad">
               <Keyboard
+                {...keyboardNumPadOptionsFinal}
+                onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-numpad"}
                 theme={"hg-theme-default myTheme1"}
-                {...keyboardNumPadOptions}
               />
               <Keyboard
+                {...keyboardNumPadEndOptionsFinal}
+                onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-numpadEnd"}
                 theme={"hg-theme-default myTheme1"}
-                {...keyboardNumPadEndOptions}
               />
             </div>
           </div>

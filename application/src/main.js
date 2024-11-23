@@ -58,6 +58,7 @@ const toggleWindow = () => {
       frame: true,
       show: true,
       resizable: true,
+      minimizable: true,
     };
   }
 

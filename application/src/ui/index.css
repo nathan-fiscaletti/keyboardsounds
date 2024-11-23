@@ -1,6 +1,10 @@
 body {}
 
 
+.keySelected {
+    background: #388e3c !important;
+}
+
 /*
   Keyboard Theme
 */

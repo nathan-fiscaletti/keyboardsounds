@@ -411,7 +411,7 @@ const kbs = {
                     console.error('Failed to fetch global action:', err);
                 });
 
-                // Watch the profiles and notify the renderer process when they change
+                // Watch the rules and notify the renderer process when they change
                 this.rules().then((rules) => {
                     const stringifiedRules = JSON.stringify(rules)
                     if (lastKnownAppRules === null || stringifiedRules !== lastKnownAppRules) {

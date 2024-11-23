@@ -8,13 +8,13 @@ setup(
     author_email="nate.fiscaletti@gmail.com",
     packages=["keyboardsounds"],
     install_requires=[
-        "pygame==2.5.2",
-        "pynput==1.7.6",
-        "psutil==5.9.4",
-        "imageio-ffmpeg==0.4.6",
-        "pyyaml==6.0.1",
-        "setuptools==70.0.0",
-        "requests==2.32.2",
+        "pygame==2.6.1",
+        "pynput==1.7.7",
+        "psutil==6.1.0",
+        "imageio-ffmpeg==0.5.1",
+        "pyyaml==6.0.2",
+        "setuptools==75.6.0",
+        "requests==2.32.3",
     ],
     package_data={
         "keyboardsounds": [

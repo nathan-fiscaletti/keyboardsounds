@@ -26,6 +26,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FileOpenIcon from '@mui/icons-material/FileOpen';
 import WarningIcon from '@mui/icons-material/Warning';
 import EditNoteIcon from '@mui/icons-material/EditNote';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { execute } from './execute';
 
@@ -243,6 +244,58 @@ function SourceListItem({ name, press, release, isDefault }) {
   )
 }
 
+function AssignedSourceListItem({ name, press, release, isDefault, onDelete }) {
+  const secondaryText = (press && release) ? `${press}, ${release}` : `${press}` || `${release}`;
+
+  const typeVariant = press && release ? "filled" : "outlined";
+  const typeLabel = press && release ? "Press & Release" : "Press Only";
+  const typeDescription = press && release ? "Distinct press and release sounds" : "Single press sound";
+
+  return (
+    <ListItem
+      disableGutters
+      secondaryAction={
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <Tooltip title={typeDescription} placement="top" arrow>
+            <Chip sx={{ mr: 1 }} size="small" label={typeLabel} variant={typeVariant} color="primary" />
+          </Tooltip>
+
+          <Tooltip title="Remove Source" placement="top" arrow>
+            <IconButton color="primary" sx={{ mr: 1 }} onClick={() => onDelete()}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      }
+      sx={{
+        borderRadius: 1,
+        mb: 1,
+        bgcolor: "background.default",
+        pl: 2,
+      }}
+    >
+      <ListItemText
+        primary={(
+          <Typography variant="body1">
+            {name} {isDefault && <Typography variant="caption" color="text.secondary">(default)</Typography>}
+          </Typography>
+        )}
+        secondary={secondaryText}
+        secondaryTypographyProps={{
+          noWrap: true,
+          variant: "caption",
+          style: {
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            maxWidth: 'calc(100vw - 275px)',
+          }
+        }}
+      />
+    </ListItem>
+  )
+}
+
 function Editor() {
   const [assignedSourceKey, setAssignedSourceKey] = useState(null);
   const [editAssignedSourcesOpen, setEditAssignedSourcesOpen] = useState(false);
@@ -324,6 +377,10 @@ function Editor() {
     setKeyConfigs([...keyConfigs, ...newBatch]);
     setSelectedKeys([]);
   };
+
+  useEffect(() => {
+    updateKeyboardConfigs();
+  }, [keyConfigs]);
 
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
   const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
@@ -444,10 +501,39 @@ function Editor() {
             alignItems: 'center',
             mb: 2,
           }}>
-            <Typography variant="h6">Assigned Sources {assignedSourceKey}</Typography>
+            <Typography variant="h6">Assigned Sources</Typography>
             <IconButton onClick={() => setEditAssignedSourcesOpen(false)}>
               <CloseIcon />
             </IconButton>
+          </Box>
+
+          <Box sx={{ 
+            overflow: 'auto',
+            maxHeight: 'calc(100vh - 200px)',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': {
+              display: 'none',
+            },
+          }}>
+            {/* Make the list have a max height */}
+            <List>
+              {keyConfigs.filter(cfg => cfg.key == assignedSourceKey).map(cfg => {return {cfg, source: sources[cfg.source]}}).map(({cfg, source}) =>
+                <AssignedSourceListItem
+                  key={source.name}
+                  name={source.name}
+                  press={source.pressSound.replace(/\\/g, "/").split("/").pop()}
+                  release={source.pressSound && source.releaseSound ? source.releaseSound.replace(/\\/g, "/").split("/").pop() : null}
+                  isDefault={source.isDefault}
+                  onDelete={() => {
+                    const shouldClose = keyConfigs.filter(kc => kc.key == assignedSourceKey).length == 1;
+                    setKeyConfigs(keyConfigs.filter(kc => kc.key != assignedSourceKey || kc.source != cfg.source));
+                    if (shouldClose) {
+                      setEditAssignedSourcesOpen(false);
+                    }
+                  }
+                } />
+              )}
+            </List>
           </Box>
         </Box>
       </Dialog>

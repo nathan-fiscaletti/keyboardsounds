@@ -135,12 +135,17 @@ const createEditorWindow = () => {
   // Create the browser window.
   const editorWindow = new BrowserWindow({
     width: 1200,
-    height: 616,
+    height: process.env.NODE_ENV === 'development' ? 616 : 600,
     title: "Keyboard Sounds - Profile Editor",
+    backgroundColor: '#121212',
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   });
+
+  if (process.env.NODE_ENV !== 'development') {
+    editorWindow.setMenuBarVisibility(false);
+  }
 
   editorWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY + "?editor=true");
 

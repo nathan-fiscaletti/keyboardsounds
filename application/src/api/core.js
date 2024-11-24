@@ -340,9 +340,6 @@ const kbs = {
             this.editorWindow.on('closed', () => {
                 this.editorWindow = null;
             });
-
-            // Open developer tools
-            this.editorWindow.webContents.openDevTools();
         }
         this.editorWindow.show();
         this.editorWindow.focus();

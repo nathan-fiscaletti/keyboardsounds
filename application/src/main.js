@@ -134,8 +134,8 @@ const toggleWindow = () => {
 const createEditorWindow = () => {
   // Create the browser window.
   const editorWindow = new BrowserWindow({
-    width: 1300,
-    height: 800,
+    width: 1200,
+    height: 616,
     title: "Keyboard Sounds - Profile Editor",
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,

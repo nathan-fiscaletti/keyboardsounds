@@ -226,67 +226,72 @@ function Editor() {
     setEditAssignedSourcesOpen(true);
   };
 
+  const [profileName, setProfileName] = useState("new-profile");
+  const [sources, setSources] = useState([]);
+  const [selectedSource, setSelectedSource] = useState(0);
+
   const keyboardRef = useRef(null);
 
   const [keyConfigs, setKeyConfigs] = useState([
     // { key: 'a', source: 'source1', },
   ]);
 
-const updateKeyboardConfigs = () => {
-  const countsPerKey = Object.values(
-    keyConfigs.reduce((acc, { key }) => {
-        if (!acc[key]) {
-            acc[key] = { key, count: 0 };
+  const updateKeyboardConfigs = () => {
+    console.log('keyConfigs', keyConfigs);
+    const countsPerKey = Object.values(
+      keyConfigs.reduce((acc, { key }) => {
+          if (!acc[key]) {
+              acc[key] = { key, count: 0 };
+          }
+          acc[key].count += 1;
+          return acc;
+      }, {})
+    );
+    console.log('countsPerKey', countsPerKey);
+
+    const allKeys = keyboardRef.current.querySelectorAll(".hg-button");
+    for (const key of allKeys) {
+      const badge = key.querySelector(".badge");
+
+      const k = key.getAttribute("data-skbtn");
+      
+      const [ keyCount ] = countsPerKey.filter(kc => kc.key === k);
+
+      if (keyCount === undefined) {
+        if (badge) {
+          badge.remove();
         }
-        acc[key].count += 1;
-        return acc;
-    }, {})
-  );
-  console.log('countsPerKey', countsPerKey);
-
-  const allKeys = keyboardRef.current.querySelectorAll(".hg-button");
-  for (const key of allKeys) {
-    const badge = key.querySelector(".badge");
-
-    const k = key.getAttribute("data-skbtn");
-    
-    const [ keyCount ] = countsPerKey.filter(kc => kc.key === k);
-
-    if (keyCount === undefined) {
-      if (badge) {
-        badge.remove();
+        key.style.position = 'initial';
+        key.classList.remove('keyAssigned');
+        continue;
       }
-      key.style.position = 'initial';
-      key.classList.remove('keyAssigned');
-      continue;
-    }
 
-    key.style.position = 'relative';
-    key.classList.add('keyAssigned');
+      key.style.position = 'relative';
+      key.classList.add('keyAssigned');
 
-    const count = keyCount.count;
-    if (count > 0) {
-      if (!badge) {
-        // Add a badge to the key
-        const badge = document.createElement("div");
-        badge.classList.add("badge");
-        badge.innerText = count;
-        key.appendChild(badge);
-        badge.addEventListener("pointerdown", function(e) {
-          e.stopImmediatePropagation();
-          showEditAssignedSources(key.getAttribute("data-skbtn"));
-        });
-      } else {
-        badge.innerText = count;
+      const count = keyCount.count;
+      if (count > 0) {
+        if (!badge) {
+          // Add a badge to the key
+          const badge = document.createElement("div");
+          badge.classList.add("badge");
+          badge.innerText = count;
+          key.appendChild(badge);
+          badge.addEventListener("pointerdown", function(e) {
+            e.stopImmediatePropagation();
+            showEditAssignedSources(key.getAttribute("data-skbtn"));
+          });
+        } else {
+          badge.innerText = count;
+        }
       }
-    }
+    };
   };
-};
 
-  const addKeyConfig = () => {
+  const addKeyConfig = (sourceIdx) => {
     const newBatch = [];
     for(const key of selectedKeys) {
-      newBatch.push({ key, source: 'source1' });
+      newBatch.push({ key, source: sourceIdx });
     }
     setKeyConfigs([...keyConfigs, ...newBatch]);
     setSelectedKeys([]);
@@ -304,6 +309,8 @@ const updateKeyboardConfigs = () => {
   const [keyboardNumPadEndOptionsFinal, setKeyboardNumPadEndOptionsFinal] = useState(keyboardNumPadEndOptions);
 
   const [selectedKeys, setSelectedKeys] = useState([]);
+
+  const [editProfileName, setEditProfileName] = useState(profileName);
 
   const toggleKeySelected = (key) => {
     if (selectedKeys.includes(key)) {
@@ -404,7 +411,7 @@ const updateKeyboardConfigs = () => {
               <CloseIcon />
             </IconButton>
           </Box>
-          <TextField label="Profile Name" size="small" sx={{ mb: 2 }} />
+          <TextField label="Profile Name" size="small" sx={{ mb: 2 }} value={editProfileName} onChange={(e) => setEditProfileName(e.target.value)} />
           <TextField label="Author" size="small" sx={{ mb: 2 }} />
           <TextField label="Description" size="small" multiline rows={5} />
           <Button
@@ -412,6 +419,15 @@ const updateKeyboardConfigs = () => {
             variant="contained"
             startIcon={<SaveIcon />}
             sx={{ mt: 3, }}
+            disabled={!(() => {
+              // make sure profile name only contains alphanumeric characters, dashes, underscores and no spaces.
+              const regex = /^[a-zA-Z0-9-_]+$/;
+              return regex.test(editProfileName);
+            })()}
+            onClick={() => {
+              setProfileName(editProfileName)
+              setProfileDetailsOpen(false);
+            }}
           >
             Save
           </Button>
@@ -458,16 +474,16 @@ const updateKeyboardConfigs = () => {
           }}>
             {/* Make the list have a max height */}
             <List>
-              {([...Array(20)].map((_, i) => {
-                const name = `source${i}`;
+              {(sources.map(source => {
+                const name = source.name;
 
                 const isPressAndRelease = Math.random() > 0.5;
-                const press = `press${i}.mp3`;
-                const release = isPressAndRelease ? `release${i}.mp3` : null;
+                const press = `press.mp3`;
+                const release = isPressAndRelease ? `release.mp3` : null;
                 const isDefault = Math.random() > 0.5;
 
                 return (
-                  <SourceListItem key={i} name={name} press={press} release={release} isDefault={isDefault} />
+                  <SourceListItem key={source.name} name={name} press={press} release={release} isDefault={isDefault} />
                 )
               }))}
             </List>
@@ -475,106 +491,10 @@ const updateKeyboardConfigs = () => {
         </Box>
       </Dialog>
 
-      <Dialog open={addSourceOpen}>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          p: 2,
-        }}>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2,
-          }}>
-            <Typography variant="h6">Add Source</Typography>
-            <IconButton onClick={() => setAddSourceOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          <TextField placeholder="Name" size="small" />
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: '100%',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 1,
-            alignItems: 'center',
-            mt: 1,
-            p: 1,
-          }}>
-            <Typography variant="body2" color="GrayText">
-              Select a press sound...
-            </Typography>
-
-            <Button
-              startIcon={<FileOpenIcon />}
-              variant="outlined"
-              size="small"
-              sx={{ ml: 1 }}
-            >
-              Select
-            </Button>
-          </Box>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: '400px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 1,
-            alignItems: 'center',
-            mt: 1,
-            p: 1,
-          }}>
-            <Typography variant="body2" color="GrayText">
-              Select a release sound...
-            </Typography>
-
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-              <Typography variant="body2" color="GrayText">
-                (optional)
-              </Typography>
-              <Button
-                startIcon={<FileOpenIcon />}
-                variant="outlined"
-                size="small"
-                sx={{ ml: 1 }}
-              >
-                Select
-              </Button>
-            </Box>
-          </Box>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            mt: 1,
-            alignItems: 'center',
-          }}>
-            <Tooltip title="This source will be included in the default sources used for keys that do not have a specific source set." placement="top" arrow followCursor>
-              <Typography variant="body">
-                Add to default sources
-              </Typography>
-            </Tooltip>
-            <Checkbox defaultChecked />
-          </Box>
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<SaveIcon />}
-            sx={{ mt: 3, }}
-          >
-            Save
-          </Button>
-        </Box>
-      </Dialog>
+      <AddSourceDialog open={addSourceOpen} onSourceAdded={(source) => {
+        setSources([...sources, source]);
+        setAddSourceOpen(false);
+      }} />
 
       <Dialog open={helpOpen}>
         <Box sx={{
@@ -688,10 +608,13 @@ const updateKeyboardConfigs = () => {
                 borderRadius: 3,
               }}>
                 <Typography variant="body1" sx={{ mr: 1, color: '#388e3c', fontWeight: 'bold' }}>
-                  MX Brown*
+                  {profileName}*
                 </Typography>
                 <Tooltip placement="bottom-start" title="Edit profile name" arrow>
-                  <IconButton size="small" onClick={() => setProfileDetailsOpen(true)}>
+                  <IconButton size="small" onClick={() => {
+                    setEditProfileName(profileName);
+                    setProfileDetailsOpen(true)
+                  }}>
                     <EditNoteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
@@ -760,12 +683,12 @@ const updateKeyboardConfigs = () => {
               flexDirection: 'row',
               alignItems: 'center',
             }}>
-              <Select size="small" sx={{ mr: 1 }} value="1">
-                <MenuItem value="1" selected>Audio Source 1</MenuItem>
-                <MenuItem value="2">Audio Source 2</MenuItem>
-                <MenuItem value="3">Audio Source 3</MenuItem>
+              <Select size="small" sx={{ mr: 1 }} value={selectedSource} onChange={e => setSelectedSource(e.target.value)} disabled={selectedKeys.length === 0}>
+                {sources.map((source, idx) => (
+                  <MenuItem value={idx} selected={selectedSource === idx}>{source.name}</MenuItem>
+                ))}
               </Select>
-              <Button variant="outlined" startIcon={<CheckCircleIcon />} onClick={() => addKeyConfig()}>
+              <Button variant="outlined" startIcon={<CheckCircleIcon />} onClick={() => addKeyConfig(selectedSource)} disabled={selectedKeys.length === 0}>
                 Apply
               </Button>
               <Box sx={{
@@ -788,7 +711,10 @@ const updateKeyboardConfigs = () => {
               <Button variant="outlined" sx={{ mr: 1 }} startIcon={<GraphicEqIcon />} color="info" onClick={() => setManageSourcesOpen(true)}>
                 Manage Sources
               </Button>
-              <Button variant="outlined" startIcon={<SettingsIcon />} color="info" onClick={() => setProfileDetailsOpen(true)}>
+              <Button variant="outlined" startIcon={<SettingsIcon />} color="info" onClick={() => {
+                setEditProfileName(profileName);
+                setProfileDetailsOpen(true)
+              }}>
                 Profile Details
               </Button>
             </Box>
@@ -840,6 +766,117 @@ const updateKeyboardConfigs = () => {
       </Box>
     </ThemeProvider>
   );
+}
+
+function AddSourceDialog({ open, onSourceAdded }) {
+  const [name, setName] = useState("");
+
+  return (
+    <Dialog open={open}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}>
+          <Typography variant="h6">Add Source</Typography>
+          <IconButton onClick={() => setAddSourceOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <TextField placeholder="Name" size="small" value={name} onChange={(e) => setName(e.target.value)} />
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          width: '100%',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 1,
+          alignItems: 'center',
+          mt: 1,
+          p: 1,
+        }}>
+          <Typography variant="body2" color="GrayText">
+            Select a press sound...
+          </Typography>
+
+          <Button
+            startIcon={<FileOpenIcon />}
+            variant="outlined"
+            size="small"
+            sx={{ ml: 1 }}
+          >
+            Select
+          </Button>
+        </Box>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          width: '400px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 1,
+          alignItems: 'center',
+          mt: 1,
+          p: 1,
+        }}>
+          <Typography variant="body2" color="GrayText">
+            Select a release sound...
+          </Typography>
+
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <Typography variant="body2" color="GrayText">
+              (optional)
+            </Typography>
+            <Button
+              startIcon={<FileOpenIcon />}
+              variant="outlined"
+              size="small"
+              sx={{ ml: 1 }}
+            >
+              Select
+            </Button>
+          </Box>
+        </Box>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          mt: 1,
+          alignItems: 'center',
+        }}>
+          <Tooltip title="This source will be included in the default sources used for keys that do not have a specific source set." placement="top" arrow followCursor>
+            <Typography variant="body">
+              Add to default sources
+            </Typography>
+          </Tooltip>
+          <Checkbox defaultChecked />
+        </Box>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<SaveIcon />}
+          sx={{ mt: 3, }}
+          onClick={() => {
+            onSourceAdded({name});
+            setName("");
+          }}
+        >
+          Save
+        </Button>
+      </Box>
+    </Dialog>
+  )
 }
 
 export default Editor;

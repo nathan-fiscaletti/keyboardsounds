@@ -35,6 +35,28 @@ import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 
+import { CopyBlock, solarizedDark } from 'react-code-blocks';
+
+const sampleYaml = `profile:
+  name: Example
+  author: Your Name
+  description: Describe your profile
+
+sources:
+  - id: key1
+    source: sound1.wav
+  - id: key2
+    source:
+      press: sound2.wav
+      release: sound3.wav
+
+keys:
+  default: [ key1, key2 ]
+
+  other:
+    - sound: key1
+      keys: [ backspace, delete ]`;
+
 // Create the initial theme for the application.
 const theme = createTheme({
   palette: {
@@ -230,6 +252,8 @@ function Editor() {
     setEditAssignedSourcesOpen(true);
   };
 
+  const [viewYamlOpen, setViewYamlOpen] = useState(false);
+
   const [profileName, setProfileName] = useState("new-profile");
   const [sources, setSources] = useState([]);
   const [selectedSource, setSelectedSource] = useState(0);
@@ -375,6 +399,37 @@ function Editor() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
+
+      <Dialog open={viewYamlOpen} fullWidth>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          p: 2,
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}>
+            <Typography variant="h6">View Profile YAML</Typography>
+            <IconButton onClick={() => setViewYamlOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          <CopyBlock
+            text={sampleYaml}
+            language={"yaml"}
+            showLineNumbers={false}
+            customStyle={{
+              padding: '16px',
+            }}
+            theme={{...solarizedDark, backgroundColor: '#121212'}}
+          />
+        </Box>
+      </Dialog>
 
       <Dialog open={editAssignedSourcesOpen} fullWidth>
         <Box sx={{
@@ -582,7 +637,7 @@ function Editor() {
               </Tooltip>
               <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 1 }} variant="middle" />
               <Tooltip placement="bottom-start" title="View Profile YAML" arrow>
-                <IconButton onClick={() => {}}>
+                <IconButton onClick={() => setViewYamlOpen(true)}>
                   <CodeIcon />
                 </IconButton>
               </Tooltip>

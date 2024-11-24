@@ -10,8 +10,8 @@ body {}
 
 .badge {
     position: absolute;
-    right: -2px;
-    top: -2px;
+    right: -5px;
+    top: -5px;
     background: #4caf50;
     color: white;
     padding: 2px 5px;

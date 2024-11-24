@@ -77,6 +77,7 @@ const keyboardOptions = {
     "{f12}": "f12",
     "{escape}": "esc",
     "{tab}": "tab",
+    "{space}": "space",
     "{backspace}": "backspace",
     "{enter}": "enter",
     "{backslash}": "\\",

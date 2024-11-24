@@ -2,7 +2,7 @@ import "./index.css";
 
 import React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -28,7 +28,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 
 import Card from "@mui/material/Card";
-import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip, Paper, Checkbox, FormControlLabel } from "@mui/material";
+import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip, Paper, Checkbox } from "@mui/material";
 
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
@@ -219,6 +219,78 @@ function SourceListItem({ name, press, release, isDefault }) {
 }
 
 function Editor() {
+  const [editAssignedSourcesOpen, setEditAssignedSourcesOpen] = useState(false);
+
+  const showEditAssignedSources = (key) => {
+    setEditAssignedSourcesOpen(true);
+  };
+
+  const keyboardRef = useRef(null);
+
+  const [keyConfigs, setKeyConfigs] = useState([
+    // { key: 'a', source: 'source1', },
+  ]);
+
+const updateKeyboardConfigs = () => {
+  const countsPerKey = Object.values(
+    keyConfigs.reduce((acc, { key }) => {
+        if (!acc[key]) {
+            acc[key] = { key, count: 0 };
+        }
+        acc[key].count += 1;
+        return acc;
+    }, {})
+  );
+  console.log('countsPerKey', countsPerKey);
+
+  const allKeys = keyboardRef.current.querySelectorAll(".hg-button");
+  for (const key of allKeys) {
+    const badge = key.querySelector(".badge");
+
+    const k = key.getAttribute("data-skbtn");
+    
+    const [ keyCount ] = countsPerKey.filter(kc => kc.key === k);
+
+    if (keyCount === undefined) {
+      if (badge) {
+        badge.remove();
+      }
+      key.style.position = 'initial';
+      key.classList.remove('keyAssigned');
+      continue;
+    }
+
+    key.style.position = 'relative';
+    key.classList.add('keyAssigned');
+
+    const count = keyCount.count;
+    if (count > 0) {
+      if (!badge) {
+        // Add a badge to the key
+        const badge = document.createElement("div");
+        badge.classList.add("badge");
+        badge.innerText = count;
+        key.appendChild(badge);
+        badge.addEventListener("pointerdown", function(e) {
+          e.stopImmediatePropagation();
+          showEditAssignedSources(key.getAttribute("data-skbtn"));
+        });
+      } else {
+        badge.innerText = count;
+      }
+    }
+  };
+};
+
+  const addKeyConfig = () => {
+    const newBatch = [];
+    for(const key of selectedKeys) {
+      newBatch.push({ key, source: 'source1' });
+    }
+    setKeyConfigs([...keyConfigs, ...newBatch]);
+    setSelectedKeys([]);
+  };
+
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
   const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
@@ -245,17 +317,17 @@ function Editor() {
   };
 
   useEffect(() => {
-    console.log(selectedKeys);
-
-    const themes = {};
+    console.log('selectedKeys', selectedKeys);
+    
+    const themes = {
+      buttonTheme: [],
+    };
 
     if(selectedKeys.length > 0) {
-      themes.buttonTheme = [
-        {
-          class: "keySelected",
-          buttons: selectedKeys.join(" "),
-        }
-      ];
+      themes.buttonTheme.push({
+        class: "keySelected",
+        buttons: selectedKeys.join(" "),
+      });
     }
 
     setKeyboardOptionsFinal({
@@ -291,6 +363,27 @@ function Editor() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
+
+      <Dialog open={editAssignedSourcesOpen} fullWidth>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          p: 2,
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}>
+            <Typography variant="h6">Assigned Sources</Typography>
+            <IconButton onClick={() => setEditAssignedSourcesOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Dialog>
 
       <Dialog open={profileDetailsOpen} fullWidth>
         <Box sx={{
@@ -671,7 +764,7 @@ function Editor() {
                 <MenuItem value="2">Audio Source 2</MenuItem>
                 <MenuItem value="3">Audio Source 3</MenuItem>
               </Select>
-              <Button variant="outlined" startIcon={<CheckCircleIcon />}>
+              <Button variant="outlined" startIcon={<CheckCircleIcon />} onClick={() => addKeyConfig()}>
                 Apply
               </Button>
               <Box sx={{
@@ -700,21 +793,25 @@ function Editor() {
             </Box>
           </Box>
           <Divider sx={{ mt: 1, mb: 2 }} flexItem />
-          <div className={"keyboardContainer"}>
+
+          <div ref={keyboardRef} className={"keyboardContainer"}>
             <Keyboard 
+            onRender={() => updateKeyboardConfigs()}
             onKeyPress={onKeyPress}
             baseClass={"simple-keyboard-main"}
-              {...keyboardOptionsFinal} 
-              theme={"hg-theme-default myTheme1"} 
+            {...keyboardOptionsFinal} 
+            theme={"hg-theme-default myTheme1"} 
             />
             <div className="controlArrows">
               <Keyboard
+                onRender={() => updateKeyboardConfigs()}
                 {...keyboardControlPadOptionsFinal}
                 onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-control"}
                 theme={"hg-theme-default myTheme1"}
               />
               <Keyboard
+                onRender={() => updateKeyboardConfigs()}
                 {...keyboardArrowsOptionsFinal}
                 onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-arrows"}
@@ -723,12 +820,14 @@ function Editor() {
             </div>
             <div className="numPad">
               <Keyboard
+                onRender={() => updateKeyboardConfigs()}
                 {...keyboardNumPadOptionsFinal}
                 onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-numpad"}
                 theme={"hg-theme-default myTheme1"}
               />
               <Keyboard
+                onRender={() => updateKeyboardConfigs()}
                 {...keyboardNumPadEndOptionsFinal}
                 onKeyPress={onKeyPress}
                 baseClass={"simple-keyboard-numpadEnd"}

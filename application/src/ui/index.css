@@ -1,8 +1,28 @@
 body {}
 
+.keyAssigned {
+    border: 1px solid #388e3c !important;
+}
 
 .keySelected {
     background: #388e3c !important;
+}
+
+.badge {
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    background: #388e3c;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 2px;
+    transition: scale 0.2s;
+    pointer-events: auto !important;
+    z-index: 50;
+}
+
+.badge:hover {
+    scale: 1.25;
 }
 
 /*
@@ -160,6 +180,7 @@ body {}
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
     padding: 0px;
+    overflow: visible !important;
 }
 
 .simple-keyboard.myTheme1 .hg-button {

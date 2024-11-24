@@ -8,4 +8,8 @@ module.exports = {
   module: {
     rules: require('./webpack.rules'),
   },
+  cache: {
+      type: 'filesystem', // Cache builds to disk
+  },
+  devtool: process.env.NODE_ENV === 'development' ? 'cheap-module-source-map' : 'source-map',
 };

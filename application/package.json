@@ -31,7 +31,7 @@
     }
   },
   "scripts": {
-    "start": "electron-forge start",
+    "start": "cross-env NODE_ENV=development electron-forge start",
     "package": "electron-forge package",
     "make-installer:win": "electron-builder -w \"-c.extraMetadata.main=.webpack\\x64\\main\\index.js\"",
     "lint": "echo \"No linting configured\""

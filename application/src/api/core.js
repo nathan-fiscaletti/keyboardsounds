@@ -151,6 +151,21 @@ const kbs = {
         this.mainWindow.focus();
     },
 
+    selectAudioFile: async function() {
+        const res = await dialog.showOpenDialog(this.mainWindow, {
+            properties: ['openFile'],
+            filters: [
+                { name: 'Audio File', extensions: ['wav', 'mp3'] }
+            ]
+        });
+
+        this.editorWindow.focus();
+        if (!res.canceled) {
+            return res.filePaths[0];
+        }
+        return "";
+    },
+
     selectExecutableFile: async function() {
         if (this.openFileDialogIsOpen) {
             return;

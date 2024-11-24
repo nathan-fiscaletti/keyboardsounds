@@ -27,6 +27,8 @@ import FileOpenIcon from '@mui/icons-material/FileOpen';
 import WarningIcon from '@mui/icons-material/Warning';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 
+import { execute } from './execute';
+
 import Card from "@mui/material/Card";
 import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip, Paper, Checkbox } from "@mui/material";
 
@@ -220,9 +222,11 @@ function SourceListItem({ name, press, release, isDefault }) {
 }
 
 function Editor() {
+  const [assignedSourceKey, setAssignedSourceKey] = useState(null);
   const [editAssignedSourcesOpen, setEditAssignedSourcesOpen] = useState(false);
 
   const showEditAssignedSources = (key) => {
+    setAssignedSourceKey(key);
     setEditAssignedSourcesOpen(true);
   };
 
@@ -385,7 +389,7 @@ function Editor() {
             alignItems: 'center',
             mb: 2,
           }}>
-            <Typography variant="h6">Assigned Sources</Typography>
+            <Typography variant="h6">Assigned Sources {assignedSourceKey}</Typography>
             <IconButton onClick={() => setEditAssignedSourcesOpen(false)}>
               <CloseIcon />
             </IconButton>
@@ -434,64 +438,9 @@ function Editor() {
         </Box>
       </Dialog>
 
-      <Dialog open={manageSourcesOpen} fullWidth>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          p: 2,
-        }}>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2,
-          }}>
-            <Typography variant="h6">Manage Sources</Typography>
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-              <Button variant="outlined" size="small" startIcon={<AddIcon />} sx={{ mr: 1 }} onClick={() => setAddSourceOpen(true)}>
-                Add Source
-              </Button>
-              <IconButton onClick={() => setManageSourcesOpen(false)}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-          </Box>
-          <TextField label="Search" size="small" sx={{ mb: 1 }} InputProps={{
-            endAdornment: <InputAdornment position="end"><SearchIcon /></InputAdornment>,
-          }} />
-          <Box sx={{ 
-            overflow: 'auto',
-            maxHeight: 'calc(100vh - 200px)',
-            scrollbarWidth: 'none',
-            '&::-webkit-scrollbar': {
-              display: 'none',
-            },
-          }}>
-            {/* Make the list have a max height */}
-            <List>
-              {(sources.map(source => {
-                const name = source.name;
+      <ManageSourcesDialog open={manageSourcesOpen} onClose={() => setManageSourcesOpen(false)} onAddSource={() => setAddSourceOpen(true)} sources={sources} />
 
-                const isPressAndRelease = Math.random() > 0.5;
-                const press = `press.mp3`;
-                const release = isPressAndRelease ? `release.mp3` : null;
-                const isDefault = Math.random() > 0.5;
-
-                return (
-                  <SourceListItem key={source.name} name={name} press={press} release={release} isDefault={isDefault} />
-                )
-              }))}
-            </List>
-          </Box>
-        </Box>
-      </Dialog>
-
-      <AddSourceDialog open={addSourceOpen} onSourceAdded={(source) => {
+      <AddSourceDialog open={addSourceOpen} onClose={() => setAddSourceOpen(false)} onSourceAdded={(source) => {
         setSources([...sources, source]);
         setAddSourceOpen(false);
       }} />
@@ -768,8 +717,28 @@ function Editor() {
   );
 }
 
-function AddSourceDialog({ open, onSourceAdded }) {
+function AddSourceDialog({ open, onClose, onSourceAdded }) {
   const [name, setName] = useState("");
+  const [isDefault, setIsDefault] = useState(true);
+
+  const [pressSound, setPressSound] = useState(null);
+  const [releaseSound, setReleaseSound] = useState(null);
+
+  const selectPressSound = () => {
+    execute("selectAudioFile").then((path) => {
+      if (path) {
+        setPressSound(path);
+      }
+    });
+  };
+
+  const selectReleaseSound = () => {
+    execute("selectAudioFile").then((path) => {
+      if (path) {
+        setReleaseSound(path);
+      }
+    });
+  };
 
   return (
     <Dialog open={open}>
@@ -786,7 +755,7 @@ function AddSourceDialog({ open, onSourceAdded }) {
           mb: 2,
         }}>
           <Typography variant="h6">Add Source</Typography>
-          <IconButton onClick={() => setAddSourceOpen(false)}>
+          <IconButton onClick={() => onClose()}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -795,25 +764,37 @@ function AddSourceDialog({ open, onSourceAdded }) {
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-between',
-          width: '100%',
+          width: '400px',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: 1,
           alignItems: 'center',
           mt: 1,
           p: 1,
         }}>
-          <Typography variant="body2" color="GrayText">
-            Select a press sound...
+          <Typography variant="body2" color="GrayText" noWrap sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            maxWidth: "calc(100vw - 250px)",
+          }}>
+            {pressSound || "Select a press sound..."}
           </Typography>
 
-          <Button
-            startIcon={<FileOpenIcon />}
-            variant="outlined"
-            size="small"
-            sx={{ ml: 1 }}
-          >
-            Select
-          </Button>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <Button
+              startIcon={<FileOpenIcon />}
+              variant="outlined"
+              size="small"
+              sx={{ ml: 1 }}
+              onClick={() => selectPressSound()}
+            >
+              Select
+            </Button>
+          </Box>
         </Box>
         <Box sx={{
           display: 'flex',
@@ -826,8 +807,13 @@ function AddSourceDialog({ open, onSourceAdded }) {
           mt: 1,
           p: 1,
         }}>
-          <Typography variant="body2" color="GrayText">
-            Select a release sound...
+          <Typography variant="body2" color="GrayText" noWrap sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            maxWidth: "calc(100vw - 250px)",
+          }}>
+            {releaseSound || "Select a release sound..."}
           </Typography>
 
           <Box sx={{
@@ -843,6 +829,7 @@ function AddSourceDialog({ open, onSourceAdded }) {
               variant="outlined"
               size="small"
               sx={{ ml: 1 }}
+              onClick={() => selectReleaseSound()}
             >
               Select
             </Button>
@@ -860,7 +847,7 @@ function AddSourceDialog({ open, onSourceAdded }) {
               Add to default sources
             </Typography>
           </Tooltip>
-          <Checkbox defaultChecked />
+          <Checkbox checked={isDefault} onChange={(e, c) => setIsDefault(c)} />
         </Box>
         <Button
           fullWidth
@@ -868,8 +855,11 @@ function AddSourceDialog({ open, onSourceAdded }) {
           startIcon={<SaveIcon />}
           sx={{ mt: 3, }}
           onClick={() => {
-            onSourceAdded({name});
+            onSourceAdded({name, isDefault, pressSound, releaseSound});
             setName("");
+            setIsDefault(true);
+            setPressSound(null);
+            setReleaseSound(null);
           }}
         >
           Save
@@ -877,6 +867,68 @@ function AddSourceDialog({ open, onSourceAdded }) {
       </Box>
     </Dialog>
   )
+}
+
+function ManageSourcesDialog({ open, onClose, onAddSource, sources }) {
+  const [search, setSearch] = useState("");
+
+  return (
+    <Dialog open={open} fullWidth>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}>
+          <Typography variant="h6">Manage Sources</Typography>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <Button variant="outlined" size="small" startIcon={<AddIcon />} sx={{ mr: 1 }} onClick={() => onAddSource()}>
+              Add Source
+            </Button>
+            <IconButton onClick={() => onClose()}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
+        <TextField label="Search" size="small" sx={{ mb: 1 }} InputProps={{
+          endAdornment: <InputAdornment position="end"><SearchIcon /></InputAdornment>,
+        }} value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Box sx={{ 
+          overflow: 'auto',
+          maxHeight: 'calc(100vh - 200px)',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        }}>
+          {/* Make the list have a max height */}
+          <List>
+            {(sources.filter(source => search === "" || source.name.toLowerCase().includes(search.toLowerCase())).map(source => {
+              const name = source.name;
+
+              const isPressAndRelease = source.pressSound && source.releaseSound;
+              const press = source.pressSound.replace(/\\/g, "/").split("/").pop();
+              const release = isPressAndRelease ? source.releaseSound.replace(/\\/g, "/").split("/").pop() : null;
+
+              return (
+                <SourceListItem key={source.name} name={name} press={press} release={release} isDefault={source.isDefault} />
+              )
+            }))}
+          </List>
+        </Box>
+      </Box>
+    </Dialog>
+  );
 }
 
 export default Editor;

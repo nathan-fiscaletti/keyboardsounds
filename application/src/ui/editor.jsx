@@ -27,36 +27,21 @@ import FileOpenIcon from '@mui/icons-material/FileOpen';
 import WarningIcon from '@mui/icons-material/Warning';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ErrorIcon from '@mui/icons-material/Error';
+
+import { Buffer } from 'buffer';
 
 import { execute } from './execute';
 
 import Card from "@mui/material/Card";
-import { Typography, Box, Tooltip, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip, Paper, Checkbox } from "@mui/material";
+import { Typography, Box, Tooltip, CircularProgress, IconButton, TextField, List, ListItem, Button, Select, MenuItem, Divider, Dialog, InputAdornment, ListItemText, Chip, Paper, Checkbox } from "@mui/material";
 
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 
 import { CopyBlock, solarizedDark } from 'react-code-blocks';
 
-const sampleYaml = `profile:
-  name: Example
-  author: Your Name
-  description: Describe your profile
-
-sources:
-  - id: key1
-    source: sound1.wav
-  - id: key2
-    source:
-      press: sound2.wav
-      release: sound3.wav
-
-keys:
-  default: [ key1, key2 ]
-
-  other:
-    - sound: key1
-      keys: [ backspace, delete ]`;
+import yaml from 'js-yaml';
 
 // Create the initial theme for the application.
 const theme = createTheme({
@@ -307,7 +292,11 @@ function Editor() {
 
   const [viewYamlOpen, setViewYamlOpen] = useState(false);
 
-  const [profileName, setProfileName] = useState("new-profile");
+  const [profileDetails, setProfileDetails] = useState({
+    name: "new-profile",
+    author: "",
+    description: "",
+  });
   const [sources, setSources] = useState([]);
   const [selectedSource, setSelectedSource] = useState(0);
 
@@ -372,8 +361,13 @@ function Editor() {
   const addKeyConfig = (sourceIdx) => {
     const newBatch = [];
     for(const key of selectedKeys) {
+      if (keyConfigs.filter(kc => kc.key == selectedKeys[0] && kc.source == sourceIdx).length > 0) {
+        continue;
+      }
+
       newBatch.push({ key, source: sourceIdx });
     }
+
     setKeyConfigs([...keyConfigs, ...newBatch]);
     setSelectedKeys([]);
   };
@@ -386,6 +380,8 @@ function Editor() {
   const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [error, setError] = useState(null);
 
   const [keyboardOptionsFinal, setKeyboardOptionsFinal] = useState(keyboardOptions);
   const [keyboardControlPadOptionsFinal, setKeyboardControlPadOptionsFinal] = useState(keyboardControlPadOptions);
@@ -395,7 +391,10 @@ function Editor() {
 
   const [selectedKeys, setSelectedKeys] = useState([]);
 
-  const [editProfileName, setEditProfileName] = useState(profileName);
+  useEffect(() => {
+    console.log('error changed', error);
+    setErrorOpen(error !== null);
+  }, [error]);
 
   const toggleKeySelected = (key) => {
     if (selectedKeys.includes(key)) {
@@ -453,140 +452,152 @@ function Editor() {
     toggleKeySelected(key);
   }
 
+  const [yamlValue, setYamlValue] = useState("");
+
+  const buildYamlObj = () => {
+    const yamlObj = {};
+    yamlObj.profile = profileDetails;
+
+    // Sources
+    yamlObj.sources = [];
+    for(const source of sources) {
+      // name, isDefault, pressSound, releaseSound
+      const sourceObj = {
+        id: source.name,
+      };
+      if (source.releaseSound) {
+        sourceObj.source = {
+          press: source.pressSound.replace(/\\/g, "/").split("/").pop(),
+          release: source.releaseSound.replace(/\\/g, "/").split("/").pop(),
+        };
+      } else {
+        sourceObj.source = source.pressSound.replace(/\\/g, "/").split("/").pop();
+      }
+      yamlObj.sources.push(sourceObj);
+    }
+
+    // Keys
+    yamlObj.keys = {
+      default: sources.filter(s => s.isDefault).map(s => s.name),
+    };
+
+    // group the keyConfigs by source
+    const keyConfigsBySource = [];
+    for(const keyConfig of keyConfigs) {
+      let found = false;
+      for (const ot of keyConfigsBySource) {
+        if (ot.sound == sources[keyConfig.source].name) {
+          ot.keys.push(keyConfig.key);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        keyConfigsBySource.push({ sound: sources[keyConfig.source].name, keys: [keyConfig.key] });
+      }
+    }
+
+    yamlObj.keys.other = keyConfigsBySource;
+    return yamlObj;
+  };
+
+  useEffect(() => {
+    setYamlValue(yaml.dump(buildYamlObj()));
+  }, [sources, keyConfigs, profileDetails]);
+
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+
+    // perform validation
+    if (
+      profileDetails.name === "" ||
+      profileDetails.author === "" ||
+      profileDetails.description === ""
+    ) {
+      setError("Please fill out all fields in the Profile Details section before attempting to save the profile.");
+      setSaving(false);
+      return;
+    }
+
+    // buildData.profileYaml = the object representing the profile.yaml
+    // buildData.sources = array of source file paths
+    try {
+      await execute(`finalizeProfileEdit ${Buffer.from(JSON.stringify({
+        profileYaml: buildYamlObj(),
+        sources: [...new Set(sources.flatMap(source => 
+          source.releaseSound
+            ? [source.pressSound, source.releaseSound]
+            : [source.pressSound]
+        ))],
+      })).toString('base64')}`);
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+      setError(`Failed to save profile: ${err}`);
+    }
+
+    setSaving(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
 
-      <Dialog open={viewYamlOpen} fullWidth>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          p: 2,
-        }}>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2,
-          }}>
-            <Typography variant="h6">View Profile YAML</Typography>
-            <IconButton onClick={() => setViewYamlOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+      {/* Dialogs */}
 
-          <CopyBlock
-            text={sampleYaml}
-            language={"yaml"}
-            showLineNumbers={false}
-            customStyle={{
-              padding: '16px',
-            }}
-            theme={{...solarizedDark, backgroundColor: '#121212'}}
-          />
-        </Box>
-      </Dialog>
+      <ErrorDialog 
+        open={errorOpen} 
+        onClose={() => setError(null)}
+        error={error} />
 
-      <Dialog open={editAssignedSourcesOpen} fullWidth>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          p: 2,
-        }}>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2,
-          }}>
-            <Typography variant="h6">Assigned Sources</Typography>
-            <IconButton onClick={() => setEditAssignedSourcesOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+      <HelpDialog 
+        open={helpOpen} 
+        onClose={() => setHelpOpen(false)}
+      />
 
-          <Box sx={{ 
-            overflow: 'auto',
-            maxHeight: 'calc(100vh - 200px)',
-            scrollbarWidth: 'none',
-            '&::-webkit-scrollbar': {
-              display: 'none',
-            },
-          }}>
-            {/* Make the list have a max height */}
-            <List>
-              {keyConfigs.filter(cfg => cfg.key == assignedSourceKey).map(cfg => {return {cfg, source: sources[cfg.source]}}).map(({cfg, source}) =>
-                <AssignedSourceListItem
-                  key={source.name}
-                  name={source.name}
-                  press={source.pressSound.replace(/\\/g, "/").split("/").pop()}
-                  release={source.pressSound && source.releaseSound ? source.releaseSound.replace(/\\/g, "/").split("/").pop() : null}
-                  isDefault={source.isDefault}
-                  onDelete={() => {
-                    const shouldClose = keyConfigs.filter(kc => kc.key == assignedSourceKey).length == 1;
-                    setKeyConfigs(keyConfigs.filter(kc => kc.key != assignedSourceKey || kc.source != cfg.source));
-                    if (shouldClose) {
-                      setEditAssignedSourcesOpen(false);
-                    }
-                  }
-                } />
-              )}
-            </List>
-          </Box>
-        </Box>
-      </Dialog>
+      <ProfileDetailsDialog 
+        open={profileDetailsOpen}
+        profileDetails={profileDetails}
+        onClose={() => setProfileDetailsOpen(false)}
+        onSave={(profileDetails) => {
+          setProfileDetails(profileDetails);
+        }}
+      />
 
-      <Dialog open={profileDetailsOpen} fullWidth>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          p: 2,
-        }}>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2,
-          }}>
-            <Typography variant="h6">Profile Details</Typography>
-            <IconButton onClick={() => setProfileDetailsOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          <TextField label="Profile Name" size="small" sx={{ mb: 2 }} value={editProfileName} onChange={(e) => setEditProfileName(e.target.value)} />
-          <TextField label="Author" size="small" sx={{ mb: 2 }} />
-          <TextField label="Description" size="small" multiline rows={5} />
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<SaveIcon />}
-            sx={{ mt: 3, }}
-            disabled={!(() => {
-              // make sure profile name only contains alphanumeric characters, dashes, underscores and no spaces.
-              const regex = /^[a-zA-Z0-9-_]+$/;
-              return regex.test(editProfileName);
-            })()}
-            onClick={() => {
-              setProfileName(editProfileName)
-              setProfileDetailsOpen(false);
-            }}
-          >
-            Save
-          </Button>
-        </Box>
-      </Dialog>
+      <ViewYamlDialog
+        open={viewYamlOpen}
+        onClose={() => setViewYamlOpen(false)}
+        yaml={yamlValue}
+      />
 
-      <ManageSourcesDialog open={manageSourcesOpen} onClose={() => setManageSourcesOpen(false)} onAddSource={() => setAddSourceOpen(true)} sources={sources} />
+      <EditAssignedSourcesDialog 
+        open={editAssignedSourcesOpen} 
+        onClose={() => setEditAssignedSourcesOpen(false)} 
+        keyConfigs={keyConfigs} 
+        onKeyConfigsUpdated={kc => setKeyConfigs(kc)} 
+        assignedSourceKey={assignedSourceKey} 
+        sources={sources} 
+      />
 
-      <AddSourceDialog open={addSourceOpen} onClose={() => setAddSourceOpen(false)} onSourceAdded={(source) => {
-        setSources([...sources, source]);
-        setAddSourceOpen(false);
-      }} />
+      <ManageSourcesDialog 
+        open={manageSourcesOpen}
+        onClose={() => setManageSourcesOpen(false)}
+        onAddSource={() => setAddSourceOpen(true)}
+        sources={sources}
+      />
 
-      <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <AddSourceDialog 
+        open={addSourceOpen}
+        onClose={() => setAddSourceOpen(false)}
+        onSourceAdded={(source) => {
+          setSources([...sources, source]);
+          setAddSourceOpen(false);
+        }}
+      />
+
+      {/* Main Editor */}
 
       <Box sx={{
         display: 'flex',
@@ -633,13 +644,10 @@ function Editor() {
                 borderRadius: 3,
               }}>
                 <Typography variant="body1" sx={{ mr: 1, color: '#388e3c', fontWeight: 'bold' }}>
-                  {profileName}*
+                  {profileDetails.name}*
                 </Typography>
                 <Tooltip placement="bottom-start" title="Edit profile name" arrow>
-                  <IconButton size="small" onClick={() => {
-                    setEditProfileName(profileName);
-                    setProfileDetailsOpen(true)
-                  }}>
+                  <IconButton size="small" onClick={() => setProfileDetailsOpen(true)}>
                     <EditNoteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
@@ -668,13 +676,19 @@ function Editor() {
                 </IconButton>
               </Tooltip>
               <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 2 }} variant="middle" />
-              <Button
+              {saving ? (
+                <CircularProgress size={18} />
+              ) : (
+                <Button
                 variant="contained"
                 size="small"
                 startIcon={<SaveIcon />}
-              >
-                Save
-              </Button>
+                onClick={() => save()}
+                >
+                  Save
+                </Button>
+              )}
+              
             </Box>
           </Box>
         </Card>
@@ -736,10 +750,7 @@ function Editor() {
               <Button variant="outlined" sx={{ mr: 1 }} startIcon={<GraphicEqIcon />} color="info" onClick={() => setManageSourcesOpen(true)}>
                 Manage Sources
               </Button>
-              <Button variant="outlined" startIcon={<SettingsIcon />} color="info" onClick={() => {
-                setEditProfileName(profileName);
-                setProfileDetailsOpen(true)
-              }}>
+              <Button variant="outlined" startIcon={<SettingsIcon />} color="info" onClick={() => setProfileDetailsOpen(true)}>
                 Profile Details
               </Button>
             </Box>
@@ -793,9 +804,57 @@ function Editor() {
   );
 }
 
+function ErrorDialog({ open, onClose, error }) {
+  return (
+    <Dialog open={open}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+        overflow: 'auto',
+        maxHeight: 'calc(100vh - 200px)',
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': {
+          display: 'none',
+        },
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <ErrorIcon fontSize="small" sx={{ mr: 1 }} />
+            <Typography variant="h6">Error</Typography>
+          </Box>
+          <IconButton onClick={() => onClose()}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        
+        <Paper sx={{ 
+          p: 2,
+          mb: 1,
+          height: '100%',
+        }}>
+          <Typography variant="body1" color="HighlightText">
+            {error}
+          </Typography>
+        </Paper>
+      </Box>
+    </Dialog>
+  )
+}
+
 function AddSourceDialog({ open, onClose, onSourceAdded }) {
   const [name, setName] = useState("");
-  const [isDefault, setIsDefault] = useState(true);
+  const [isDefault, setIsDefault] = useState(false);
 
   const [pressSound, setPressSound] = useState(null);
   const [releaseSound, setReleaseSound] = useState(null);
@@ -1077,5 +1136,149 @@ function ManageSourcesDialog({ open, onClose, onAddSource, sources }) {
     </Dialog>
   );
 }
+
+function ProfileDetailsDialog({ open, onClose, onSave, profileDetails }) {
+  const [name, setName] = useState(profileDetails.name);
+  const [author, setAuthor] = useState(profileDetails.author);
+  const [description, setDescription] = useState(profileDetails.description);
+
+  return (
+    <Dialog open={open} fullWidth>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}>
+          <Typography variant="h6">Profile Details</Typography>
+          <IconButton onClick={() => {
+            setName(profileDetails.name);
+            setAuthor(profileDetails.author);
+            setDescription(profileDetails.description);
+            onClose()
+          }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <TextField label="Profile Name" size="small" sx={{ mb: 2 }} value={name} onChange={(e) => setName(e.target.value)} />
+        <TextField label="Author" size="small" sx={{ mb: 2 }} value={author} onChange={(e) => setAuthor(e.target.value)} />
+        <TextField label="Description" size="small" multiline rows={5} value={description} onChange={(e) => setDescription(e.target.value)} />
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<SaveIcon />}
+          sx={{ mt: 3, }}
+          disabled={!(() => {
+            // make sure profile name only contains alphanumeric characters, dashes, underscores and no spaces.
+            const regex = /^[a-zA-Z0-9-_]+$/;
+            return regex.test(name);
+          })()}
+          onClick={() => {
+            onSave({name, author, description});
+            onClose();
+          }}
+        >
+          Save
+        </Button>
+      </Box>
+    </Dialog>
+  );
+}
+
+function EditAssignedSourcesDialog({open, onClose, keyConfigs, onKeyConfigsUpdated, assignedSourceKey, sources}) {
+  return (
+    <Dialog open={open} fullWidth>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}>
+          <Typography variant="h6">Assigned Sources</Typography>
+          <IconButton onClick={() => onClose()}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ 
+          overflow: 'auto',
+          maxHeight: 'calc(100vh - 200px)',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        }}>
+          {/* Make the list have a max height */}
+          <List>
+            {keyConfigs.filter(cfg => cfg.key == assignedSourceKey).map(cfg => {return {cfg, source: sources[cfg.source]}}).map(({cfg, source}) =>
+              <AssignedSourceListItem
+                key={source.name}
+                name={source.name}
+                press={source.pressSound.replace(/\\/g, "/").split("/").pop()}
+                release={source.pressSound && source.releaseSound ? source.releaseSound.replace(/\\/g, "/").split("/").pop() : null}
+                isDefault={source.isDefault}
+                onDelete={() => {
+                  const shouldClose = keyConfigs.filter(kc => kc.key == assignedSourceKey).length == 1;
+                  onKeyConfigsUpdated(keyConfigs.filter(kc => kc.key != assignedSourceKey || kc.source != cfg.source));
+                  if (shouldClose) {
+                    onClose();
+                  }
+                }
+              } />
+            )}
+          </List>
+        </Box>
+      </Box>
+    </Dialog>
+  );
+}
+
+function ViewYamlDialog({ open, onClose, yaml }) {
+  return (
+    <Dialog open={open} fullWidth>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}>
+          <Typography variant="h6">View Profile YAML</Typography>
+          <IconButton onClick={() => onClose()}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <CopyBlock
+          text={yaml}
+          language={"yaml"}
+          showLineNumbers={false}
+          customStyle={{
+            padding: '16px',
+          }}
+          theme={{...solarizedDark, backgroundColor: '#121212'}}
+        />
+      </Box>
+    </Dialog>
+  )
+}
+
 
 export default Editor;

@@ -2,6 +2,10 @@ import { Socket } from "net";
 import { BrowserWindow, shell, dialog } from 'electron';
 import { exec } from 'child_process';
 import semver from 'semver';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import yaml from 'js-yaml';
 
 import Store from 'electron-store';
 
@@ -348,17 +352,19 @@ const kbs = {
     registerKbsIpcHandler: function (ipcMain, shouldNotify=()=>false) {
         // Listen for incoming IPC messages.
         ipcMain.on('kbs', async (event, data) => {
-            console.log('ipcMain.on kbs');
             const { command, channelId } = data;
+            console.log(`ipcMain.on kbs[${channelId}] ${command}`);
 
             const [commandName, ...commandArgs] = command.split(' ');
 
             // check if cmd is a member of this
             if (typeof this[commandName] === 'function') {
+                console.log(`running as functional command`)
                 try {
                     const result = await this[commandName](...commandArgs);
                     event.reply(`kbs_execute_result_${channelId}`, result);
                 } catch (err) {
+                    console.log(`error running command: ${err}`);
                     event.reply(`kbs_execute_result_${channelId}`, err);
                 }
             } else if (commandName == "reset_last_known") {
@@ -368,10 +374,12 @@ const kbs = {
                 lastKnownProfiles = null;
                 lastKnownPerformNotify = null;
             } else {
+                console.log(`running as direct command`);
                 // attempt to execute the command directly
                 this.exec(command).then((result) => {
                     event.reply(`kbs_execute_result_${channelId}`, result);
                 }).catch((err) => {
+                    console.log(`error running command: ${err}`);
                     event.reply(`kbs_execute_result_${channelId}`, err);
                 });
             }
@@ -384,7 +392,7 @@ const kbs = {
        let lastKnownPerformNotify = null;
 
         const notify = (key, val) => {
-            console.log(`notify ${key} ${val}`);
+            console.log(`notify ${key} ${JSON.stringify(val)}`);
             BrowserWindow.getAllWindows().forEach(window => {
                 console.log(`window ${window.id}`);
                 window.webContents.send(key, val);
@@ -450,6 +458,50 @@ const kbs = {
                 });
             }
         }, 1000);
+    },
+
+    finalizeProfileEdit: async function(resJsonBase64) {
+        const buildData = JSON.parse(Buffer.from(resJsonBase64, 'base64').toString());
+
+        // buildData.profileYaml = the object representing the profile.yaml
+        // buildData.sources = array of source file paths
+
+        // create temporary directory
+        const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'kbs-editor-'));
+        // write the profile.yaml file to it
+        console.log(`writing profile.yaml to ${tmpdir}`);
+        fs.writeFileSync(path.join(tmpdir, 'profile.yaml'), yaml.dump(buildData.profileYaml));
+        // copy each of the source files to the temporary directory
+        buildData.sources.forEach(source => {
+            console.log(`copying ${source} to ${tmpdir}`);
+            fs.copyFileSync(source, path.join(tmpdir, path.basename(source)));
+        });
+        // build the profile
+        const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kbs-editor-output-'));
+        console.log(`using output dir ${outputDir}`);
+        try {
+            console.log(`running bp -d "${tmpdir}" -o "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`);
+            await this.exec(`bp -d "${tmpdir}" -o "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`, true);
+        } catch (err) {
+            console.error('Failed to build profile:', err);
+            return;
+        }
+        // import the profile into keyboard sounds
+        try {
+            console.log(`running ap -z "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`);
+            await this.exec(`ap -z "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`, true);
+        } catch (err) {
+            console.error('Failed to import profile:', err);
+            return;
+        }
+
+        // clean up the temporary directory
+        console.log('cleaning up temporary directories');
+        fs.rmSync(tmpdir, { recursive: true, force: true });
+        fs.rmSync(outputDir, { recursive: true, force: true });
+
+        // notify the editor window that the profile has been imported
+        return true;
     },
 }
 

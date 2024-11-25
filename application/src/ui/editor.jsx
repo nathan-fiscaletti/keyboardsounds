@@ -376,12 +376,13 @@ function Editor() {
     updateKeyboardConfigs();
   }, [keyConfigs]);
 
-  const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
+  const [profileDetailsOpen, setProfileDetailsOpen] = useState(true);
   const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [savedOpen, setSavedOpen] = useState(false);
 
   const [keyboardOptionsFinal, setKeyboardOptionsFinal] = useState(keyboardOptions);
   const [keyboardControlPadOptionsFinal, setKeyboardControlPadOptionsFinal] = useState(keyboardControlPadOptions);
@@ -522,6 +523,19 @@ function Editor() {
       return;
     }
 
+    if (sources.filter(s => s.isDefault) < 1) {
+      setError("Please add at least one default source before attempting to save the profile.");
+      setSaving(false);
+      return;
+    }
+
+    const profileNames = await execute("profileNames");
+    if (profileNames.includes(profileDetails.name)) {
+      setError("Profile name already exists. Please choose a different name.");
+      setSaving(false);
+      return;
+    }
+
     // buildData.profileYaml = the object representing the profile.yaml
     // buildData.sources = array of source file paths
     try {
@@ -533,6 +547,8 @@ function Editor() {
             : [source.pressSound]
         ))],
       })).toString('base64')}`);
+      console.log('saved successfully');
+      setSavedOpen(true);
     } catch (err) {
       console.error('Failed to save profile:', err);
       setError(`Failed to save profile: ${err}`);
@@ -546,6 +562,9 @@ function Editor() {
       <CssBaseline enableColorScheme />
 
       {/* Dialogs */}
+
+      <SavingDialog saving={saving} />
+      <SavedDialog open={savedOpen} onClose={() => setSavedOpen(false)} />
 
       <ErrorDialog 
         open={errorOpen} 
@@ -564,6 +583,7 @@ function Editor() {
         onSave={(profileDetails) => {
           setProfileDetails(profileDetails);
         }}
+        onError={(err) => setError(err)}
       />
 
       <ViewYamlDialog
@@ -595,6 +615,7 @@ function Editor() {
           setSources([...sources, source]);
           setAddSourceOpen(false);
         }}
+        onError={(err) => setError(err)}
       />
 
       {/* Main Editor */}
@@ -644,7 +665,7 @@ function Editor() {
                 borderRadius: 3,
               }}>
                 <Typography variant="body1" sx={{ mr: 1, color: '#388e3c', fontWeight: 'bold' }}>
-                  {profileDetails.name}*
+                  {profileDetails.name}
                 </Typography>
                 <Tooltip placement="bottom-start" title="Edit profile name" arrow>
                   <IconButton size="small" onClick={() => setProfileDetailsOpen(true)}>
@@ -658,13 +679,17 @@ function Editor() {
               flexDirection: 'row',
               alignItems: 'center',
             }}>
-              {/* <Tooltip placement="bottom-start" title="Up to date" arrow>
-                  <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
-              </Tooltip> */}
-              <Tooltip placement="bottom-start" title="Unsaved Changes" arrow>
-                <WarningIcon color="warning" sx={{ mr: 1 }} />
-              </Tooltip>
-              <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 1 }} variant="middle" />
+              {/* {needsSave ? (
+                <Tooltip placement="bottom-start" title="Unsaved Changes" arrow>
+                  <WarningIcon color="warning" sx={{ mr: 1 }} />
+                </Tooltip>
+              ) : (
+                <Tooltip placement="bottom-start" title="Up to date" arrow>
+                    <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
+                </Tooltip>
+              )}
+              <Divider orientation="vertical" flexItem sx={{ ml: 1, mr: 1 }} variant="middle" /> */}
+
               <Tooltip placement="bottom-start" title="View Profile YAML" arrow>
                 <IconButton onClick={() => setViewYamlOpen(true)}>
                   <CodeIcon />
@@ -804,6 +829,92 @@ function Editor() {
   );
 }
 
+function SavingDialog({saving}) {
+  return (
+    <Dialog open={saving}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+        overflow: 'auto',
+        maxHeight: 'calc(100vh - 200px)',
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': {
+          display: 'none',
+        },
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+          <ErrorIcon fontSize="small" sx={{ mr: 1 }} />
+          <Typography variant="h6">Saving...</Typography>
+        </Box>
+        
+        <Paper sx={{ 
+          p: 2,
+          mb: 1,
+          mt: 2,
+          height: '100%',
+        }}>
+          <Typography variant="body1" color="HighlightText">
+            Saving profile, please wait...
+          </Typography>
+        </Paper>
+      </Box>
+    </Dialog>
+  )
+}
+
+function SavedDialog({ open, onClose }) {
+  return (
+    <Dialog open={open}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2,
+        overflow: 'auto',
+        maxHeight: 'calc(100vh - 200px)',
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': {
+          display: 'none',
+        },
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+        }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <ErrorIcon fontSize="small" sx={{ mr: 1 }} />
+            <Typography variant="h6">Saved</Typography>
+          </Box>
+          <IconButton onClick={() => onClose()}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        
+        <Paper sx={{ 
+          p: 2,
+          mb: 1,
+          height: '100%',
+        }}>
+          <Typography variant="body1" color="HighlightText">
+            Profile saved successfully.
+          </Typography>
+        </Paper>
+      </Box>
+    </Dialog>
+  )
+}
+
 function ErrorDialog({ open, onClose, error }) {
   return (
     <Dialog open={open}>
@@ -852,7 +963,7 @@ function ErrorDialog({ open, onClose, error }) {
   )
 }
 
-function AddSourceDialog({ open, onClose, onSourceAdded }) {
+function AddSourceDialog({ open, onClose, onSourceAdded, onError }) {
   const [name, setName] = useState("");
   const [isDefault, setIsDefault] = useState(false);
 
@@ -873,6 +984,24 @@ function AddSourceDialog({ open, onClose, onSourceAdded }) {
         setReleaseSound(path);
       }
     });
+  };
+
+  const saveSource = () => {
+    if (name.length < 1) {
+      onError("Source name cannot be empty.");
+      return;
+    }
+
+    if (pressSound === null || pressSound.length < 1) {
+      onError("Press sound must be set.");
+      return;
+    }
+
+    onSourceAdded({name, isDefault, pressSound, releaseSound});
+    setName("");
+    setIsDefault(true);
+    setPressSound(null);
+    setReleaseSound(null);
   };
 
   return (
@@ -989,13 +1118,7 @@ function AddSourceDialog({ open, onClose, onSourceAdded }) {
           variant="contained"
           startIcon={<SaveIcon />}
           sx={{ mt: 3, }}
-          onClick={() => {
-            onSourceAdded({name, isDefault, pressSound, releaseSound});
-            setName("");
-            setIsDefault(true);
-            setPressSound(null);
-            setReleaseSound(null);
-          }}
+          onClick={() => saveSource()}
         >
           Save
         </Button>
@@ -1137,10 +1260,25 @@ function ManageSourcesDialog({ open, onClose, onAddSource, sources }) {
   );
 }
 
-function ProfileDetailsDialog({ open, onClose, onSave, profileDetails }) {
+function ProfileDetailsDialog({ open, onClose, onSave, onError, profileDetails }) {
   const [name, setName] = useState(profileDetails.name);
   const [author, setAuthor] = useState(profileDetails.author);
   const [description, setDescription] = useState(profileDetails.description);
+
+  const doSave = () => {
+    if (name.length < 1) {
+      onError("Profile name cannot be empty.");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9-_]+$/.test(name)) {
+      onError("Profile name can only contain alphanumeric characters, dashes, and underscores.");
+      return;
+    }
+
+    onSave({name, author, description});
+    onClose();
+  };
 
   return (
     <Dialog open={open} fullWidth>
@@ -1174,15 +1312,7 @@ function ProfileDetailsDialog({ open, onClose, onSave, profileDetails }) {
           variant="contained"
           startIcon={<SaveIcon />}
           sx={{ mt: 3, }}
-          disabled={!(() => {
-            // make sure profile name only contains alphanumeric characters, dashes, underscores and no spaces.
-            const regex = /^[a-zA-Z0-9-_]+$/;
-            return regex.test(name);
-          })()}
-          onClick={() => {
-            onSave({name, author, description});
-            onClose();
-          }}
+          onClick={() => doSave()}
         >
           Save
         </Button>

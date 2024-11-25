@@ -84,6 +84,21 @@ const kbs = {
         });
     },
 
+    profileNames: function() {
+        return new Promise((resolve, reject) => {
+            this.exec('list-profiles --short', false).then((stdout) => {
+                try {
+                    const profiles = JSON.parse(stdout);
+                    resolve(profiles.map(p => p.name));
+                } catch (err) {
+                    reject(err);
+                }
+            }).catch((err) => {
+                reject(err);
+            });
+        });
+    },
+
     rules: function() {
         return new Promise((resolve, reject) => {
             this.exec('list-rules --short', false).then((stdout) => {

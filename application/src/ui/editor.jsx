@@ -43,6 +43,73 @@ import { CopyBlock, solarizedDark } from 'react-code-blocks';
 
 import yaml from 'js-yaml';
 
+const keyToName = {
+  "{altleft}": "alt_l",
+  "{altright}": "alt_r",
+  "{ctrlleft}": "ctrl_l",
+  "{ctrlright}": "ctrl_r",
+  "{shiftleft}": "shift_l",
+  "{shiftright}": "shift_r",
+  "{metaleft}": "cmd_l",
+  "{metaright}": "cmd_r",
+  "{space}": "space",
+  "{tab}": "tab",
+  "{backspace}": "backspace",
+  "{enter}": "enter",
+  "{backslash}": "\\",
+  "{capslock}": "caps_lock",
+  "{shiftleft}": "shift_l",
+  "{shiftright}": "shift_r",
+  "{controlleft}": "ctrl_l",
+  "{controlright}": "ctrl_r",
+  "{altleft}": "alt_l",
+  "{altright}": "alt_r",
+  "{metaleft}": "cmd_l",
+  "{metaright}": "cmd_r",
+  "{f1}": "f1",
+  "{f2}": "f2",
+  "{f3}": "f3",
+  "{f4}": "f4",
+  "{f5}": "f5",
+  "{f6}": "f6",
+  "{f7}": "f7",
+  "{f8}": "f8",
+  "{f9}": "f9",
+  "{f10}": "f10",
+  "{f11}": "f11",
+  "{f12}": "f12",
+  "{arrowup}": "up",
+  "{arrowdown}": "down",
+  "{arrowleft}": "left",
+  "{arrowright}": "right",
+  "{prtscr}": "print_screen",
+  "{scrolllock}": "scroll_lock",
+  "{pause}": "pause",
+  "{insert}": "insert",
+  "{home}": "home",
+  "{pageup}": "page_up",
+  "{delete}": "delete",
+  "{end}": "end",
+  "{pagedown}": "page_down",
+  "{numlock}": "num_lock",
+  "{numpaddivide}": "\\",
+  "{numpadmultiply}": "*",
+  "{numpad7}": "7",
+  "{numpad8}": "8",
+  "{numpad9}": "9",
+  "{numpad4}": "4",
+  "{numpad5}": "5",
+  "{numpad6}": "6",
+  "{numpad1}": "1",
+  "{numpad2}": "2",
+  "{numpad3}": "3",
+  "{numpad0}": "0",
+  "{numpaddecimal}": ".",
+  "{numpadsubtract}": "-",
+  "{numpadadd}": "+",
+  "{numpadenter}": "enter",
+};
+
 // Create the initial theme for the application.
 const theme = createTheme({
   palette: {
@@ -393,7 +460,6 @@ function Editor() {
   const [selectedKeys, setSelectedKeys] = useState([]);
 
   useEffect(() => {
-    console.log('error changed', error);
     setErrorOpen(error !== null);
   }, [error]);
 
@@ -488,14 +554,14 @@ function Editor() {
       let found = false;
       for (const ot of keyConfigsBySource) {
         if (ot.sound == sources[keyConfig.source].name) {
-          ot.keys.push(keyConfig.key);
+          ot.keys.push(keyToName[keyConfig.key] || keyConfig.key);
           found = true;
           break;
         }
       }
 
       if (!found) {
-        keyConfigsBySource.push({ sound: sources[keyConfig.source].name, keys: [keyConfig.key] });
+        keyConfigsBySource.push({ sound: sources[keyConfig.source].name, keys: [keyToName[keyConfig.key] || keyConfig.key] });
       }
     }
 

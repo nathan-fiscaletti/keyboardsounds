@@ -45,7 +45,7 @@ Keyboard Sounds can be installed as a desktop application or as a Python package
 
 [⬇️ Download (Windows Only)](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-<img src="./application/main.png" width="250" style="float: right;" />
+<img align="right" src="./application/main.png" width="250" />
 
 Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 

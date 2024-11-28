@@ -31,7 +31,7 @@
     }
   },
   "scripts": {
-    "start": "electron-forge start",
+    "start": "cross-env NODE_ENV=development electron-forge start",
     "package": "electron-forge package",
     "make-installer:win": "electron-builder -w \"-c.extraMetadata.main=.webpack\\x64\\main\\index.js\"",
     "lint": "echo \"No linting configured\""
@@ -51,6 +51,7 @@
     "@electron/fuses": "^1.7.0",
     "@vercel/webpack-asset-relocator-loader": "1.7.3",
     "babel-loader": "^9.1.3",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.0.0",
     "electron": "29.2.0",
     "electron-builder": "^24.13.3",
@@ -72,9 +73,12 @@
     "@mui/material": "^5.15.15",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.2.0",
+    "js-yaml": "^4.1.0",
     "react": "^18.2.0",
+    "react-code-blocks": "^0.1.6",
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.1",
+    "react-simple-keyboard": "^3.8.22",
     "semver": "^7.6.2"
   }
 }

@@ -1,32 +1,23 @@
-<p align="center">
-  <img src="./application/src/app_icon.png" width="150" height="150">
-  <h1 align="center">Keyboard Sounds</h1>
-  <p align="center">Add sound effects to your typing experience.</p>
-</p>
+![Banner](./banner.png)
 
-<div align="center">
+# Keyboard Sounds
 
-<a href="https://github.com/sponsors/nathan-fiscaletti"><img src="https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue"></a>
-<a href="https://badge.fury.io/py/keyboardsounds"><img src="https://badge.fury.io/py/keyboardsounds.svg"></a>
-<a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE"><img src="https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg"></a>
-<a href="https://pepy.tech/project/keyboardsounds"><img src="https://static.pepy.tech/badge/keyboardsounds"></a>
+Add sound effects to your typing experience.
 
-</div>
+[![Sponsor Me](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
+[![PyPi](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
+[![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
+[![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
 
-<p align="center">
-Keyboard Sounds is a tool that runs in your system tray and plays sound effects when you type on your keyboard. It comes with a variety of sound profiles to choose from, and you can even create your own custom profiles.
-</p>
+[⬇️ Download Desktop Application (Windows Only)](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-<p align="center">
-
-  <img src="./application/preview.png" alt="Preview" style="max-width: 100%;">
-
-</p>
+Keyboard Sounds is a lightweight system tray application that adds sound effects to your typing experience.
 
 ### Getting Started
 
 - [Install Keyboard Sounds](#installation)
 - [Create Custom Profiles](#custom-profiles)
+- [Application Rules](#application-rules)
 - [Command Line Usage](#command-line)
 
 ### Helpful Links
@@ -42,6 +33,8 @@ Keyboard Sounds can be installed as a desktop application or as a Python package
 
 [⬇️ Download (Windows Only)](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
+<img align="right" src="./application/main.png" width="250" />
+
 Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
 The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
@@ -50,7 +43,9 @@ The desktop application still requires the Python package to be installed on you
 
 You may need to restart the application after doing this for the changes to take effect.
 
-### Python Package
+> For information on uninstalling Keyboard Sounds, see [Uninstall Keyboard Sounds](#uninstalling)
+
+### Install as Python Package
 
 To install this application as a CLI utility via the Python package, you will need to have Python installed on your system. You can download Python from the [official website](https://www.python.org/).
 
@@ -63,11 +58,25 @@ To install this application as a CLI utility via the Python package, you will ne
 
 ## Custom Profiles
 
-This application supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
+Keyboard Sounds comes bundled with eleven built-in sound profiles and supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
 
 Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
+![Custom Profiles](./application/editor-with-profiles.png)
+
+## Application Rules
+
+Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently running applications. Read more about application rules [here](./docs/backend.md#managing-application-rules-windows-only)
+
+<p align="center">
+  <img src="./application/app-rule.png" />
+</p>
+
 ## Command Line
+
+<p align="center">
+  <img src="./application/cli.png" />
+</p>
 
 Keyboard Sounds has a comprehensive backend that can be used to manage the daemon, application rules, and profiles. This backend can be accessed via the command line interface (CLI) in your terminal application.
 

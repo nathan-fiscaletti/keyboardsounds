@@ -191,6 +191,11 @@ function App() {
         setGlobalAction(newGlobalAction);
       }
     );
+
+    // Cleanup on component unmount
+    return () => {
+      removeGlobalActionListener();
+    };
   }, []);
 
   useEffect(() => {
@@ -205,13 +210,6 @@ function App() {
       if (status.volume !== null) {
         setDisplayVolume(status.volume);
         setVolume(status.volume);
-      }
-    }
-
-    if (status !== null) {
-      if (status.status === 'running') {
-        // setDisplayVolume(status.volume);
-        // setSelectedProfile(status.profile);
       }
     }
   }, [status]);
@@ -299,6 +297,11 @@ function App() {
   };
 
   const [selectedTab, setSelectedTab] = useState(0);
+
+  // Must be last effect.
+  useEffect(() => {
+    execute("reset_last_known");
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>

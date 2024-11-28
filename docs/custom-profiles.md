@@ -1,6 +1,8 @@
 # Keyboard Sounds: Custom Profiles
 
-This application supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
+Keyboard Sounds comes bundled with eleven built-in sound profiles and supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
+
+![Custom Profiles](../application/editor-with-profiles.png)
 
 ## Index
 

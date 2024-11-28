@@ -51,6 +51,17 @@ const toggleWindow = () => {
   const x = width - appWidth - 10;
   const y = height - appHeight - 10;
 
+  var extraVars = {};
+  console.log(`process.env.NODE_ENV=${process.env.NODE_ENV}`);
+  if (process.env.NODE_ENV === 'development') {
+    extraVars = {
+      frame: true,
+      show: true,
+      resizable: true,
+      minimizable: true,
+    };
+  }
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     x: x,
@@ -71,14 +82,18 @@ const toggleWindow = () => {
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
+
+    ...extraVars,
   });
 
   // Close the window when it loses focus.
-  mainWindow.on('blur', () => {
-    if (!kbs.openFileDialogIsOpen) {
-      mainWindow.hide();
-    }
-  });
+  if (process.env.NODE_ENV !== 'development') {
+    mainWindow.on('blur', () => {
+      if (!kbs.openFileDialogIsOpen) {
+        mainWindow.hide();
+      }
+    });
+  }
 
   // Make links open in browser.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -109,9 +124,33 @@ const toggleWindow = () => {
 
   // Dereference the window object when the window is 
   // closed to free up memory.
-  mainWindow.on('closed', () => {
-    mainWindow = null; // Dereference the window object
+  if (process.env.NODE_ENV !== 'development') {
+    mainWindow.on('closed', () => {
+      mainWindow = null; // Dereference the window object
+    });
+  }
+};
+
+const createEditorWindow = () => {
+  // Create the browser window.
+  const editorWindow = new BrowserWindow({
+    width: 1200,
+    height: process.env.NODE_ENV === 'development' ? 616 : 600,
+    title: "Keyboard Sounds - Profile Editor (beta)",
+    backgroundColor: '#121212',
+    icon: path.join(__dirname, 'app_icon.png'),
+    webPreferences: {
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    },
   });
+
+  if (process.env.NODE_ENV !== 'development') {
+    editorWindow.setMenuBarVisibility(false);
+  }
+
+  editorWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY + "?editor=true");
+
+  return editorWindow;
 };
 
 // This method will be called when Electron has finished
@@ -259,6 +298,7 @@ app.whenReady().then(() => {
   });
 
   toggleWindow();
+  kbs.setEditorWindowCreateHandler(createEditorWindow);
 
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
@@ -282,12 +322,14 @@ app.whenReady().then(() => {
 
   // Allow the user to double-click the tray icon to open
   // or focus the application window.
-  tray.on('click', toggleWindow);
+  if (process.env.NODE_ENV !== 'development') {
+    tray.on('click', toggleWindow);
 
-  tray.displayBalloon({
-    title: APP_NAME,
-    content: `${APP_NAME} lives in your system tray.`,
-  });
+    tray.displayBalloon({
+      title: APP_NAME,
+      content: `${APP_NAME} lives in your system tray.`,
+    });
+  }
 });
 
 // Display a notification when the application is closed

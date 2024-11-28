@@ -7,25 +7,23 @@ This section is intended for developers who wish to contribute to this project. 
 - [Git](https://git-scm.com/downloads)
 - [Python](https://www.python.org/) (version 3.7 or higher)
 - [pip](https://pip.pypa.io/en/stable/installing/) (Python package installer)
-- [yarn](https://yarnpkg.com/getting-started/install) (Node.js package installer)
+- [Node.js (npm)](https://nodejs.org/en/download/package-manager) (Node.js package installer)
 
-### Setting Up the Development Environment
+### Cloning the Repository
 
-1. **Clone the Repository**
+Begin by cloning the repository to your local machine using Git:
 
-   Begin by cloning the repository to your local machine using Git:
+```bash
+git clone https://github.com/nathan-fiscaletti/keyboardsounds.git
+```
 
-   ```bash
-   git clone https://github.com/nathan-fiscaletti/keyboardsounds.git
-   ```
+Change to the project directory:
 
-2. **Navigate to the Project Directory**
+```bash
+cd keyboardsounds
+```
 
-   Change to the project directory:
-
-   ```bash
-   cd keyboardsounds
-   ```
+### Installing Dependencies
 
 4. **Install Dependencies: Python**
 
@@ -37,11 +35,11 @@ This section is intended for developers who wish to contribute to this project. 
 
 5. **Install Dependencies: Node.js**
 
-    Install the project dependencies using `yarn`:
+    Install the project dependencies using `npm`:
   
     ```bash
     cd application
-    yarn
+    npm install
     ```
 
 ### Running the Project Locally
@@ -58,10 +56,11 @@ It is recommended that you install the package in editable mode to allow you to 
 
 ### Running the Desktop Application
 
-To run the desktop application, navigate to the `application` directory and run the following command:
+To run the desktop application in development mode, run the following:
 
 ```bash
-yarn start
+cd application
+npm run start
 ```
 
 ### Contributing

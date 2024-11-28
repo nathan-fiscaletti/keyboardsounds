@@ -380,7 +380,7 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
         }}>
           <Tooltip followCursor title={(
             <Typography variant="caption">
-              When enabled, the sound daemon will only be active for applications with "Enabled" (or "Exclusive") rules. It will be disabled for all other applications.
+              When enabled, sounds will only be played when applications with a rule configured are in focus.
             </Typography>
           )}>
             <Box sx={{
@@ -391,7 +391,7 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
             }}>
               <Settings color="GrayText" fontSize="small" />
               <Typography variant="body2" sx={{ ml: 1, mt: 0.5, cursor: 'default' }}>
-                Make "Enabled" rules exclusive
+                Disable for unknown applications
               </Typography>
             </Box>
           </Tooltip>

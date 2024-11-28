@@ -1,41 +1,26 @@
-<p align="center">
-  <img src="banner.png" style="max-width: 100%;" />
-  
-  <h1 align="center">Keyboard Sounds</h1>
-  <p align="center">Add sound effects to your typing experience.</p>
-</p>
+![Banner](./banner.png)
 
-<div align="center">
+[![Sponsor Me](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
+[![PyPi](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
+[![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
+[![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
+
+# Keyboard Sounds
+
+Add sound effects to your typing experience.
 
 [⬇️ Download Desktop Application (Windows Only)](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-<a href="https://github.com/sponsors/nathan-fiscaletti"><img src="https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue"></a>
-<a href="https://badge.fury.io/py/keyboardsounds"><img src="https://badge.fury.io/py/keyboardsounds.svg"></a>
-<a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE"><img src="https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg"></a>
-<a href="https://pepy.tech/project/keyboardsounds"><img src="https://static.pepy.tech/badge/keyboardsounds"></a>
+Keyboard Sounds is a lightweight system tray application that adds sound effects to your typing experience.
 
-</div>
+## Features
 
-<p align="center">
-Keyboard Sounds is a tool that runs in your system tray and plays sound effects when you type on your keyboard.
-</p>
-<p align="center">
-It comes with a variety of sound profiles to choose from, and you can even create your own custom profiles.
-</p>
-
-<hr />
-
-### Getting Started
-
-- [Install Keyboard Sounds](#installation)
-- [Create Custom Profiles](#custom-profiles)
-- [Application Rules](#application-rules)
-- [Command Line Usage](#command-line)
-
-### Helpful Links
-
-- [Uninstall Keyboard Sounds](#uninstalling)
-- [Developer Documentation](#development)
+| Feature                        | Description                                                                                     |
+|--------------------------------|-------------------------------------------------------------------------------------------------|
+| Pre-made Sound Profiles        | Comes packaged with a variety of ready-to-use sound profiles, perfect for quick setup and customization. |
+| [Create Custom Profiles](#custom-profiles) | Includes a built-in editor for crafting your own custom sound profiles with ease.              |
+| [Application-Specific Rules](#application-rules)     | Flexible rules to enable or disable sound effects for certain applications based on their focus. |
+| [Command-Line](#command-line) | Provides a command-line interface for advanced users to control and configure the application. |
 
 ## Installation
 
@@ -54,6 +39,8 @@ The desktop application still requires the Python package to be installed on you
   - Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
 
 You may need to restart the application after doing this for the changes to take effect.
+
+> For information on uninstalling Keyboard Sounds, see [Uninstall Keyboard Sounds](#uninstalling)
 
 ### Install as Python Package
 

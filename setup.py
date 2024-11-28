@@ -13,7 +13,7 @@ setup(
         "psutil==6.1.0",
         "imageio-ffmpeg==0.5.1",
         "pyyaml==6.0.2",
-        "setuptools==75.6.0",
+        "setuptools==75.3.0",
         "requests==2.32.3",
     ],
     package_data={

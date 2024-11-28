@@ -1,6 +1,6 @@
 [project]
 name = "keyboardsounds"
-version = "5.8.5"
+version = "5.8.6"
 authors = [
   { name="Nathan Fiscaletti", email="nate.fiscaletti@gmail.com" },
 ]

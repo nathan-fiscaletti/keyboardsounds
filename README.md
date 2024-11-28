@@ -18,7 +18,7 @@ Keyboard Sounds is a lightweight system tray application that adds sound effects
 | Feature                        | Description                                                                                     |
 |--------------------------------|-------------------------------------------------------------------------------------------------|
 | [Pre-loaded](./keyboardsounds/profiles)        | Comes packaged with a variety of ready-to-use sound profiles, perfect for quick setup and customization. |
-| [Custom Profiles](#custom-profiles) | Includes a built-in editor for crafting your own custom sound profiles with ease.              |
+| [Profile Editor](#custom-profiles) | Includes a built-in editor for crafting your own custom sound profiles with ease.              |
 | [App Rules](#application-rules)     | Flexible rules to enable or disable sound effects for certain applications based on their focus. |
 | [Command-Line](#command-line) | Provides a command-line interface for advanced users to control and configure the application. |
 

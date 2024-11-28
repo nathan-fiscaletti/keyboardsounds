@@ -136,8 +136,9 @@ const createEditorWindow = () => {
   const editorWindow = new BrowserWindow({
     width: 1200,
     height: process.env.NODE_ENV === 'development' ? 616 : 600,
-    title: "Keyboard Sounds - Profile Editor",
+    title: "Keyboard Sounds - Profile Editor (beta)",
     backgroundColor: '#121212',
+    icon: path.join(__dirname, 'app_icon.png'),
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },

@@ -311,11 +311,22 @@ app.whenReady().then(() => {
   // Create a system tray icon and context menu for the application.
   tray = new Tray(AppIcon);
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Quit', type: 'normal', click: () => {
-      kbs.exec('stop').finally(() => {
-        process.exit(0);
-      });
-    }},
+    {
+      label: 'Create Profile',
+      type: 'normal',
+      click: () => {
+        kbs.showEditorWindow();
+      },
+    },
+    { 
+      label: 'Quit',
+      type: 'normal',
+      click: () => {
+        kbs.exec('stop').finally(() => {
+          process.exit(0);
+        });
+      },
+    },
   ]);
   tray.setToolTip(APP_NAME);
   tray.setContextMenu(contextMenu);

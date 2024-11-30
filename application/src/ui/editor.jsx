@@ -589,27 +589,45 @@ function Editor() {
                 alignItems: "center",
               }}
             >
-              <Select
-                size="small"
-                sx={{ mr: 1 }}
-                value={selectedSource}
-                onChange={(e) => setSelectedSource(e.target.value)}
-                disabled={selectedKeys.length === 0}
-              >
-                {sources.map((source, idx) => (
-                  <MenuItem value={idx} selected={selectedSource === idx}>
-                    {source.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Button
-                variant="outlined"
-                startIcon={<CheckCircleIcon />}
-                onClick={() => addKeyConfig(selectedSource)}
-                disabled={selectedKeys.length === 0}
-              >
-                Apply
-              </Button>
+              {sources.length > 0 ? (
+                <Box sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}>
+                  <Select
+                    size="small"
+                    sx={{ mr: 1 }}
+                    value={selectedSource}
+                    onChange={(e) => setSelectedSource(e.target.value)}
+                    disabled={selectedKeys.length === 0}
+                  >
+                    {sources.map((source, idx) => (
+                      <MenuItem value={idx} selected={selectedSource === idx}>
+                        {source.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Button
+                    variant="outlined"
+                    startIcon={<CheckCircleIcon />}
+                    onClick={() => addKeyConfig(selectedSource)}
+                    disabled={selectedKeys.length === 0 || sources.length < 1}
+                  >
+                    Apply
+                  </Button>
+                </Box>
+              ) : (
+                <Box sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  visibility: sources.length < 1 ? "visible" : "hidden",
+                }}>
+                  <Typography variant="body2" color="GrayText">
+                    Add a source to get started.
+                  </Typography>
+                </Box>
+              )}
               <Box
                 sx={{
                   display: "flex",

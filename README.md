@@ -1,5 +1,4 @@
-https://github.com/user-attachments/assets/36a26a5a-9c31-4005-99ca-70ec58655ea1
-
+https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
 
 # Keyboard Sounds
 

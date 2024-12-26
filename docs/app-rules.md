@@ -6,19 +6,9 @@
 
 ## Index
 
-- [Rule Types](#rule-types)
 - [Add and Remove Rules](#add-and-remove-rules)
+- [Rule Types](#rule-types)
 - [Set the global rule](#set-the-global-rule)
-
-## Rule Types
-
-![Rule Types](./rule-type.png)
-
-- `enable` - Enable sound effects for the application.
-- `disable` - Disable sound effects for the application.
-- `exclusive` - Only play sound effects for the application.
-
-> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
 
 ## Add and Remove Rules
 
@@ -37,6 +27,16 @@ $ kbs add-rule -r disable -a "C:\Program Files\MyApp\MyApp.exe"
 # Remove a rule for an application
 $ kbs remove-rule -a "C:\Program Files\MyApp\MyApp.exe"
 ```
+
+## Rule Types
+
+![Rule Types](./rule-type.png)
+
+- `enable` - Enable sound effects for the application.
+- `disable` - Disable sound effects for the application.
+- `exclusive` - Only play sound effects for the application.
+
+> The global rule can only be set to `enable` or `disable`. By default, the global rule is set to `enable`.
 
 ## List Rules
 

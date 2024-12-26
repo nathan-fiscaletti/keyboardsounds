@@ -15,7 +15,15 @@ Keyboard Sounds comes bundled with eleven built-in sound profiles and supports c
 
 ## Importing a profile
 
-Profiles can be imported from a ZIP file using the [`add-profile`](./backend.md#manage-profiles) action.
+### In Application
+
+To import a profile in the application, use the "Import" button in the Profiles section.
+
+![Import](./import.png)
+
+### From the Command Line
+
+Profiles can be imported from a ZIP file using the `add-profile` action.
 
 ```bash
 $ kbs add-profile -z "./my-profile.zip"
@@ -23,13 +31,29 @@ $ kbs add-profile -z "./my-profile.zip"
 
 ## Exporting an existing profile
 
-Profiles can be exported from the command line using the [`export-profile`](./backend.md#manage-profiles) action.
+### In Application
+
+To export a profile in the application, use the "Export" button in the Profiles section.
+
+![Export](./export.png)
+
+### From the Command Line
+
+Profiles can be exported from the command line using the `export-profile` action.
 
 ```bash
 $ kbs export-profile -n my-profile -o "./my-profile.zip"
 ```
 
 ## Creating a new Profile
+
+### Using the Editor
+
+To create a new profile using the editor, use the "Create" button in the Profiles section of the application.
+
+![Create](./create.png)
+
+### From the Command Line
 
 Create a new profile using the following command:
 

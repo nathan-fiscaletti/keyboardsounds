@@ -66,21 +66,19 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 ## Application Rules
 
-Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently running applications. Read more about application rules [here](./docs/backend.md#managing-application-rules-windows-only)
+Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently running applications.
+
+Read more about application rules [here](./docs/app-rules.md).
 
 <p align="center">
-  <img src="./application/app-rule.png" />
+  <img src="./docs/app-rules.png" />
 </p>
 
 ## Command Line
 
-<p align="center">
-  <img src="./application/cli.png" />
-</p>
-
 Keyboard Sounds has a comprehensive backend that can be used to manage the daemon, application rules, and profiles. This backend can be accessed via the command line interface (CLI) in your terminal application.
 
-Read more about backend usage [here](./docs/backend.md).
+Run `kbs --help` to see a list of available commands.
 
 ## Uninstalling
 

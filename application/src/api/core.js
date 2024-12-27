@@ -50,7 +50,7 @@ const kbs = {
 
     openInBrowser: function () {
         return Promise.resolve(
-            shell.openExternal("https://github.com/nathan-fiscaletti/keyboardsounds")
+            shell.openExternal("https://github.com/nathan-fiscaletti/keyboardsounds?ref=KeyboardSounds%20Application")
         );
     },
 

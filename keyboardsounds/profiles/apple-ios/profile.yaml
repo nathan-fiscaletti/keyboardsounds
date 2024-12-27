@@ -1,0 +1,36 @@
+keys:
+  default:
+  - Default
+  other:
+  - keys:
+    - backspace
+    sound: Back
+  - keys:
+    - space
+    - alt_l
+    - ctrl_l
+    - shift_l
+    - tab
+    - shift_r
+    - enter
+    - insert
+    - home
+    - page_up
+    - delete
+    - end
+    - page_down
+    - alt_r
+    - ctrl_r
+    - enter
+    sound: Alternate
+profile:
+  author: Apple Inc. (Sampled)
+  description: Simulates the sounds made by the iPhone keyboard.
+  name: apple-ios
+sources:
+- id: Default
+  source: key.mp3
+- id: Alternate
+  source: alt.mp3
+- id: Back
+  source: back.mp3

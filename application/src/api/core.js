@@ -194,7 +194,7 @@ const kbs = {
         const res = await dialog.showOpenDialog(this.mainWindow, {
             properties: ['openFile'],
             filters: [
-                { name: 'Executable', extensions: ['exe'] }
+                { name: 'Executable' }
             ]
         });
         this.openFileDialogIsOpen = false;

@@ -11,9 +11,14 @@ from keyboardsounds.profile import Profile
 from keyboardsounds.audio_manager import AudioManager
 
 WIN32 = platform.lower().startswith("win")
+LINUX = platform.lower() == "linux"
 
 if WIN32:
     from keyboardsounds import app_detector
+    from keyboardsounds import app_rules
+    from keyboardsounds.app_rules import Action
+if LINUX:
+    from keyboardsounds import app_detector_linux
     from keyboardsounds import app_rules
     from keyboardsounds.app_rules import Action
 
@@ -94,7 +99,7 @@ def __on_release(key):
     __down = [k for k in __down if k != key]
 
 
-if WIN32:
+if WIN32 or LINUX:
 
     def __on_focused_application_changed(app_path: str):
         """
@@ -106,6 +111,7 @@ if WIN32:
         Parameters:
         - app_path: The file path of the application that has just gained focus.
         """
+        print(f"focused application changed: {app_path}")
         rules = app_rules.get_rules()
 
         global __am
@@ -145,6 +151,8 @@ def run(dm, volume: int, profile: str):
 
     if WIN32:
         app_detector.start_listening(__on_focused_application_changed)
+    if LINUX:
+        app_detector_linux.start_listening(__on_focused_application_changed)
 
     mixer.init()
     with Listener(on_press=__on_press, on_release=__on_release) as listener:

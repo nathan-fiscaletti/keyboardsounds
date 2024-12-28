@@ -24,13 +24,6 @@ from keyboardsounds.app_rules import get_rules
 
 
 def main():
-    if LINUX:
-        if os.geteuid() != 0:
-            print(
-                "warning: it is recommended that you run this program "
-                + "as root on Linux systems."
-            )
-
     LOCK_FILE = f"{ROOT}/.lock"
 
     # Work around to get pygame to load mp3 files on windows
@@ -45,7 +38,7 @@ def main():
     version_number = version("keyboardsounds")
 
     win_messages = ""
-    if WIN32:
+    if WIN32 or LINUX:
         win_messages = (
             f"  manage rules:{os.linesep * 2}"
             f"    %(prog)s <ar|add-rule> -r <rule> -a <app>{os.linesep}"
@@ -153,7 +146,7 @@ def main():
     )
 
     # Rules
-    if WIN32:
+    if WIN32 or LINUX:
         parser.add_argument(
             "-a",
             "--app",
@@ -299,7 +292,7 @@ def main():
         Profile.export_profile(args.name, args.output)
         return
     # Rules are only available on windows
-    elif WIN32 and (args.action == "list-rules" or args.action == "lr"):
+    elif (WIN32 or LINUX) and (args.action == "list-rules" or args.action == "lr"):
         rules = get_rules()
 
         if args.short:
@@ -333,7 +326,7 @@ def main():
             print(f" - Application : {rule.app_path}")
             print(f"   Action      : {rule.action.value.upper()}")
         print("")
-    elif WIN32 and (args.action == "add-rule" or args.action == "ar"):
+    elif (WIN32 or LINUX) and (args.action == "add-rule" or args.action == "ar"):
         if args.app is None:
             print("Please specify an application to add the rule for.")
             return
@@ -365,7 +358,7 @@ def main():
             print(f"Rule '{args.rule.upper()}' added for {args.app}.")
         except Exception as e:
             print(f"Failed to save rules: {e}")
-    elif WIN32 and (args.action == "remove-rule" or args.action == "rr"):
+    elif (WIN32 or LINUX) and (args.action == "remove-rule" or args.action == "rr"):
         if args.app is None:
             print("Please specify an application to remove the rule for.")
             return
@@ -381,7 +374,7 @@ def main():
             print(f"Rule removed for {args.app}.")
         except Exception as e:
             print(f"Failed to save rules: {e}")
-    elif WIN32 and (args.action == "set-global-rule" or args.action == "sr"):
+    elif (WIN32 or LINUX) and (args.action == "set-global-rule" or args.action == "sr"):
         if args.rule is None:
             print(
                 "Please specify a rule to apply. Must be one of 'enable' or 'disable'."
@@ -408,7 +401,7 @@ def main():
             return
 
         print(f"Global rule set to '{args.rule.upper()}'.")
-    elif WIN32 and (args.action == "get-global-rule" or args.action == "gr"):
+    elif (WIN32 or LINUX) and (args.action == "get-global-rule" or args.action == "gr"):
         rules = get_rules()
         if args.short:
             print(json.dumps({"global_action": rules.global_action.value}))

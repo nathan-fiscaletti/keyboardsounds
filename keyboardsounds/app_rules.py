@@ -29,7 +29,7 @@ class Rule:
         :param app_path: Path of the app the rule applies to.
         :param action: Action (from Action enum) for the app.
         """
-        self.app_path = app_path
+        self.app_path = os.path.realpath(app_path) if os.path.islink(app_path) else app_path
         self.action = action
 
 

@@ -317,10 +317,10 @@ class DaemonManager:
 
             self.update_lock_file(volume, profile)
 
-            LINE_BUFFERED = 1
-            f = open(os.devnull, "w", buffering=LINE_BUFFERED)
-            sys.stdout = f
-            sys.stderr = f
+            # LINE_BUFFERED = 1
+            # f = open(os.devnull, "w", buffering=LINE_BUFFERED)
+            # sys.stdout = f
+            # sys.stderr = f
             daemon.run(self, volume, profile)
             return True
         return False

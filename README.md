@@ -93,3 +93,10 @@ You can uninstall the Keyboard Sounds Desktop Application from the "Apps" sectio
 ## Development
 
 Documentation for developers who wish to contribute to this project can be found [here](./docs/development.md).
+
+                        
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/nathan-fiscaletti/keyboardsounds.svg?variant=adaptive)](https://starchart.cc/nathan-fiscaletti/keyboardsounds)
+
+                    

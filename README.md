@@ -11,7 +11,7 @@ Add sound effects to your typing experience.
 
 [⬇️ Download Desktop Application (Windows Only)](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-Keyboard Sounds is a lightweight system tray application that adds sound effects to your typing experience.
+Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 11 built in profiles, a profile editor, and application rules.
 
 ### Getting Started
 

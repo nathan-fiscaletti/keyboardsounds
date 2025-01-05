@@ -59,6 +59,8 @@ const toggleWindow = () => {
       show: true,
       resizable: true,
       minimizable: true,
+      skipTaskbar: false,
+      movable: true,
     };
   }
 

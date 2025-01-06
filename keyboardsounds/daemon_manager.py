@@ -69,7 +69,8 @@ class DaemonManager:
                 proc_name = self.__proc.name()
                 current_name = psutil.Process().name()
                 self.__is_daemon_process = proc_name == current_name
-            except ValueError:
+            except:
+                self.__proc = None
                 pass
         else:
             self.__is_daemon_process = False

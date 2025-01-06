@@ -15,10 +15,10 @@ const ErrPythonVersionUnknown = 'Failed to parse python version';
 const ErrPythonMissing = 'Python is not installed';
 const ErrPythonVersionMismatch = 'Python Version 3.8 or higher is required';
 const ErrPythonPackageMissing = 'KeyboardSounds package is not installed';
-const ErrPythonPackageVersionMismatch = 'KeyboardSounds python package version 5.7.2 or higher is required.';
+const ErrPythonPackageVersionMismatch = 'KeyboardSounds python package version 5.9.0 or higher is required.';
 
 const MinimumPythonVersion = '3.8.0';
-const MinimumPythonPackageVersion = '5.7.2';
+const MinimumPythonPackageVersion = '5.9.0';
 
 const kbs = {
     mainWindow: null,

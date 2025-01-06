@@ -13,9 +13,9 @@ const store = new Store();
 
 const ErrPythonVersionUnknown = 'Failed to parse python version';
 const ErrPythonMissing = 'Python is not installed';
-const ErrPythonVersionMismatch = 'Python Version 3.0 or higher is required';
+const ErrPythonVersionMismatch = 'Python Version 3.8 or higher is required';
 const ErrPythonPackageMissing = 'KeyboardSounds package is not installed';
-const ErrPythonPackageVersionMismatch = 'KeyboardSounds package version mismatch';
+const ErrPythonPackageVersionMismatch = 'KeyboardSounds python package version 5.7.2 or higher is required.';
 
 const MinimumPythonVersion = '3.8.0';
 const MinimumPythonPackageVersion = '5.7.2';
@@ -364,6 +364,21 @@ const kbs = {
         this.editorWindow.focus();
     },
 
+    getState: function() {
+        return new Promise((resolve, reject) => {
+            this.exec('state', false).then((stdout) => {
+                try {
+                    const state = JSON.parse(stdout);
+                    resolve(state);
+                } catch (err) {
+                    reject(err);
+                }
+            }).catch((err) => {
+                reject(err);
+            });
+        });
+    },
+
     registerKbsIpcHandler: function (ipcMain, shouldNotify=()=>false) {
         // Listen for incoming IPC messages.
         ipcMain.on('kbs', async (event, data) => {
@@ -422,7 +437,8 @@ const kbs = {
                 lastKnownPerformNotify = performNotify;
             }
             if (performNotify) {
-                this.status().then((status) => {
+                this.getState().then(state => {
+                    const status = state.status;
                     const stringifiedStatus = JSON.stringify(status);
                     if (lastKnownStatus === null || stringifiedStatus !== lastKnownStatus) {
                         console.log('notifying status change');
@@ -430,24 +446,16 @@ const kbs = {
                         // Update the last known status
                         lastKnownStatus = stringifiedStatus;
                     }
-                }).catch((err) => {
-                    console.error('Failed to fetch status:', err);
-                });
 
-                // Watch the app rules and notify the renderer process when they change
-                this.getGlobalAction().then((action) => {
+                    const action = state.global_action;
                     if (lastKnownGlobalAction === null || action !== lastKnownGlobalAction) {
                         console.log('notifying global action change');
                         notify('kbs-global-action', action);
                         // Update the last known global action
                         lastKnownGlobalAction = action;
                     }
-                }).catch((err) => {
-                    console.error('Failed to fetch global action:', err);
-                });
 
-                // Watch the rules and notify the renderer process when they change
-                this.rules().then((rules) => {
+                    const rules = state.rules;
                     const stringifiedRules = JSON.stringify(rules)
                     if (lastKnownAppRules === null || stringifiedRules !== lastKnownAppRules) {
                         console.log('notifying app rules change');
@@ -455,12 +463,8 @@ const kbs = {
                         // Update the last known app rules
                         lastKnownAppRules = stringifiedRules;
                     }
-                }).catch((err) => {
-                    console.error('Failed to fetch app rules:', err);
-                });
 
-                // Watch the profiles and notify the renderer process when they change
-                this.profiles().then((profiles) => {
+                    const profiles = state.profiles;
                     const stringifiedProfiles = JSON.stringify(profiles);
                     if (lastKnownProfiles === null || stringifiedProfiles !== lastKnownProfiles) {
                         console.log('notifying profiles change');
@@ -468,8 +472,8 @@ const kbs = {
                         // Update the last known profiles
                         lastKnownProfiles = stringifiedProfiles;
                     }
-                }).catch((err) => {
-                    console.error('Failed to fetch profiles:', err);
+                }).catch(err => {
+                    console.error('Failed to fetch state:', err);
                 });
             }
         }, 1000);

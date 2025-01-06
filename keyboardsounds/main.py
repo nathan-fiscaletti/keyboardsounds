@@ -193,6 +193,26 @@ def main():
     elif args.action == "status":
         status = dm.status(full=not args.short, short=args.short)
         print(f"{status}")
+    elif args.action == "state":
+        rules = get_rules()
+        output = {
+            "global_action": rules.global_action.value,
+            "rules": [
+                {"app_path": rule.app_path, "action": rule.action.value}
+                for rule in rules.rules
+            ],
+            "profiles": [
+                {
+                    "name": profile["name"],
+                    "author": profile["author"],
+                    "description": profile["description"],
+                }
+                for profile in [profile.metadata() for profile in Profile.list()]
+            ],
+            "status": json.loads(dm.status(full=False, short=True)),
+        }
+
+        print(json.dumps(output))
     elif args.action == "add-profile" or args.action == "ap":
         if args.zip is None:
             print("Please specify a zip file for the profile to add.")

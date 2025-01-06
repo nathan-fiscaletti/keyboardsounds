@@ -353,61 +353,89 @@ function App() {
         </Box>
       </Card>
       
-      <Card sx={{
-        mr: 2,
-        ml: 2,
-        mb: 1,
-        mt: 1,
-        height: "100%",
-        minHeight: "calc(100vh - 124px)",
-        maxHeight: "calc(100vh - 124px)"
-      }}>
-        <Tabs 
-          value={selectedTab}
-          onChange={(_, v) => setSelectedTab(v)}
-          variant="fullWidth"
-        >
-          <Tooltip title="Status" arrow><Tab icon={<MonitorHeartIcon />} /></Tooltip>
-          <Tooltip title="Profiles" arrow><Tab icon={<LibraryMusicIcon />} /></Tooltip>
-          <Tooltip title="Application Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>
-          <Tooltip title="About" arrow><Tab icon={<InfoIcon />} /></Tooltip>
-        </Tabs>
+      {!statusLoaded && (
+        <Card sx={{
+          mr: 2,
+          ml: 2,
+          mb: 1,
+          mt: 1,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "calc(100vh - 124px)",
+          maxHeight: "calc(100vh - 124px)"
+        }}>
+          <Box sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}>
+            <CircularProgress sx={{ color: "#fff" }} size={48} />
+          </Box>
+        </Card>
+      )}
 
-        {selectedTab === 0 && (
-          <Status 
-            statusLoaded={statusLoaded}
-            status={status}
-            profilesLoaded={profilesLoaded}
-            profiles={profiles}
-            selectedProfile={selectedProfile} 
-            displayVolume={displayVolume}
-            onProfileChanged={handleProfileChanged}
-            onVolumeChanged={handleVolumeChanged}
-            onDisplayVolumeChanged={setDisplayVolume}
-          />
-        )}
-
-        {selectedTab === 1 && (
-          <Profiles statusLoaded={statusLoaded} status={status} profilesLoaded={profilesLoaded} profiles={profiles} />
-        )}
-
-        {selectedTab === 2 && (
-          <AppRules
-            appRules={appRules}
-            appRulesLoaded={appRulesLoaded}
-            enabledRulesAreExclusive={enabledRulesAreExclusive}
-            globalAction={globalAction}
-            onGlobalActionChanged={handleGlobalActionChanged}
-          />
-        )}
-
-        {selectedTab === 3 && (
-          <Settings
-            appVersion={appVersion}
-            backEndVersion={backEndVersion} />
-        )}
-
-      </Card>
+      {statusLoaded && (
+        <Card sx={{
+          mr: 2,
+          ml: 2,
+          mb: 1,
+          mt: 1,
+          height: "100%",
+          minHeight: "calc(100vh - 124px)",
+          maxHeight: "calc(100vh - 124px)"
+        }}>
+          <Tabs 
+            value={selectedTab}
+            onChange={(_, v) => setSelectedTab(v)}
+            variant="fullWidth"
+          >
+            <Tooltip title="Status" arrow><Tab icon={<MonitorHeartIcon />} /></Tooltip>
+            <Tooltip title="Profiles" arrow><Tab icon={<LibraryMusicIcon />} /></Tooltip>
+            <Tooltip title="Application Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>
+            <Tooltip title="About" arrow><Tab icon={<InfoIcon />} /></Tooltip>
+          </Tabs>
+  
+          {selectedTab === 0 && (
+            <Status 
+              statusLoaded={statusLoaded}
+              status={status}
+              profilesLoaded={profilesLoaded}
+              profiles={profiles}
+              selectedProfile={selectedProfile} 
+              displayVolume={displayVolume}
+              onProfileChanged={handleProfileChanged}
+              onVolumeChanged={handleVolumeChanged}
+              onDisplayVolumeChanged={setDisplayVolume}
+            />
+          )}
+  
+          {selectedTab === 1 && (
+            <Profiles statusLoaded={statusLoaded} status={status} profilesLoaded={profilesLoaded} profiles={profiles} />
+          )}
+  
+          {selectedTab === 2 && (
+            <AppRules
+              appRules={appRules}
+              appRulesLoaded={appRulesLoaded}
+              enabledRulesAreExclusive={enabledRulesAreExclusive}
+              globalAction={globalAction}
+              onGlobalActionChanged={handleGlobalActionChanged}
+            />
+          )}
+  
+          {selectedTab === 3 && (
+            <Settings
+              appVersion={appVersion}
+              backEndVersion={backEndVersion} />
+          )}
+  
+        </Card>
+      )}
+      
     </ThemeProvider>
   );
 }

@@ -2,10 +2,6 @@
 layout: default
 ---
 
-<video src="https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511" controls="controls" width="100%"></video>
-
-# Keyboard Sounds
-
 [![Sponsor Me](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
 [![PyPi](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
 [![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)

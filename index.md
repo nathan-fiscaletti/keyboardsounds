@@ -29,9 +29,9 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
 
-### Desktop Application
+### Desktop Application (Windows only)
 
-[⬇️ Download (Windows Only)](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
+[⬇️ Download](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
 <img align="right" src="./application/main.png" width="250" />
 
@@ -39,22 +39,27 @@ Currently the desktop application is only available for **Windows**. The Python 
 
 The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
 
-  - Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
+  - **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
+    > This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
 
 You may need to restart the application after doing this for the changes to take effect.
 
 > For information on uninstalling Keyboard Sounds, see [Uninstall Keyboard Sounds](#uninstalling)
 
-### Install as Python Package
+### Install as Python Package (macOS, Linux or Windows)
 
-To install this application as a CLI utility via the Python package, you will need to have Python installed on your system. You can download Python from the [official website](https://www.python.org/).
-
-  - Make sure when you install Python that you check the box that says **"Add Python to PATH"**. This will allow you to run Python from the command line.
+1. **Install Python**
+  - To install this application as a CLI utility via the Python package, you will need to have Python installed on your system. You can download Python from the [official website](https://www.python.org/).
+    - **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
+      > This will allow you to run Python from the command line.
+2. **Install the Keyboard Sounds CLI**
   - After you have installed Python, you can install the Keyboard Sounds CLI by running the following command in your terminal.
 
     ```sh
     $ pip install keyboardsounds
     ```
+3. **Using the CLI**
+  - To use the Keyboard Sounds CLI, run `kbs --help` from your command line terminal.
 
 ## Custom Profiles
 

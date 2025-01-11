@@ -18,7 +18,7 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 - [Install Keyboard Sounds](#installation)
 - [Create Custom Profiles](#custom-profiles)
 - [Application Rules](#application-rules)
-- [Command Line Usage](#command-line)
+- [Command Line Usage](#command-line-macos-linux-or-windows)
 
 ### Helpful Links
 
@@ -37,7 +37,7 @@ Keyboard Sounds can be installed as a desktop application or as a Python package
 
 Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
-The desktop application still requires the Python package to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
+The desktop application still requires the [command line](#command-line-macos-linux-or-windows) to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
 
   - **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
     > This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
@@ -46,22 +46,9 @@ You may need to restart the application after doing this for the changes to take
 
 > For information on uninstalling Keyboard Sounds, see [Uninstall Keyboard Sounds](#uninstalling)
 
-### Install as Python Package (macOS, Linux or Windows)
+## Features
 
-1. **Install Python**
-  - To install this application as a CLI utility via the Python package, you will need to have Python installed on your system. You can download Python from the [official website](https://www.python.org/).
-    - **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
-      > This will allow you to run Python from the command line.
-2. **Install the Keyboard Sounds CLI**
-  - After you have installed Python, you can install the Keyboard Sounds CLI by running the following command in your terminal.
-
-    ```sh
-    $ pip install keyboardsounds
-    ```
-3. **Using the CLI**
-  - To use the Keyboard Sounds CLI, run `kbs --help` from your command line terminal.
-
-## Custom Profiles
+### Custom Profiles
 
 Keyboard Sounds comes bundled with eleven built-in sound profiles and supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
 
@@ -69,7 +56,7 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 ![Custom Profiles](./application/editor-with-profiles.png)
 
-## Application Rules
+### Application Rules
 
 Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently running applications.
 
@@ -79,11 +66,25 @@ Read more about application rules [here](./docs/app-rules.md).
   <img src="./docs/app-rules.png" />
 </p>
 
-## Command Line
+### Command Line (macOS, Linux or Windows)
 
-Keyboard Sounds has a comprehensive backend that can be used to manage the daemon, application rules, and profiles. This backend can be accessed via the command line interface (CLI) in your terminal application.
+1. **Install Python**
+   
+   To install this application as a CLI utility via the Python package, you will need to have Python installed on your system. You can download Python from the [official website](https://www.python.org/).
+    
+   **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
+    
+   > This will allow you to run Python from the command line.
+2. **Install the Keyboard Sounds CLI**
 
-Run `kbs --help` to see a list of available commands.
+   After you have installed Python, you can install the Keyboard Sounds CLI by running the following command in your terminal.
+
+   ```sh
+   $ pip install keyboardsounds
+   ```
+3. **Using the CLI**
+   
+   To use the Keyboard Sounds CLI, run `kbs --help` from your command line terminal.
 
 ## Uninstalling
 
@@ -98,3 +99,8 @@ You can uninstall the Keyboard Sounds Desktop Application from the "Apps" sectio
 ## Development
 
 Documentation for developers who wish to contribute to this project can be found [here](./docs/development.md).
+
+                        
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/nathan-fiscaletti/keyboardsounds.svg?variant=adaptive)](https://starchart.cc/nathan-fiscaletti/keyboardsounds)

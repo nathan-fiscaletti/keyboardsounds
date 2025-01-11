@@ -58,7 +58,7 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 ### Application Rules
 
-<img align="right" src="./docs/app-rules.png" height="350" />
+<img align="right" src="./docs/app-rules.png" height="350" style="margin-left: 10px;" />
 
 - Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently focused application.
 
@@ -68,7 +68,7 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 - _Application rules are currently only available for the Windows platform._
 
-<br><br><br><br><br>
+<br><br><br><br>
 
 ## Command Line (macOS, Linux or Windows)
 

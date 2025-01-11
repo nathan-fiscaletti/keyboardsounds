@@ -58,13 +58,17 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 ### Application Rules
 
-Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently running applications.
+<img align="right" src="./docs/app-rules.png" height="350" />
 
-Read more about application rules [here](./docs/app-rules.md).
+- Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently focused application.
 
-<p align="center">
-  <img src="./docs/app-rules.png" />
-</p>
+- This allows you to do things like only enabling in your text editor or terminal, disabling it for specific games, or localizing the sound effects to a particular application.
+
+- Read more about application rules [here](./docs/app-rules.md).
+
+> Application rules are currently only available for the Windows platform. Although, there is [a branch](https://github.com/nathan-fiscaletti/keyboardsounds/tree/linux-app-rules) that attempts to add the support for Linux, but it is not feature-complete.
+
+<br><br><br>
 
 ### Command Line (macOS, Linux or Windows)
 

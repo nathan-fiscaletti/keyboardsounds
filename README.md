@@ -62,9 +62,9 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 - Read more about application rules [here](./docs/app-rules.md).
 
-> Application rules are currently only available for the Windows platform. Although, there is [a branch](https://github.com/nathan-fiscaletti/keyboardsounds/tree/linux-app-rules) that attempts to add the support for Linux, but it is not feature-complete.
+- _Application rules are currently only available for the Windows platform._
 
-<br><br><br>
+<br><br><br><br>
 
 ### Command Line (macOS, Linux or Windows)
 

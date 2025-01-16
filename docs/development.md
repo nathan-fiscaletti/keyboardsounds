@@ -1,6 +1,14 @@
-## Development
+# Development
 
-This section is intended for developers who wish to contribute to this project. Follow the steps below to set up your development environment and start contributing.
+This section is intended for developers who wish to contribute to this project.
+
+## Architecture
+
+![Architecture](./arch.png)
+
+## Development Environment
+
+Follow the steps below to set up your development environment and start contributing.
 
 ### Prerequisites
 

@@ -97,9 +97,9 @@ def main():
         "-p",
         "--profile",
         type=str,
-        default="ios",
+        default="apple-ios",
         metavar="profile",
-        help="sound profile to use, default 'ios'",
+        help="sound profile to use, default 'apple-ios'",
     )
 
     # Status Action

@@ -10,7 +10,7 @@ import { Typography, Box, IconButton, TextField, List, Button, Dialog, InputAdor
 
 import { SourceListItem } from './../components/source-list-item.jsx';
 
-function ManageSourcesDialog({ open, onClose, onAddSource, sources }) {
+function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, playingSource, sources }) {
   const [search, setSearch] = useState("");
 
   return (
@@ -105,6 +105,8 @@ function ManageSourcesDialog({ open, onClose, onAddSource, sources }) {
                     press={press}
                     release={release}
                     isDefault={source.isDefault}
+                    onListenRequested={() => onListenRequested(source)}
+                    playingSource={playingSource}
                   />
                 );
               })}

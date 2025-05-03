@@ -159,8 +159,9 @@ const createEditorWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  // Ensure that both Python & the `keyboardsounds` Python Package are installed.
   kbs.checkPythonInstallation().then(() => {
-    // Verify that Keyboard Sounds back-end is installed and functioning.
+    // Verify that Keyboard Sounds package is installed and functioning.
     kbs.checkInstallation().then(() => {
       kbs.getBackendVersion().then(version => {
         console.log(`Found Keyboard Sounds backend installation with version: ${version}`);
@@ -175,6 +176,8 @@ app.whenReady().then(() => {
       process.exit(1);
     });
   }).catch((err) => {
+    // Help the user address the problem by offering to install both Python and the
+    // required `keyboardsounds` Python Package.
     switch (err) {
       case ErrPythonMissing:
         dialog.showMessageBox({

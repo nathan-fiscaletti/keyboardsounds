@@ -51,7 +51,7 @@ def __validate_meta_data(path_resolver: PathResolver, data: dict) -> str:
             raise ValueError(f"Profile '{name}' is corrupted. Invalid 'video' in profile.yaml.")
         if not str(data["profile"]["video"]).endswith(tuple(SUPPORTED_VIDEO_FORMATS)):
             raise ValueError(f"Profile '{name}' is corrupted. Invalid 'video' in profile.yaml.")
-        if not os.path.isfile(path_resolver.get_file_path(data["profile"]["video"])):
+        if not os.path.isfile(path_resolver.get_child(data["profile"]["video"]).get_path()):
             raise ValueError(f"Profile '{name}' is corrupted. Missing video file '{data['profile']['video']}' in profile folder.")
     
     return data
@@ -82,19 +82,19 @@ def __validate_source(path_resolver: PathResolver, name: str, data: dict, source
                 raise ValueError(f"Profile '{name}' is corrupted. Invalid 'press' in source object of one or more sources in profile.yaml.")
             if not str(source["source"]["press"]).endswith(tuple(SUPPORTED_AUDIO_FORMATS)):
                 raise ValueError(f"Profile '{name}' is corrupted. Invalid 'press' in source object of one or more sources in profile.yaml.")
-            if not os.path.isfile(path_resolver.get_file_path(source["source"]["press"])):
+            if not os.path.isfile(path_resolver.get_child(source["source"]["press"]).get_path()):
                 raise ValueError(f"Profile '{name}' is corrupted. Missing audio file '{source['source']['press']}' in profile folder.")
             if "release" in source["source"]:
                 if type(source["source"]["release"]) != str:
                     raise ValueError(f"Profile '{name}' is corrupted. Invalid 'release' in source object of one or more sources in profile.yaml.")
                 if not str(source["source"]["release"]).endswith(tuple(SUPPORTED_AUDIO_FORMATS)):
                     raise ValueError(f"Profile '{name}' is corrupted. Invalid 'release' in source object of one or more sources in profile.yaml.")
-                if not os.path.isfile(path_resolver.get_file_path(source["source"]["release"])):
+                if not os.path.isfile(path_resolver.get_child(source["source"]["release"]).get_path()):
                     raise ValueError(f"Profile '{name}' is corrupted. Missing audio file '{source['source']['release']}' in profile folder.")
         elif type(source["source"]) == str:
             if not str(source["source"]).endswith(tuple(SUPPORTED_AUDIO_FORMATS)):
                 raise ValueError(f"Profile '{name}' is corrupted. Invalid 'source' in one or more sources in profile.yaml.")
-            if not os.path.isfile(path_resolver.get_file_path(source["source"])):
+            if not os.path.isfile(path_resolver.get_child(source["source"]).get_path()):
                 raise ValueError(f"Profile '{name}' is corrupted. Missing audio file '{source['source']}' in profile folder.")
     elif data["profile"]["type"] == "video-extract":
         if "start" not in source:

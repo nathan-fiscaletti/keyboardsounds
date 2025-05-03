@@ -11,21 +11,21 @@ import Store from 'electron-store';
 
 const store = new Store();
 
+const MinimumPythonVersion = '3.8.0';
+const MinimumPythonPackageVersion = '5.9.2';
+
 const ErrPythonVersionUnknown = 'Failed to parse python version';
 const ErrPythonMissing = 'Python is not installed';
 const ErrPythonVersionMismatch = 'Python Version 3.8 or higher is required';
 const ErrPythonPackageMissing = 'KeyboardSounds package is not installed';
-const ErrPythonPackageVersionMismatch = 'KeyboardSounds python package version 5.9.0 or higher is required.';
-
-const MinimumPythonVersion = '3.8.0';
-const MinimumPythonPackageVersion = '5.9.0';
+const ErrPythonPackageVersionMismatch = `KeyboardSounds python package version ${MinimumPythonPackageVersion} or higher is required.`;
 
 const kbs = {
     mainWindow: null,
     editorWindowCreateHandler: null,
     editorWindow: null,
     openFileDialogIsOpen: false,
-    appVersion: '1.0.0',
+    appVersion: '1.4.0',
 
     exec: function (cmd, print=true) {
         return new Promise((resolve, reject) => {

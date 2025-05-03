@@ -22,7 +22,7 @@ class AudioFile:
     def __init__(self, resolver: PathResolver, value: str):
         if not str(value).endswith(tuple(SUPPORTED_AUDIO_FORMATS)):
             raise ValueError(f"Invalid audio file '{value}'.")
-        if not os.path.isfile(resolver.get_file_path(value)):
+        if not os.path.isfile(resolver.get_child(value).get_path()):
             raise ValueError(f"Missing audio file '{value}'.")
         self.value = value
 
@@ -39,12 +39,12 @@ class ProfileBuilder(PathResolver):
         self.__load_audio_files()
 
     def exists(self):
-        return os.path.isfile(self.get_file_path("profile.yaml"))
+        return os.path.isfile(self.get_child("profile.yaml").get_path())
 
     def __load_profile_data(self):
         if self.exists():
             self.__data = yaml.load(
-                open(self.get_file_path("profile.yaml"), "r"), Loader=yaml.FullLoader
+                open(self.get_child("profile.yaml").get_path(), "r"), Loader=yaml.FullLoader
             )
 
     def __load_audio_files(self):
@@ -166,7 +166,7 @@ class ProfileBuilder(PathResolver):
         intermediate = PathResolver(intermediate_dir)
 
         print("Writing profile.yaml...")
-        profile_file = intermediate.get_file_path("profile.yaml")
+        profile_file = intermediate.get_child("profile.yaml").get_path()
         with open(profile_file, "w") as file:
             yaml.dump(self.__data, file)
 
@@ -183,8 +183,8 @@ class ProfileBuilder(PathResolver):
 
         for file in used_files:
             print(f"Writing '{file}'...")
-            source = self.get_file_path(file)
-            destination = intermediate.get_file_path(file)
+            source = self.get_child(file).get_path()
+            destination = intermediate.get_child(file).get_path()
             if not os.path.isfile(source):
                 raise ValueError(f"Missing intermediate audio file '{file}'.")
             shutil.copy(source, destination)

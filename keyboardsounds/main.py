@@ -38,7 +38,11 @@ def main():
     if os.name == "nt":
         os.add_dll_directory(pygame.__path__[0])
 
-    dm = DaemonManager(LOCK_FILE)
+    dm = DaemonManager(lock_file=None, one_shot=True)
+    if dm.capture_oneshot():
+        return
+
+    dm = DaemonManager(lock_file=LOCK_FILE)
     if dm.capture_daemon_initialization():
         return
 

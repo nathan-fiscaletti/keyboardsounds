@@ -14,24 +14,42 @@ PROFILES_REMOTE_URL = "https://api.github.com/repos/nathan-fiscaletti/keyboardso
 PROFILE_REMOTE_URL = "https://api.github.com/repos/nathan-fiscaletti/keyboardsounds/contents/keyboardsounds/profiles/{name}?ref=master"
 PROFILE_DETAIL_URL = "https://raw.githubusercontent.com/nathan-fiscaletti/keyboardsounds/master/keyboardsounds/profiles/{name}/profile.yaml"
 
-
+def OneShotProfile(press_sound: str = None, release_sound: str = None):
+    return Profile("one-shot", one_shot=True, one_shot_press_sound=press_sound, one_shot_release_sound=release_sound)
 class Profile(PathResolver):
-    def __init__(self, name: str):
+    def __init__(self, name: str, one_shot: bool = False, one_shot_press_sound:str = None, one_shot_release_sound:str = None):
         super().__init__(os.path.join(ROOT, "profiles", name))
+        
         self.name = name
+        self.__one_shot = one_shot
+        self.__one_shot_press_sound = one_shot_press_sound
+        self.__one_shot_release_sound = one_shot_release_sound
         self.__validate()
 
     def __validate(self):
+        
+        # Check for Oneshot
+        
+        if self.__one_shot:
+            self.__data = {
+                'profile': {
+                    'type': "one-shot",
+                    'press': self.__one_shot_press_sound,
+                    'release': self.__one_shot_release_sound
+                }
+            }
+            return
+
         # Validate File Structure
 
         if not os.path.isdir(self.root):
             raise ValueError(f"Profile '{self.name}' does not exist")
-        if not os.path.isfile(self.get_file_path("profile.yaml")):
+        if not os.path.isfile(self.get_child("profile.yaml").get_path()):
             raise ValueError(
                 f"Profile '{self.name}' is corrupted. Missing profile.yaml."
             )
 
-        with open(self.get_file_path("profile.yaml"), "r") as f:
+        with open(self.get_child("profile.yaml").get_path(), "r") as f:
             data = yaml.safe_load(f)
             self.__data = validate_profile(self, data)
 
@@ -70,7 +88,7 @@ class Profile(PathResolver):
         names = [
             f.name for f in os.scandir(os.path.join(ROOT, "profiles")) if f.is_dir()
         ]
-        return [Profile(name) for name in names]
+        return [Profile(name, one_shot=False, one_shot_press_sound=None, one_shot_release_sound=None) for name in names]
 
     @classmethod
     def remove_profile(cls, name: str):

@@ -1,6 +1,8 @@
 import React from "react";
 
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 import { Typography, Box, Tooltip, IconButton, ListItem, ListItemText, Chip } from "@mui/material";
 
@@ -10,10 +12,12 @@ function AssignedSourceListItem({ name, press, release, isDefault, onDelete }) {
 
   const typeVariant = press && release ? "filled" : "outlined";
   const typeLabel = press && release ? "Press & Release" : "Press Only";
+  const typeIcon = press && release ? <CheckCircleIcon color="primary" /> : <ErrorOutlineIcon color="warning" /> 
+  const typeColor = press && release ? "primary" : "warning";
   const typeDescription =
     press && release
       ? "Distinct press and release sounds"
-      : "Single press sound";
+      : "Only press sound";
 
   return (
     <ListItem
@@ -27,8 +31,9 @@ function AssignedSourceListItem({ name, press, release, isDefault, onDelete }) {
               sx={{ mr: 1 }}
               size="small"
               label={typeLabel}
+              icon={typeIcon}
               variant={typeVariant}
-              color="primary"
+              color={typeColor}
             />
           </Tooltip>
 

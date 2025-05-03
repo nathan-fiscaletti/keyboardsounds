@@ -1,20 +1,23 @@
 import React from "react";
 
-import EditIcon from '@mui/icons-material/Edit';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
-import { Typography, Box, Tooltip, IconButton, ListItem, ListItemText, Chip } from "@mui/material";
+import { Typography, Box, Tooltip, IconButton, ListItem, ListItemText, Chip, CircularProgress } from "@mui/material";
 
-function SourceListItem({ name, press, release, isDefault }) {
+function SourceListItem({ name, press, release, isDefault, onListenRequested, playingSource }) {
   const secondaryText =
     press && release ? `${press}, ${release}` : `${press}` || `${release}`;
 
   const typeVariant = press && release ? "filled" : "outlined";
   const typeLabel = press && release ? "Press & Release" : "Press Only";
+  const typeIcon = press && release ? <CheckCircleIcon color="primary" /> : <ErrorOutlineIcon color="warning" /> 
+  const typeColor = press && release ? "primary" : "warning";
   const typeDescription =
     press && release
       ? "Distinct press and release sounds"
-      : "Single press sound";
+      : "Only press sound";
 
   return (
     <ListItem
@@ -28,21 +31,20 @@ function SourceListItem({ name, press, release, isDefault }) {
               sx={{ mr: 1 }}
               size="small"
               label={typeLabel}
+              icon={typeIcon}
               variant={typeVariant}
-              color="primary"
+              color={typeColor}
             />
           </Tooltip>
 
           <Tooltip title="Listen" placement="top" arrow>
-            <IconButton color="primary" sx={{ mr: 1 }}>
-              <PlayArrowIcon />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Edit Source" placement="top" arrow>
-            <IconButton color="primary" sx={{ mr: 1 }}>
-              <EditIcon />
-            </IconButton>
+            {playingSource ? (
+              <CircularProgress size={18} sx={{ mr: 2, ml: 2 }} />
+            ) : (
+              <IconButton color="primary" sx={{ mr: 1 }} onClick={onListenRequested}>
+                <PlayArrowIcon />
+              </IconButton>
+            )}
           </Tooltip>
         </Box>
       }

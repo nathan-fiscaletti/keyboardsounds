@@ -5,6 +5,7 @@
    ```bash
    $ python3 -m build
    ```
+
    ```
    dist/
     ├── keyboardsounds-X.X.X-py3-none-any.whl
@@ -12,9 +13,11 @@
    ```
 
 2. Upload to testpypi
+
    ```bash
    $ python3 -m twine upload --repository testpypi dist/*
    ```
+
    ```
    Uploading distributions to https://test.pypi.org/legacy/
    Enter your username: __token__

@@ -2,12 +2,13 @@ from sys import platform
 
 import json
 import base64
+import time
 
 from pygame import mixer
 
 from pynput.keyboard import Listener
 
-from keyboardsounds.profile import Profile
+from keyboardsounds.profile import Profile, OneShotProfile
 from keyboardsounds.audio_manager import AudioManager
 
 WIN32 = platform.lower().startswith("win")
@@ -150,6 +151,31 @@ def run(dm, volume: int, profile: str):
     with Listener(on_press=__on_press, on_release=__on_release) as listener:
         listener.join()
 
+def one_shot(volume: int, press_sound: str, release_sound: str):
+    global __am
+
+    __am = AudioManager(OneShotProfile(press_sound=press_sound, release_sound=release_sound))
+
+    sounds = __am.get_one_shot_sounds()
+
+    clips = []
+
+    mixer.init()
+
+    waitlen = 0
+    for sound in sounds:
+        if sound is not None:
+            clip = mixer.Sound(sound)
+            clip.set_volume(float(volume) / float(100))
+            clips.append(clip)
+            waitlen += clip.get_length()
+
+    for clip in clips:
+        clip.set_volume(float(volume) / float(100))
+        clip.play()
+        time.sleep(0.15)
+
+    time.sleep(waitlen)
 
 def get_audio_manager() -> AudioManager:
     """

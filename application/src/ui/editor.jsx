@@ -186,6 +186,8 @@ function Editor() {
 
   const [selectedKeys, setSelectedKeys] = useState([]);
 
+  const [playingSource, setPlayingSource] = useState(false);
+
   useEffect(() => {
     setErrorOpen(error !== null);
   }, [error]);
@@ -368,6 +370,29 @@ function Editor() {
     setSaving(false);
   };
 
+  const playSource = async (source) => {
+    setPlayingSource(true);
+    try {
+      if (source.pressSound && source.releaseSound) {
+        await execute(
+          `one-shot "${source.pressSound}" "${source.releaseSound}"`
+        );
+      } else if (source.pressSound) {
+        await execute(
+          `one-shot "${source.pressSound}"`
+        );
+      } else if (source.releaseSound) {
+        await execute(
+          `one-shot "${source.releaseSound}"`
+        );
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setPlayingSource(false);
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
@@ -414,7 +439,9 @@ function Editor() {
         open={manageSourcesOpen}
         onClose={() => setManageSourcesOpen(false)}
         onAddSource={() => setAddSourceOpen(true)}
+        onListenRequested={(s) => playSource(s)}
         sources={sources}
+        playingSource={playingSource}
       />
 
       <AddSourceDialog

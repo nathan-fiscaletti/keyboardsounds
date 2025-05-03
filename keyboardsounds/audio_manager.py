@@ -26,6 +26,8 @@ class AudioManager:
         """
         self.sounds = {}
         self.profile = profile
+        self.__one_shot_press_sound = None
+        self.__one_shot_release_sound = None
         self.__prime_audio_clips()
         self.__enabled = True
 
@@ -59,7 +61,7 @@ class AudioManager:
         """
         if self.profile.value("profile.type") == "video-extract":
             ffmpeg_exe = get_ffmpeg_exe()
-            V_FILE = self.profile.get_file_path(self.profile.value("profile.video"))
+            V_FILE = self.profile.get_child(self.profile.value("profile.video")).get_path()
             A_FILE = f"{V_FILE}.wav"
             subprocess.run(
                 [ffmpeg_exe, "-y", "-i", V_FILE, "-f", "wav", "-vn", A_FILE],
@@ -69,14 +71,29 @@ class AudioManager:
             for source in self.profile.value("sources"):
                 self.__extract(source["id"], A_FILE, source["start"], source["end"])
             os.unlink(A_FILE)
+        elif self.profile.value("profile.type") == "one-shot":
+            press = self.profile.value('profile.press')
+            release = self.profile.value('profile.release')
+            if press is not None:
+                self.__extract("one-shot-press", input=press)
+                pressBytes = self.sounds["one-shot-press"].getbuffer().tobytes()
+                pressAudioData = io.BytesIO(pressBytes)
+                self.__one_shot_press_sound = pressAudioData
+            if release is not None:
+                self.__extract("one-shot-release", input=release)
+                releaseBytes = self.sounds["one-shot-release"].getbuffer().tobytes()
+                releaseAudioData = io.BytesIO(releaseBytes)
+                self.__one_shot_release_sound = releaseAudioData
+
+            
         elif self.profile.value("profile.type") == "files":
             for source in self.profile.value("sources"):
                 if isinstance(source["source"], dict):
                     source_id = source["id"]
                     press_loc = source["source"]["press"]
-                    press_path = self.profile.get_file_path(press_loc)
+                    press_path = self.profile.get_child(press_loc).get_path()
                     release_loc = source["source"]["release"]
-                    release_path = self.profile.get_file_path(release_loc)
+                    release_path = self.profile.get_child(release_loc).get_path()
                     press_id = f"{source_id}__press"
                     release_id = f"{source_id}__release"
 
@@ -94,7 +111,7 @@ class AudioManager:
                     del self.sounds[release_id]
                 elif type(source["source"]) == str:
                     source_id = source["id"]
-                    path = self.profile.get_file_path(source["source"])
+                    path = self.profile.get_child(source["source"]).get_path()
                     self.__extract(source_id, path)
 
     def __extract(self, id, input, start: float = 0.0, end: float = None):
@@ -167,6 +184,9 @@ class AudioManager:
                 default_key = self.profile.value("keys.default")
                 return self.__get_sound(default_key, action)
         return self.__get_sound(key=None, action=action)
+
+    def get_one_shot_sounds(self) -> list[Optional[io.BytesIO]]:
+        return [self.__one_shot_press_sound, self.__one_shot_release_sound]
 
     def set_enabled(self, enabled: bool) -> None:
         """

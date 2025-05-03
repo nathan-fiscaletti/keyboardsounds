@@ -12,7 +12,7 @@ from keyboardsounds.external_api import ExternalAPI
 
 
 class DaemonManager:
-    def __init__(self, lock_file) -> None:
+    def __init__(self, lock_file, one_shot = False) -> None:
         """
         Initializes the DaemonManager object with a specified lock file.
 
@@ -29,9 +29,14 @@ class DaemonManager:
         self.__is_daemon_process = False
         self.__proc = None
         self.__api = None
-        self.__load_status()
+        self.__one_shot = one_shot
+        if not self.__one_shot:
+            self.__load_status()
 
     def __load_status(self):
+        if self.__one_shot:
+            return
+        
         """
         Loads the daemon's current status from the lock file, if it exists, and
         updates internal state accordingly. This includes checking if the lock
@@ -324,4 +329,20 @@ class DaemonManager:
             sys.stderr = f
             daemon.run(self, volume, profile)
             return True
+        return False
+
+    def capture_oneshot(self) -> bool:
+        if self.__one_shot and (len(sys.argv) == 3 or len(sys.argv) == 4) and sys.argv[1] == "one-shot":
+            pressSound = sys.argv[2]
+            releaseSound = None
+            if len(sys.argv) == 4:
+                releaseSound = sys.argv[3]
+
+            try:
+                daemon.one_shot(100, pressSound, releaseSound)
+                return True
+            except Exception as e:
+                print(e)
+                return False
+
         return False

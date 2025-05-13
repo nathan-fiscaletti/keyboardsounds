@@ -11,7 +11,7 @@ Keyboard Sounds comes bundled with eleven built-in sound profiles and supports c
 - [Creating a new Profile](#creating-a-new-profile)
 - [Editing a Profile](#editing-a-profile)
 - [Compiling a Profile](#compiling-a-profile)
-- [Adding a profile to the official repository](#adding-a-profile-to-the-official-repository)
+- [Sharing your profile](#sharing-your-profile)
 
 ## Importing a profile
 
@@ -106,10 +106,8 @@ $ kbs bp -d "./my-profile"
   
   > Using the `build-profile (bp)` action is recommended instead of creating your own ZIP file as it has built-in validation to ensure the profile is valid.
 
-## Adding a profile to the official repository
+## Sharing your profile
 
-If you have created a profile that you think others would enjoy, you can submit it to the official repository. To do this, you will need to create a pull request.
+If you have created a profile that you think others would enjoy, you can share it with the community on the Discord Server in the `#profiles` channel.
 
-1. Fork the repository.
-2. Add your profile to the `profiles` directory.
-3. Create a pull request.
+[![Discord](https://img.shields.io/badge/-Join%20the%20Community-gray?logo=discord&logoColor=%23ffffff&labelColor=%235865f2)](https://discord.gg/gysskqts6z)

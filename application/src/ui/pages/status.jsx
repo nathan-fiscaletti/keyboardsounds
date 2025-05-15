@@ -23,7 +23,7 @@ const Status = ({
       sx={{
         ml: 2,
         mr: 2,
-        mt: 2,
+        mt: 3.5,
       }}
     >
       <Box
@@ -32,9 +32,9 @@ const Status = ({
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          borderRadius: 1,
+          borderRadius: 8,
           pl: 2,
-          pr: 2,
+          pr: 2.5,
           pt: 2.5,
           pb: 2.5,
           bgcolor: "#292929",

@@ -19,7 +19,8 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 import FileOpenIcon from '@mui/icons-material/FileOpenOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
-import { Chip, CircularProgress } from "@mui/material";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Chip, CircularProgress, Link } from "@mui/material";
 import { execute } from "../execute";
 
 function ProfileListItem({ statusLoaded, status, profile: { name, author, description }, onExport }) {  
@@ -232,7 +233,25 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
           mb: 2,
         }}
       >
-        <Typography variant="h6">Profiles</Typography>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+          <Typography variant="h6">Profiles</Typography>
+          <Tooltip title={
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}>
+              <Typography variant="body2">Community Profiles</Typography>
+              <Typography variant="caption" color="text.secondary">Custom profiles are available for download and sharing in the <Link href="https://discord.gg/gysskqts6z" target="_blank">Discord Community</Link></Typography>
+            </Box>
+          } placement="bottom-end" arrow sx={{ ml: 1 }}>
+            <InfoOutlinedIcon fontSize="14" />
+          </Tooltip>
+        </Box>
         <Box sx={{
           display: "flex",
           flexDirection: "row",

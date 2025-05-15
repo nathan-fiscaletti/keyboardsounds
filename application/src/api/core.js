@@ -1,5 +1,5 @@
 import { Socket } from "net";
-import { BrowserWindow, shell, dialog } from 'electron';
+import { BrowserWindow, shell, dialog, screen } from 'electron';
 import { exec } from 'child_process';
 import semver from 'semver';
 import fs from 'fs';
@@ -25,7 +25,7 @@ const kbs = {
     editorWindowCreateHandler: null,
     editorWindow: null,
     openFileDialogIsOpen: false,
-    appVersion: '1.4.0',
+    appVersion: '1.5.0',
 
     exec: function (cmd, print=true) {
         return new Promise((resolve, reject) => {
@@ -250,6 +250,30 @@ const kbs = {
         store.set('volume', Number(volume));
     },
 
+    getNotifyOnLaunch: async function() {
+        return Promise.resolve(store.get('notify_on_launch', true));
+    },
+
+    storeNotifyOnLaunch: async function(value) {
+        store.set('notify_on_launch', value === 'true');
+    },
+
+    getNotifyOnHide: async function() {
+        return Promise.resolve(store.get('notify_on_hide', false));
+    },
+
+    storeNotifyOnHide: async function(value) {
+        store.set('notify_on_hide', value === 'true');
+    },
+
+    getNotifyOnUpdate: async function() {
+        return Promise.resolve(store.get('notify_on_update', true));
+    },
+
+    storeNotifyOnUpdate: async function(value) {
+        store.set('notify_on_update', value === 'true');
+    },
+
     setVolume: async function(volume) {
         return this.executeDaemonCommand({
             action: 'set_volume',
@@ -377,6 +401,28 @@ const kbs = {
                 reject(err);
             });
         });
+    },
+
+    setHeight: function(newHeight) {
+        if (process.env.NODE_ENV !== 'development') {
+            const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+            this.mainWindow.setResizable(true);
+
+            let newHeightNum = 800;
+            try {
+                newHeightNum = Number(newHeight);
+            } catch (e) {}
+
+            animateBounds(this.mainWindow, {
+                x: width  - 510,
+                y: height - newHeightNum - 10,
+                width:  500,
+                height: newHeightNum
+            });
+
+            this.mainWindow.setResizable(false);
+        }
     },
 
     registerKbsIpcHandler: function (ipcMain, shouldNotify=()=>false) {
@@ -522,6 +568,40 @@ const kbs = {
         // notify the editor window that the profile has been imported
         return true;
     },
+}
+
+/**
+ * Smoothly animates a BrowserWindow’s bounds.
+ * @param {BrowserWindow} win   – the window to move/resize
+ * @param {Object} target       – { x, y, width, height }
+ * @param {number} duration     – milliseconds (default 250 ms)
+ * @param {(t:number)=>number} ease – easing fn, t ∈ [0,1] (default easeInOutQuad)
+ */
+function animateBounds(
+    win,
+    { x: x1, y: y1, width: w1, height: h1 },
+    duration = 250,
+    ease = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2 // easeInOutQuad
+) {
+    const start   = performance.now();
+    const { x, y, width, height } = win.getBounds();
+  
+    // preprocess deltas so we don’t allocate every frame
+    const dx = x1 - x,  dy = y1 - y,  dw = w1 - width,  dh = h1 - height;
+  
+    (function step(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const k = ease(t);
+  
+      win.setBounds({
+        x: Math.round(x + dx * k),
+        y: Math.round(y + dy * k),
+        width:  Math.round(width  + dw * k),
+        height: Math.round(height + dh * k)
+      });
+  
+      if (t < 1) setImmediate(() => step(performance.now()));
+    })(start);
 }
 
 export { 

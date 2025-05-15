@@ -90,9 +90,16 @@ const toggleWindow = () => {
 
   // Close the window when it loses focus.
   if (process.env.NODE_ENV !== 'development') {
-    mainWindow.on('blur', () => {
+    mainWindow.on('blur', async () => {
       if (!kbs.openFileDialogIsOpen) {
         mainWindow.hide();
+        const notifyOnHide = await kbs.getNotifyOnHide();
+        if (notifyOnHide) {
+          tray.displayBalloon({
+            title: APP_NAME,
+            content: `${APP_NAME} is running in the background.`,
+          });
+        }
       }
     });
   }
@@ -158,7 +165,7 @@ const createEditorWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Ensure that both Python & the `keyboardsounds` Python Package are installed.
   kbs.checkPythonInstallation().then(() => {
     // Verify that Keyboard Sounds package is installed and functioning.
@@ -341,21 +348,57 @@ app.whenReady().then(() => {
   if (process.env.NODE_ENV !== 'development') {
     tray.on('click', toggleWindow);
 
-    tray.displayBalloon({
-      title: APP_NAME,
-      content: `${APP_NAME} lives in your system tray.`,
-    });
+    const notifyOnLaunch = await kbs.getNotifyOnLaunch();
+    if (notifyOnLaunch) {
+      tray.displayBalloon({
+        title: APP_NAME,
+        content: `${APP_NAME} is running in the background.`,
+      });
+    }
   }
 });
 
 // Display a notification when the application is closed
 // but still running in the background.
-app.on('window-all-closed', () => {
-  tray.displayBalloon({
-    title: APP_NAME,
-    content: `${APP_NAME} is still running in the background.`,
-  });
+app.on('window-all-closed', async () => {
+  const notifyOnHide  = await kbs.getNotifyOnHide();
+  if (notifyOnHide) {
+    tray.displayBalloon({
+      title: APP_NAME,
+      content: `${APP_NAME} is running in the background.`,
+    });
+  }
 });
+
+async function runUpdateCheck() {
+  try {
+    const update = await kbs.checkForUpdate();
+    if (update !== null) {
+      const notifyOnUpdate = await kbs.getNotifyOnUpdate();
+      if (notifyOnUpdate) {
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'Keyboard Sounds',
+          message: `Update Available`,
+          detail: `A newer version of Keyboard Sounds is available for download.\n\nKeyboard Sounds ${update.name}`,
+          buttons: ['Download Update', 'Close'],
+          defaultId: 0,
+          cancelId: 1
+        }).then((response) => {
+          if (response.response === 0) {
+            shell.openExternal(update.html_url);
+          }
+        });
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+// Check for updates periodically
+runUpdateCheck();
+setTimeout(runUpdateCheck, 86400 * 1000);
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.

@@ -29,9 +29,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import FileOpenIcon from '@mui/icons-material/FileOpen';
 import SaveIcon from '@mui/icons-material/Save';
+import SettingsIcon from "@mui/icons-material/Settings";
 
 import { execute } from '../execute';
-import { Info, Settings } from "@mui/icons-material";
+
 
 const RuleActionLabel = ({ action }) => {
   return (
@@ -389,7 +390,7 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
               alignItems: 'center',
               flex: 1,
             }}>
-              <Settings color="GrayText" fontSize="small" />
+              <SettingsIcon color="GrayText" fontSize="small" sx={{ mt: 0.5 }} />
               <Typography variant="body2" sx={{ ml: 1, mt: 0.5, cursor: 'default' }}>
                 Disable for unknown applications
               </Typography>

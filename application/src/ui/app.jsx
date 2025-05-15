@@ -25,19 +25,12 @@ import StopIcon from "@mui/icons-material/Stop";
 import CircularProgress from "@mui/material/CircularProgress";
 import GavelIcon from "@mui/icons-material/Gavel";
 import LibraryMusicIcon from "@mui/icons-material/LibraryMusic";
-import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import InfoIcon from "@mui/icons-material/Info";
+import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import { IconButton, Typography, Link } from "@mui/material";
 
 import { execute } from './execute';
-
-const StatusColors = {
-  enabled: green[500],
-  disabled: "#f55d42",
-  loading: "#e3e3e3",
-};
 
 // Create the initial theme for the application.
 const theme = createTheme({
@@ -140,6 +133,10 @@ function App() {
   const [appVersion, setAppVersion] = useState('<unknown>');
   const [backEndVersion, setBackEndVersion] = useState('<unknown>');
 
+  const [notifyOnLaunch, setNotifyOnLaunch] = useState(true);
+  const [notifyOnHide, setNotifyOnHide] = useState(true);
+  const [notifyOnUpdate, setNotifyOnUpdate] = useState(true);
+
   // Get the version from the backend
   useEffect(() => {
     const run = async () => {
@@ -157,15 +154,21 @@ function App() {
   }, []);
 
 
-  // Load the profile and volume from the backend
+  // Load the profile, volume and notification preferences from the backend
   useEffect(() => {
     const run = async () => {
       const volume = await execute("getVolume");
       const profile = await execute("getProfile");
+      const notifyOnLaunch = await execute("getNotifyOnLaunch");
+      const notifyOnHide = await execute("getNotifyOnHide");
+      const notifyOnUpdate = await execute("getNotifyOnUpdate");
 
       setVolume(volume);
       setDisplayVolume(volume);
       setSelectedProfile(profile);
+      setNotifyOnLaunch(notifyOnLaunch);
+      setNotifyOnHide(notifyOnHide);
+      setNotifyOnUpdate(notifyOnUpdate);
     };
     run();
   }, []);
@@ -296,7 +299,30 @@ function App() {
     execute(`setGlobalAction ${isEnabled ? 'disable' : 'enable'}`);
   };
 
+  const handleNotifyOnLaunchChanged = (notify) => {
+    setNotifyOnLaunch(notify);
+    execute(`storeNotifyOnLaunch ${notify}`);
+  };
+
+  const handleNotifyOnHideChanged = (notify) => {
+    setNotifyOnHide(notify);
+    execute(`storeNotifyOnHide ${notify}`);
+  };
+
+  const handleNotifyOnUpdateChanged = (notify) => {
+    setNotifyOnUpdate(notify);
+    execute(`storeNotifyOnUpdate ${notify}`);
+  };
+
   const [selectedTab, setSelectedTab] = useState(0);
+
+  useEffect(() => {
+    if (selectedTab === 3) {
+      execute(`setHeight 1064`);
+    } else {
+      execute(`setHeight 800`);
+    }
+  }, [selectedTab]);
 
   // Must be last effect.
   useEffect(() => {
@@ -396,7 +422,7 @@ function App() {
             <Tooltip title="Status" arrow><Tab icon={<MonitorHeartIcon />} /></Tooltip>
             <Tooltip title="Profiles" arrow><Tab icon={<LibraryMusicIcon />} /></Tooltip>
             <Tooltip title="Application Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>
-            <Tooltip title="About" arrow><Tab icon={<InfoIcon />} /></Tooltip>
+            <Tooltip title="More" arrow><Tab icon={<HelpCenterIcon />} /></Tooltip>
           </Tabs>
   
           {selectedTab === 0 && (
@@ -430,7 +456,14 @@ function App() {
           {selectedTab === 3 && (
             <Settings
               appVersion={appVersion}
-              backEndVersion={backEndVersion} />
+              backEndVersion={backEndVersion}
+              notifyOnLaunch={notifyOnLaunch}
+              onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
+              notifyOnHide={notifyOnHide}
+              onNotifyOnHideChanged={handleNotifyOnHideChanged}
+              notifyOnUpdate={notifyOnUpdate}
+              onNotifyOnUpdateChanged={handleNotifyOnUpdateChanged}
+            />
           )}
   
         </Card>

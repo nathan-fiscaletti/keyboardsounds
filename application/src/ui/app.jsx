@@ -12,6 +12,7 @@ import { Settings } from "./pages";
 import { Profiles } from "./pages";
 import { Status } from "./pages";
 import { AppRules } from "./pages";
+import { About } from "./pages";
 
 import Card from "@mui/material/Card";
 import Tooltip from "@mui/material/Tooltip";
@@ -28,9 +29,11 @@ import LibraryMusicIcon from "@mui/icons-material/LibraryMusic";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
+import SettingsIcon from "@mui/icons-material/Settings";
 import { IconButton, Typography, Link } from "@mui/material";
 
 import { execute } from './execute';
+
 
 // Create the initial theme for the application.
 const theme = createTheme({
@@ -136,6 +139,7 @@ function App() {
   const [notifyOnLaunch, setNotifyOnLaunch] = useState(true);
   const [notifyOnHide, setNotifyOnHide] = useState(true);
   const [notifyOnUpdate, setNotifyOnUpdate] = useState(true);
+  const [runOnStartUp, setRunOnStartup] = useState(true);
 
   // Get the version from the backend
   useEffect(() => {
@@ -162,6 +166,7 @@ function App() {
       const notifyOnLaunch = await execute("getNotifyOnLaunch");
       const notifyOnHide = await execute("getNotifyOnHide");
       const notifyOnUpdate = await execute("getNotifyOnUpdate");
+      const runOnStartUp = await execute("getRunOnStartUp");
 
       setVolume(volume);
       setDisplayVolume(volume);
@@ -169,6 +174,7 @@ function App() {
       setNotifyOnLaunch(notifyOnLaunch);
       setNotifyOnHide(notifyOnHide);
       setNotifyOnUpdate(notifyOnUpdate);
+      setRunOnStartup(runOnStartUp);
     };
     run();
   }, []);
@@ -314,11 +320,20 @@ function App() {
     execute(`storeNotifyOnUpdate ${notify}`);
   };
 
+  const handleRunOnStartupChanged = (r => {
+    setRunOnStartup(r);
+    execute(`storeRunOnStartUp ${r}`);
+  });
+
   const [selectedTab, setSelectedTab] = useState(0);
 
   useEffect(() => {
-    if (selectedTab === 3) {
-      execute(`setHeight 1064`);
+    if (selectedTab === 0) {
+      execute(`setHeight 500`);
+    } else if (selectedTab === 3) {
+      execute(`setHeight 816`);
+    } else if (selectedTab === 4) {
+      execute(`setHeight 708`);
     } else {
       execute(`setHeight 800`);
     }
@@ -422,7 +437,8 @@ function App() {
             <Tooltip title="Status" arrow><Tab icon={<MonitorHeartIcon />} /></Tooltip>
             <Tooltip title="Profiles" arrow><Tab icon={<LibraryMusicIcon />} /></Tooltip>
             <Tooltip title="Application Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>
-            <Tooltip title="More" arrow><Tab icon={<HelpCenterIcon />} /></Tooltip>
+            <Tooltip title="Settings" arrow><Tab icon={<SettingsIcon />} /></Tooltip>
+            <Tooltip title="About" arrow><Tab icon={<HelpCenterIcon />} /></Tooltip>
           </Tabs>
   
           {selectedTab === 0 && (
@@ -457,6 +473,8 @@ function App() {
             <Settings
               appVersion={appVersion}
               backEndVersion={backEndVersion}
+              runOnStartUp={runOnStartUp}
+              onRunOnStartUpChanged={handleRunOnStartupChanged}
               notifyOnLaunch={notifyOnLaunch}
               onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
               notifyOnHide={notifyOnHide}
@@ -464,6 +482,10 @@ function App() {
               notifyOnUpdate={notifyOnUpdate}
               onNotifyOnUpdateChanged={handleNotifyOnUpdateChanged}
             />
+          )}
+
+          {selectedTab === 4 && (
+            <About />
           )}
   
         </Card>

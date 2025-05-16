@@ -1,5 +1,5 @@
 import { Socket } from "net";
-import { BrowserWindow, shell, dialog, screen } from 'electron';
+import { app, BrowserWindow, shell, dialog, screen } from 'electron';
 import { exec } from 'child_process';
 import semver from 'semver';
 import fs from 'fs';
@@ -25,7 +25,7 @@ const kbs = {
     editorWindowCreateHandler: null,
     editorWindow: null,
     openFileDialogIsOpen: false,
-    appVersion: '1.5.0',
+    appVersion: '1.5.1',
 
     exec: function (cmd, print=true) {
         return new Promise((resolve, reject) => {
@@ -272,6 +272,21 @@ const kbs = {
 
     storeNotifyOnUpdate: async function(value) {
         store.set('notify_on_update', value === 'true');
+    },
+
+    storeRunOnStartUp: async function(value) {
+        const runOnStartup = value === 'true';
+
+        app.setLoginItemSettings({
+            openAtLogin: runOnStartup,
+            path: app.getPath('exe'),
+        });
+
+        store.set('run_on_startup', runOnStartup);
+    },
+
+    getRunOnStartUp: async function() {
+        return Promise.resolve(store.get('run_on_startup', false));
     },
 
     setVolume: async function(volume) {

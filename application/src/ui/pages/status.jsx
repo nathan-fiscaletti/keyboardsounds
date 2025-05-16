@@ -23,7 +23,7 @@ const Status = ({
       sx={{
         ml: 2,
         mr: 2,
-        mt: 3.5,
+        mt: 2,
       }}
     >
       <Box
@@ -32,9 +32,9 @@ const Status = ({
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          borderRadius: 8,
-          pl: 2,
-          pr: 2.5,
+          borderRadius: 1,
+          pl: 3,
+          pr: 3,
           pt: 2.5,
           pb: 2.5,
           bgcolor: "#292929",
@@ -76,15 +76,18 @@ const Status = ({
         </Box>
       </Box>
       {/* <Divider sx={{ mt: 2 }} /> */}
-      <Typography variant="h6" sx={{ mt: 2 }}>
+      {/* <Typography variant="h6" sx={{ mt: 2 }}>
           Configuration
-      </Typography>
+      </Typography> */}
       <Box
         sx={{
           borderRadius: 1,
-          p: 2,
+          pt: 2.5,
+          pb: 2.5,
+          pr: 3,
+          pl: 3,
           mt: 2,
-          bgcolor: "background.default",
+          bgcolor: "#292929",
         }}
       >
       <Typography
@@ -157,9 +160,10 @@ const Status = ({
         </Tooltip>
       </Box>
       </Box>
-      <Typography variant="h6" sx={{ mt: 2 }}>
-          Status Details
-      </Typography>
+
+
+      {/* Status details, move this later */}
+      {/*
       <Box
         sx={{
           display: "flex",
@@ -282,7 +286,7 @@ const Status = ({
               : "N/A"}
           </Typography>
         </Box>
-      </Box>
+      </Box> */}
     </Box>
   );
 };

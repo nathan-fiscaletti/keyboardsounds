@@ -1,8 +1,14 @@
 const { app, ipcMain, shell, BrowserWindow, Menu, Tray, screen, dialog } = require('electron');
+
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
+import fetch from 'node-fetch';
+
+import { spawn } from 'child_process';
+
 const a = require('electron-squirrel-startup');
 if (a) process.exit(0);
-
-const path = require('node:path');
 
 import { 
   kbs,
@@ -23,6 +29,10 @@ const AppIcon = path.join(__dirname, APP_ICO);
 // Initialize variables to hold the tray and window objects.
 let tray = null;
 let mainWindow = null;
+
+// When enabled, even if NODE_ENV=development, the application will still
+// act as if it is running in a production state.
+const simulateProd = false;
 
 const toggleWindow = () => {
   // Check if the window exists and isn't destroyed; if so,
@@ -53,7 +63,7 @@ const toggleWindow = () => {
 
   var extraVars = {};
   console.log(`process.env.NODE_ENV=${process.env.NODE_ENV}`);
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' && !simulateProd) {
     extraVars = {
       frame: true,
       show: true,
@@ -89,7 +99,7 @@ const toggleWindow = () => {
   });
 
   // Close the window when it loses focus.
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== 'development' || simulateProd) {
     mainWindow.on('blur', async () => {
       if (!kbs.openFileDialogIsOpen) {
         mainWindow.hide();
@@ -133,7 +143,7 @@ const toggleWindow = () => {
 
   // Dereference the window object when the window is 
   // closed to free up memory.
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== 'development' || simulateProd) {
     mainWindow.on('closed', () => {
       mainWindow = null; // Dereference the window object
     });
@@ -144,7 +154,7 @@ const createEditorWindow = () => {
   // Create the browser window.
   const editorWindow = new BrowserWindow({
     width: 1200,
-    height: process.env.NODE_ENV === 'development' ? 616 : 600,
+    height: process.env.NODE_ENV === 'development' && !simulateProd ? 616 : 600,
     title: "Keyboard Sounds - Profile Editor (beta)",
     backgroundColor: '#121212',
     icon: path.join(__dirname, 'app_icon.png'),
@@ -153,7 +163,7 @@ const createEditorWindow = () => {
     },
   });
 
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== 'development' || simulateProd) {
     editorWindow.setMenuBarVisibility(false);
   }
 
@@ -345,7 +355,7 @@ app.whenReady().then(async () => {
 
   // Allow the user to double-click the tray icon to open
   // or focus the application window.
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== 'development' || simulateProd) {
     tray.on('click', toggleWindow);
 
     const notifyOnLaunch = await kbs.getNotifyOnLaunch();
@@ -370,6 +380,17 @@ app.on('window-all-closed', async () => {
   }
 });
 
+async function download(url, dest) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`download failed: ${res.status}`);
+  const fileStream = fs.createWriteStream(dest);
+  await new Promise((resolve, reject) => {
+    res.body.pipe(fileStream);
+    res.body.on('error', reject);
+    fileStream.on('finish', resolve);
+  });
+}
+
 async function runUpdateCheck() {
   try {
     const update = await kbs.checkForUpdate();
@@ -379,14 +400,35 @@ async function runUpdateCheck() {
         dialog.showMessageBox({
           type: 'info',
           title: 'Keyboard Sounds',
-          message: `Update Available`,
-          detail: `A newer version of Keyboard Sounds is available for download.\n\nKeyboard Sounds ${update.name}`,
-          buttons: ['Download Update', 'Close'],
+          message: `A new version of Keyboard Sounds is available!`,
+          detail: `${kbs.appVersion} → ${update.tag_name}\n\nWould you like to install it now? The application will be restarted after the update.`,
+          buttons: ['Install and relaunch', 'Remind me later'],
           defaultId: 0,
           cancelId: 1
-        }).then((response) => {
+        }).then(async (response) => {
           if (response.response === 0) {
-            shell.openExternal(update.html_url);
+            const asset = update.assets.find(
+              asset => asset.name.includes('Keyboard-Sounds-Setup-windows-x64.exe')
+            )
+
+            if (asset === undefined) {
+              return;
+            }
+
+            const downloadUrl = asset.browser_download_url;
+            const filePath = path.join(app.getPath('temp'), 'Keyboard-Sounds-Setup-windows-x64.exe');
+
+            // Download the file
+            try {
+              await download(downloadUrl, filePath);
+              spawn(filePath, [], {
+                detached: true,
+                stdio: 'ignore'
+              }).unref();  
+              process.exit(0);
+            } catch (err) {
+              console.log(err);
+            }
           }
         });
       }

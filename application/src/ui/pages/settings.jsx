@@ -106,7 +106,18 @@ function DiscordIcon(props) {
   );
 }
 
-const Settings = ({ appVersion, backEndVersion, notifyOnLaunch, notifyOnHide, notifyOnUpdate, onNotifyOnLaunchChanged, onNotifyOnHideChanged, onNotifyOnUpdateChanged }) => {
+const Settings = ({ 
+  appVersion,
+  backEndVersion,
+  runOnStartUp,
+  onRunOnStartUpChanged,
+  notifyOnLaunch,
+  notifyOnHide,
+  notifyOnUpdate,
+  onNotifyOnLaunchChanged,
+  onNotifyOnHideChanged,
+  onNotifyOnUpdateChanged,
+}) => {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [update, setUpdate] = useState(null);
   const [checkingForUpdate, setCheckingForUpdate] = useState(false);
@@ -173,8 +184,8 @@ const Settings = ({ appVersion, backEndVersion, notifyOnLaunch, notifyOnHide, no
                 <Close />
               </IconButton>
             </Box>
-            <Typography variant="h6" sx={{ mt: 1 }}>Version {update.tag_name}</Typography>
-            <DialogContent dividers={scroll === "paper"}>
+            <Typography variant="h6" sx={{ mt: 1, mb: -1 }}>Version {update.tag_name}</Typography>
+            <DialogContent dividers={scroll === "paper"} sx={{ p: 0 }}>
               <ReactMarkdown
                 components={{
                   h1: ({ node, ...props }) => (
@@ -245,7 +256,28 @@ const Settings = ({ appVersion, backEndVersion, notifyOnLaunch, notifyOnHide, no
         )}
       </Dialog>
 
-      <Typography variant="h6">Notification Preferences</Typography>
+
+      <Typography variant="h6">Application Settings</Typography>
+      <Box
+        sx={{
+          mt: 2,
+          borderRadius: 1,
+          pl: 2,
+          pr: 2,
+          pt: 1,
+          pb: 1,
+          bgcolor: "background.default",
+          // minHeight: "calc(100vh - 800px)",
+        }}
+      >
+        <InputCheckbox
+          checked={runOnStartUp}
+          onChange={onRunOnStartUpChanged}
+          title="Run on Start Up"
+          first />
+      </Box>
+
+      <Typography variant="h6" sx={{ mt: 2 }}>Notification Preferences</Typography>
       <Box
         sx={{
           mt: 2,
@@ -273,62 +305,6 @@ const Settings = ({ appVersion, backEndVersion, notifyOnLaunch, notifyOnHide, no
           onChange={onNotifyOnUpdateChanged}
           title="Notify me when a new version is available"
           last />
-      </Box>
-
-      <Typography variant="h6" sx={{ mt: 2 }}>Discord Community</Typography>
-      <Box
-        sx={{
-          mt: 2,
-          borderRadius: 1,
-          p: 2,
-          bgcolor: "background.default",
-        }}
-      >
-        <Typography variant="body2" color="GrayText">
-          Join our Discord community to get support, share and download profiles, and connect with other members.
-        </Typography>
-        <Link
-          href="https://discord.gg/gysskqts6z"
-          target="_blank"
-        >
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<DiscordIcon sx={{ mt: 0.5 }} />}
-            sx={{ mt: 2 }}
-          >
-            Join the Discord Community
-          </Button>
-        </Link>
-      </Box>
-
-      <Typography variant="h6" sx={{ mt: 2 }}>Feedback & Support</Typography>
-      <Box
-        sx={{
-          mt: 2,
-          borderRadius: 1,
-          p: 2,
-          bgcolor: "background.default",
-        }}
-      >
-        <Typography variant="body2" color="GrayText">
-          Report bugs, request features, submit suggestions, and contribute to the project on the official GitHub page.
-        </Typography>
-        <Link
-          href="https://github.com/nathan-fiscaletti/keyboardsounds"
-          target="_blank"
-        >
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<GitHubIcon sx={{ mt: -0.5 }} />}
-            sx={{
-              mt: 2,
-            }}
-          >
-            View on GitHub
-          </Button>
-        </Link>
       </Box>
 
       <Typography variant="h6" sx={{ mt: 2 }}>

@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
@@ -9,61 +9,61 @@ import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
 
 import StorageIcon from "@mui/icons-material/Storage";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import GitHubIcon from '@mui/icons-material/GitHub';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import InfoIcon from '@mui/icons-material/Info';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ChangeHistoryIcon from '@mui/icons-material/ChangeHistory';
+import CheckIcon from '@mui/icons-material/Check';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import {
-  Button,
+  CircularProgress,
   Link,
-  Dialog,
-  DialogContent,
-  SvgIcon,
+  Tooltip,
 } from "@mui/material";
 import { execute } from "../execute";
 
-import ReactMarkdown from "react-markdown";
-import Close from "@mui/icons-material/Close";
-import { LoadingButton } from "@mui/lab";
-
-const AboutItem = ({ icon, title, value, first, last }) => {
+const AboutItem = ({ icon, details, title, value }) => {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        mt: first ? 0 : 1,
-        mb: last ? 0 : 1
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        {icon}
-        <Typography
-          variant="body1"
-          sx={{
-            fontWeight: "bold",
-            ml: 1,
-          }}
-        >
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      mb: 1.5,
+    }}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        width: '100%',
+        alignItems: 'center',
+      }}>
+        {/* {icon} */}
+        <Typography variant="body1" sx={{ ml: 1, fontWeight: "bold", flex: 1, textAlign: "left" }} color="#BCBCBC">
           {title}
         </Typography>
+        {details && (
+          <Tooltip title={details} placement="top-start" arrow>
+            <InfoIcon fontSize="small" sx={{ mr: 1, color: '#BCBCBC' }} />
+          </Tooltip>
+        )}
+        <Box sx={{
+          pl: 1,
+          pr: 1,
+          pt: 0.25,
+          pb: 0.25,
+          background: '#121212',
+          borderRadius: 2,
+        }}>
+          <Typography variant="button" color="GrayText">
+            {value}
+          </Typography>
+        </Box>
       </Box>
-      <Typography variant="button" color="GrayText">
-        {value}
-      </Typography>
     </Box>
   );
 };
 
-const InputCheckbox = ({title, first, last, checked, onChange=(value)=>{}}) => {
+const InputCheckbox = ({title, tip, first, last, checked, onChange=(value)=>{}}) => {
   return (
     <Box
       sx={{
@@ -80,6 +80,7 @@ const InputCheckbox = ({title, first, last, checked, onChange=(value)=>{}}) => {
         sx={{
           fontWeight: "bold",
         }}
+        color="#BCBCBC"
       >
         {title}
       </Typography>
@@ -88,29 +89,78 @@ const InputCheckbox = ({title, first, last, checked, onChange=(value)=>{}}) => {
         flexDirection: 'row',
       }}>
         <Divider orientation="vertical" variant="middle" flexItem sx={{ mr: 1 }} />
-        <Checkbox checked={checked} sx={{ mr: -1.5 }} onChange={(_, value) => onChange(value)} />
+        <Tooltip title={tip} placement="left" arrow>
+          <Checkbox checked={checked} sx={{ mr: -1.5 }} onChange={(_, value) => onChange(value)} />
+        </Tooltip>
       </Box>
     </Box>
   )
 };
 
-function DiscordIcon(props) {
+const UpdateMessage = ({appVersion, checkingForUpdate, isUpdateAvailable, update, color, onCheckForUpdateRequested}) => {
+  const [downloading, setDownloading] = useState(false);
+
   return (
-    <SvgIcon viewBox="0 0 256 256" {...props}>
-      <path
-        d="M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,67.146514 -3.4433191,116.400813 1.08711069,164.955721 C23.2560196,181.510915 44.7403634,191.567697 65.8621325,198.148576 C71.0772151,190.971126 75.7283628,183.341335 79.7352139,175.300261 C72.104019,172.400575 64.7949724,168.822202 57.8887866,164.667963 C59.7209612,163.310589 61.5131304,161.891452 63.2445898,160.431257 C105.36741,180.133187 151.134928,180.133187 192.754523,160.431257 C194.506336,161.891452 196.298154,163.310589 198.110326,164.667963 C191.183787,168.842556 183.854737,172.420929 176.223542,175.320965 C180.230393,183.341335 184.861538,190.991831 190.096624,198.16893 C211.238746,191.588051 232.743023,181.531619 254.911949,164.955721 C260.227747,108.668201 245.831087,59.8662432 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z"
-        fill="currentColor"          // lets the icon inherit the button colour
-        fillRule="nonzero"           // JSX uses camelCase, not fill-rule
-      />
-    </SvgIcon>
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      mb: 1.5,
+    }}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        width: '100%',
+        alignItems: 'center',
+      }}>
+        {isUpdateAvailable ? (
+          <NewReleasesIcon sx={{ mt: -0.25 }} fontSize="small" />
+        ) : (
+          <Tooltip title="You are running the latest version" placement="top" arrow>
+            <CheckIcon sx={{ color, mr: 1  }} fontSize="small" />
+          </Tooltip>
+        )}
+        <Typography variant="body1" sx={{ ml: isUpdateAvailable ? 1 : 0, fontWeight: "bold", flex: 1, textAlign: "left" }}>
+          {checkingForUpdate ? "Checking for Update..." : (isUpdateAvailable ? `Update Available (${appVersion} → ${update.tag_name})` : "Up to date")}
+        </Typography>
+        {!checkingForUpdate && !isUpdateAvailable && (<>
+          <Divider orientation="vertical" variant="middle" flexItem sx={{ mr: 1 }} />
+          <Tooltip title="Check for Update" placement="top" arrow>
+            <IconButton onClick={onCheckForUpdateRequested}>
+              <RefreshIcon sx={{ color: '#bcbcbc' }} fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>)}
+        {!checkingForUpdate && isUpdateAvailable && (<>
+          <Divider orientation="vertical" variant="middle" flexItem sx={{ mr: 1 }} />
+          <Tooltip title="View Details on GitHub" placement="top" arrow>
+            <Link href={update.html_url} target="_blank">
+              <IconButton>
+                <OpenInNewIcon sx={{ color: '#bcbcbc' }} fontSize="small" />
+              </IconButton>
+            </Link>
+          </Tooltip>
+          {downloading ? (
+            <CircularProgress size={18} sx={{ ml: 1.25, mr: 1.25 }} />
+          ) : (
+            <Tooltip title="Download Now" placement="top" arrow>
+              <IconButton onClick={() => { setDownloading(true); execute("downloadUpdate").finally(() => setDownloading(false)); }}>
+                <CloudDownloadIcon sx={{ color }} fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </>)}
+      </Box>
+    </Box>
   );
-}
+};
 
 const Settings = ({ 
   appVersion,
   backEndVersion,
   runOnStartUp,
+  startSoundDaemonOnStartup,
   onRunOnStartUpChanged,
+  onStartSoundDaemonOnStartupChanged,
   notifyOnLaunch,
   notifyOnHide,
   notifyOnUpdate,
@@ -118,30 +168,32 @@ const Settings = ({
   onNotifyOnHideChanged,
   onNotifyOnUpdateChanged,
 }) => {
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [update, setUpdate] = useState(null);
   const [checkingForUpdate, setCheckingForUpdate] = useState(false);
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
 
-  const checkForUpdate = function () {
+  const checkForUpdate = () => {
     setCheckingForUpdate(true);
-    execute("checkForUpdate").then((release) => {
-      if (release) {
-        setIsUpdateAvailable(true);
-        setUpdate(release);
-      }
-
-      setCheckingForUpdate(false);
-      setUpdateDialogOpen(true);
-    });
+    execute("checkForUpdate")
+      .then((release) => {
+        if (release) {
+          setUpdate(release);
+          setIsUpdateAvailable(true);
+        }
+      })
+      .catch((e) => {
+        console.error("Update check failed", e);
+      })
+      .finally(() => {
+        setCheckingForUpdate(false);
+      });
   };
 
   useEffect(() => {
-    if (!updateDialogOpen) {
-      setUpdate(null);
-      setIsUpdateAvailable(false);
+    if (!checkingForUpdate) {
+      checkForUpdate();
     }
-  }, [updateDialogOpen]);
+  }, []);
 
   return (
     <Box
@@ -151,112 +203,6 @@ const Settings = ({
         mt: 2,
       }}
     >
-      <Dialog open={updateDialogOpen} fullWidth>
-        {isUpdateAvailable && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              borderRadius: 1,
-              p: 2,
-              bgcolor: "background.default",
-            }}
-          >
-            <Box sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}>
-              <Box sx={{
-                display: 'flex',
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "start",
-                mb: 1,
-              }}>
-                <CheckCircleOutlineIcon color="success" />
-                <Typography variant="h5" sx={{ ml: 1 }}>
-                  Update Available
-                </Typography>
-              </Box>
-              <IconButton onClick={() => setUpdateDialogOpen(false)}>
-                <Close />
-              </IconButton>
-            </Box>
-            <Typography variant="h6" sx={{ mt: 1, mb: -1 }}>Version {update.tag_name}</Typography>
-            <DialogContent dividers={scroll === "paper"} sx={{ p: 0 }}>
-              <ReactMarkdown
-                components={{
-                  h1: ({ node, ...props }) => (
-                    <Typography variant="h6" {...props} />
-                  ),
-                  h2: ({ node, ...props }) => (
-                    <Typography variant="body1" {...props} />
-                  ),
-                  h3: ({ node, ...props }) => (
-                    <Typography variant="body2" {...props} />
-                  ),
-                  h4: ({ node, ...props }) => (
-                    <Typography variant="subtitle1" {...props} />
-                  ),
-                  p: ({ node, ...props }) => (
-                    <Typography variant="subtitle2" {...props} />
-                  ),
-                }}
-              >
-                {update.body}
-              </ReactMarkdown>
-            </DialogContent>
-            <Button
-              variant="outlined"
-              startIcon={<CloudDownloadIcon />}
-              onClick={() => window.open(update.html_url, "_blank")}
-            >
-              Download
-            </Button>
-          </Box>
-        )}
-        {!isUpdateAvailable && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              borderRadius: 1,
-              p: 2,
-              bgcolor: "background.default",
-            }}
-          >
-            <Box sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}>
-              <Box sx={{
-                display: 'flex',
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "start",
-                mb: 1,
-              }}>
-                <CheckCircleOutlineIcon color="success" />
-                <Typography variant="h5" sx={{ ml: 1 }}>
-                  Up to Date
-                </Typography>
-              </Box>
-              <IconButton onClick={() => setUpdateDialogOpen(false)}>
-                <Close />
-              </IconButton>
-            </Box>
-            <Typography variant="body" sx={{ mt: 2 }}>
-              You are running the latest version of Keyboard Sounds.
-            </Typography>
-          </Box>
-        )}
-      </Dialog>
-
-
       <Typography variant="h6">Application Settings</Typography>
       <Box
         sx={{
@@ -266,14 +212,20 @@ const Settings = ({
           pr: 2,
           pt: 1,
           pb: 1,
-          bgcolor: "background.default",
-          // minHeight: "calc(100vh - 800px)",
+          bgcolor: "#292929",
         }}
       >
         <InputCheckbox
           checked={runOnStartUp}
           onChange={onRunOnStartUpChanged}
-          title="Run on Start Up"
+          title="Start Keyboard Sounds with system"
+          tip="If enabled, Keyboard Sounds will automatically launch when your system launches."
+          first />
+        <InputCheckbox
+          checked={startSoundDaemonOnStartup}
+          onChange={onStartSoundDaemonOnStartupChanged}
+          title="Start playing sounds when launched"
+          tip="If enabled, Keyboard Sounds will start listening for keystrokes and playing sounds immediately after the application launches."
           first />
       </Box>
 
@@ -286,8 +238,7 @@ const Settings = ({
           pr: 2,
           pt: 1,
           pb: 1,
-          bgcolor: "background.default",
-          // minHeight: "calc(100vh - 800px)",
+          bgcolor: "#292929",
         }}
       >
         <InputCheckbox
@@ -308,7 +259,7 @@ const Settings = ({
       </Box>
 
       <Typography variant="h6" sx={{ mt: 2 }}>
-        About
+        Application Details
       </Typography>
       <Box
         sx={{
@@ -317,20 +268,37 @@ const Settings = ({
           borderRadius: 1,
           mt: 2,
           p: 2,
-          bgcolor: "background.default",
+          bgcolor: "#292929",
         }}
       >
-        <AboutItem
-          icon={<CheckCircleOutlineIcon fontSize="small" color="disabled" />}
-          title="App Version"
-          value={appVersion}
-          first
-        />
-        <AboutItem
-          icon={<StorageIcon fontSize="small" color="disabled" />}
-          title="Backend Version"
-          value={backEndVersion}
-        />
+        <UpdateMessage
+          isUpdateAvailable={isUpdateAvailable}
+          checkingForUpdate={checkingForUpdate}
+          update={update}
+          appVersion={appVersion}
+          color='#4caf50'
+          onCheckForUpdateRequested={checkForUpdate} />
+
+        <Box sx={{
+          pt: 1.5,
+          pl: 1,
+          pr: 1,
+          borderRadius: 1,
+          mb: 1.5,
+          background: '#1e1e1e',
+        }}>
+          <AboutItem
+            icon={<ChangeHistoryIcon fontSize="small" color="disabled" />}
+            title="Application Version"
+            value={appVersion}
+          />
+          <AboutItem
+            icon={<StorageIcon fontSize="small" color="disabled" />}
+            title="Backend Version"
+            details="The Keyboard Sounds backend is automatically updated when a new version of the application is installed."
+            value={backEndVersion}
+          />
+        </Box>
 
         <Divider sx={{ mt: 0.5, mb: 0.5 }} />
 
@@ -352,26 +320,11 @@ const Settings = ({
           justifyContent: 'space-between',
           mt: 1,
         }}>
-          <Typography variant="body2" color="GrayText">Github</Typography>
+          <Typography variant="body2" color="GrayText">GitHub</Typography>
           <Link href="https://github.com/nathan-fiscaletti/keyboardsounds" target="_blank">
             <Typography variant="body2">nathan-fiscaletti/keyboardsounds</Typography>
           </Link>
         </Box>
-
-        <LoadingButton
-          fullWidth
-          variant="outlined"
-          loading={checkingForUpdate}
-          disabled={checkingForUpdate}
-          loadingPosition="start"
-          startIcon={<CloudDownloadIcon />}
-          sx={{
-            mt: 2,
-          }}
-          onClick={() => checkForUpdate()}
-        >
-          Check for Update
-        </LoadingButton>
       </Box>
     </Box>
   );

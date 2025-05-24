@@ -8,8 +8,6 @@ import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 
 const Status = ({
-    statusLoaded,
-    status,
     profilesLoaded,
     profiles,
     selectedProfile,
@@ -26,59 +24,6 @@ const Status = ({
         mt: 2,
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderRadius: 1,
-          pl: 3,
-          pr: 3,
-          pt: 2.5,
-          pb: 2.5,
-          bgcolor: "#292929",
-        }}
-      >
-        <Typography
-          variant="body1"
-          sx={{
-            fontWeight: "bold",
-          }}
-        >
-          Status
-        </Typography>
-        <Box sx={{ 
-          borderRadius: 1, 
-          pt: 0.25, 
-          pb: 0.25,
-          pl: 1,
-          pr: 1,
-          bgcolor: 
-            !statusLoaded
-                ? "orange"
-                : status.status === "running"
-                  ? green[500]
-                  : "red" 
-        }}>
-          <Typography
-            variant="button"
-            color={"white"}
-            fontWeight={"bold"}
-          >
-            {
-              statusLoaded 
-                ? (
-                  status.user_status === "Not running" ? "disabled" : "enabled"
-                ) : "Loading"
-            }
-          </Typography>
-        </Box>
-      </Box>
-      {/* <Divider sx={{ mt: 2 }} /> */}
-      {/* <Typography variant="h6" sx={{ mt: 2 }}>
-          Configuration
-      </Typography> */}
       <Box
         sx={{
           borderRadius: 1,
@@ -160,133 +105,6 @@ const Status = ({
         </Tooltip>
       </Box>
       </Box>
-
-
-      {/* Status details, move this later */}
-      {/*
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: 1,
-          mt: 2,
-          p: 2,
-          bgcolor: "background.default",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              fontWeight: "bold",
-            }}
-          >
-            Volume
-          </Typography>
-          <Typography variant="button" color="GrayText">
-            {statusLoaded && status.volume !== null ? `${status.volume}%` : "N/A"}
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mt: 1,
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              fontWeight: "bold",
-            }}
-          >
-            Selected Profile
-          </Typography>
-          <Typography variant="button" color="GrayText">
-            {statusLoaded && status.profile ? status.profile : "N/A"}
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mt: 1,
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              fontWeight: "bold",
-            }}
-          >
-            Daemon Status
-          </Typography>
-          <Typography variant="button" color="GrayText">
-            {statusLoaded && status.status ? status.status : "N/A"}
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mt: 1,
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              fontWeight: "bold",
-            }}
-          >
-            Daemon PID
-          </Typography>
-          <Typography variant="button" color="GrayText">
-            {statusLoaded && status.pid ? status.pid : "N/A"}
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mt: 1,
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              fontWeight: "bold",
-            }}
-          >
-            Daemon Lock
-          </Typography>
-          <Typography variant="button" color="GrayText">
-            {statusLoaded
-              ? status.lock.active
-                ? "Active"
-                : "Inactive"
-              : "N/A"}
-          </Typography>
-        </Box>
-      </Box> */}
     </Box>
   );
 };

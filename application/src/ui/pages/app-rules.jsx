@@ -348,7 +348,7 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
       </Box>
       <Typography variant="body2" color="GrayText" sx={{ mb: 0.5, mt: 0.5 }}>
         These rules allow you to control the behavior of the sound daemon based
-        on the currently running applications.
+        on the currently focused application.
       </Typography>
       <Box sx={{ pr: 2 }}>
       <TextField

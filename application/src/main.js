@@ -1,11 +1,6 @@
 const { app, ipcMain, shell, BrowserWindow, Menu, Tray, screen, dialog } = require('electron');
 
-import https from 'https';
-import fs from 'fs';
 import path from 'path';
-import fetch from 'node-fetch';
-
-import { spawn } from 'child_process';
 
 const a = require('electron-squirrel-startup');
 if (a) process.exit(0);
@@ -128,6 +123,8 @@ const toggleWindow = () => {
   });
 
   kbs.appVersion = app.getVersion();
+
+  kbs.setSimulateProd(simulateProd);
 
   // Set the main window for use with the IPC handlers
   kbs.setMainWindow(mainWindow);
@@ -380,17 +377,6 @@ app.on('window-all-closed', async () => {
   }
 });
 
-async function download(url, dest) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`download failed: ${res.status}`);
-  const fileStream = fs.createWriteStream(dest);
-  await new Promise((resolve, reject) => {
-    res.body.pipe(fileStream);
-    res.body.on('error', reject);
-    fileStream.on('finish', resolve);
-  });
-}
-
 async function runUpdateCheck() {
   try {
     const update = await kbs.checkForUpdate();
@@ -407,28 +393,7 @@ async function runUpdateCheck() {
           cancelId: 1
         }).then(async (response) => {
           if (response.response === 0) {
-            const asset = update.assets.find(
-              asset => asset.name.includes('Keyboard-Sounds-Setup-windows-x64.exe')
-            )
-
-            if (asset === undefined) {
-              return;
-            }
-
-            const downloadUrl = asset.browser_download_url;
-            const filePath = path.join(app.getPath('temp'), 'Keyboard-Sounds-Setup-windows-x64.exe');
-
-            // Download the file
-            try {
-              await download(downloadUrl, filePath);
-              spawn(filePath, [], {
-                detached: true,
-                stdio: 'ignore'
-              }).unref();  
-              process.exit(0);
-            } catch (err) {
-              console.log(err);
-            }
+            kbs.downloadUpdate();
           }
         });
       }

@@ -1,101 +1,17 @@
-import React, { useEffect } from "react";
+import React from "react";
 
-import { useState } from "react";
-
-import MeImg from './me.jpg';
-
-import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Checkbox from "@mui/material/Checkbox";
-import Divider from "@mui/material/Divider";
 
-import StorageIcon from "@mui/icons-material/Storage";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import GitHubIcon from '@mui/icons-material/GitHub';
 import CoffeeIcon from '@mui/icons-material/Coffee';
+import HandshakeIcon from '@mui/icons-material/Handshake';
 
 import {
   Button,
   Link,
-  Dialog,
-  DialogContent,
   SvgIcon,
 } from "@mui/material";
-import { execute } from "../execute";
-
-import ReactMarkdown from "react-markdown";
-import Close from "@mui/icons-material/Close";
-import { LoadingButton } from "@mui/lab";
-
-const AboutItem = ({ icon, title, value, first, last }) => {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        mt: first ? 0 : 1,
-        mb: last ? 0 : 1
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        {icon}
-        <Typography
-          variant="body1"
-          sx={{
-            fontWeight: "bold",
-            ml: 1,
-          }}
-        >
-          {title}
-        </Typography>
-      </Box>
-      <Typography variant="button" color="GrayText">
-        {value}
-      </Typography>
-    </Box>
-  );
-};
-
-const InputCheckbox = ({title, first, last, checked, onChange=(value)=>{}}) => {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        mt: first ? 0 : 0.5,
-        mb: last ? 0 : 0.5,
-      }}
-    >
-      <Typography
-        variant="body1"
-        sx={{
-          fontWeight: "bold",
-        }}
-      >
-        {title}
-      </Typography>
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'row',
-      }}>
-        <Divider orientation="vertical" variant="middle" flexItem sx={{ mr: 1 }} />
-        <Checkbox checked={checked} sx={{ mr: -1.5 }} onChange={(_, value) => onChange(value)} />
-      </Box>
-    </Box>
-  )
-};
 
 function DiscordIcon(props) {
   return (
@@ -109,6 +25,37 @@ function DiscordIcon(props) {
   );
 }
 
+const CoffeeIconContainer = () => {
+  return (
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'row',
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '124px',
+      height: '124px',
+      backgroundColor: '#1e1e1e',
+    }}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 100,
+        width: '100px',
+        height: '100px',
+        backgroundColor: '#393939',
+      }}>
+        <CoffeeIcon sx={{ 
+          color: '#4caf50',
+          fontSize: "48px",
+        }} />
+      </Box>
+    </Box>
+  );
+};
+
 const About = () => {
   return (
     <Box
@@ -118,7 +65,7 @@ const About = () => {
         mt: 2,
       }}
     >
-       {/* <Typography variant="h6">Buy me a Coffee!</Typography> */}
+      <Typography variant="h6">Support the Project</Typography>
       <Box sx={{
         mt: 2,
         display: 'flex',
@@ -126,36 +73,35 @@ const About = () => {
         gap: 2,
         width: '100%',
         alignItems: 'center',
+        bgcolor: "#292929",
+        borderRadius: 1,
+        padding: 2,
       }}>
-        <Box
-            sx={{
-                flex: 1,
-                borderRadius: 1,
-                bgcolor: "#292929",
-                p: 2,
-                // bgcolor: "background.default",
-            }}
-        >
-            <Typography variant="body2" color="#BCBCBC">
-                Enjoying the app? Buy me a coffee as a small thanks — it means a lot!
-            </Typography>
-            <Link
-                href="https://buymeacoffee.com/nathan.fiscaletti"
-                target="_blank"
-            >
-                <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<CoffeeIcon sx={{ mt: -0.25 }} />}
-                    sx={{
-                    mt: 2,
-                    }}
-                >
-                    Buy me a coffee
-                </Button>
-            </Link>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+        }}>
+          <Typography variant="body2" color="#BCBCBC">
+              If you’re enjoying the app, you can buy me a coffee as a small token of appreciation—it’s totally optional and I’m incredibly grateful for any support.
+          </Typography>
+          <Link
+              href="https://buymeacoffee.com/nathan.fiscaletti"
+              target="_blank"
+          >
+              <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<HandshakeIcon sx={{ mt: -0.25 }} />}
+                  sx={{
+                  mt: 2,
+                  }}
+              >
+                  Buy me a coffee
+              </Button>
+          </Link>
         </Box>
-        <img src={MeImg} alt="Me" style={{ width: '125px', height: 'auto', borderRadius: '100px' }} />
+        <CoffeeIconContainer />
       </Box>
 
       <Typography variant="h6" sx={{ mt: 2 }}>Discord Community</Typography>
@@ -164,10 +110,10 @@ const About = () => {
           mt: 2,
           borderRadius: 1,
           p: 2,
-          bgcolor: "background.default",
+          bgcolor: "#292929",
         }}
       >
-        <Typography variant="body2" color="GrayText">
+        <Typography variant="body2" color="#BCBCBC">
           Join our Discord community to get support, share and download profiles, and connect with other members.
         </Typography>
         <Link
@@ -191,10 +137,10 @@ const About = () => {
           mt: 2,
           borderRadius: 1,
           p: 2,
-          bgcolor: "background.default",
+          bgcolor: "#292929",
         }}
       >
-        <Typography variant="body2" color="GrayText">
+        <Typography variant="body2" color="#BCBCBC">
           Report bugs, request features, submit suggestions, and contribute to the project on the official GitHub page.
         </Typography>
         <Link

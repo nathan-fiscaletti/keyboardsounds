@@ -27,9 +27,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 import GavelIcon from "@mui/icons-material/Gavel";
 import LibraryMusicIcon from "@mui/icons-material/LibraryMusic";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
+import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import GitHubIcon from "@mui/icons-material/GitHub";
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import SettingsIcon from "@mui/icons-material/Settings";
+import ForumIcon from '@mui/icons-material/Forum';
 import { IconButton, Typography, Link } from "@mui/material";
 
 import { execute } from './execute';
@@ -140,6 +142,7 @@ function App() {
   const [notifyOnHide, setNotifyOnHide] = useState(true);
   const [notifyOnUpdate, setNotifyOnUpdate] = useState(true);
   const [runOnStartUp, setRunOnStartup] = useState(true);
+  const [runSoundDaemonOnStartup, setRunSoundDaemonOnStartup] = useState(true);
 
   // Get the version from the backend
   useEffect(() => {
@@ -167,6 +170,7 @@ function App() {
       const notifyOnHide = await execute("getNotifyOnHide");
       const notifyOnUpdate = await execute("getNotifyOnUpdate");
       const runOnStartUp = await execute("getRunOnStartUp");
+      const startSoundDaemonOnStartUp = await execute("getStartSoundDaemonOnStartUp");
 
       setVolume(volume);
       setDisplayVolume(volume);
@@ -175,6 +179,11 @@ function App() {
       setNotifyOnHide(notifyOnHide);
       setNotifyOnUpdate(notifyOnUpdate);
       setRunOnStartup(runOnStartUp);
+      setRunSoundDaemonOnStartup(startSoundDaemonOnStartUp);
+
+      if (startSoundDaemonOnStartUp) {
+        await execute(`start -p ${profile} -v ${volume}`);
+      }
     };
     run();
   }, []);
@@ -325,16 +334,21 @@ function App() {
     execute(`storeRunOnStartUp ${r}`);
   });
 
+  const handleStartSoundDaemonOnStartupChanged = (r => {
+    setRunSoundDaemonOnStartup(r);
+    execute(`storeStartSoundDaemonOnStartUp ${r}`);
+  });
+
   const [selectedTab, setSelectedTab] = useState(0);
 
   useEffect(() => {
-    if (selectedTab === 0) {
-      execute(`setHeight 500`);
-    } else if (selectedTab === 3) {
-      execute(`setHeight 816`);
-    } else if (selectedTab === 4) {
-      execute(`setHeight 708`);
-    } else {
+    if (selectedTab === 0) {        // Audio
+      execute(`setHeight 414`);
+    } else if (selectedTab === 3) { // Settings
+      execute(`setHeight 888`);
+    } else if (selectedTab === 4) { // Community
+      execute(`setHeight 796`);
+    } else {                        // All Other Pages
       execute(`setHeight 800`);
     }
   }, [selectedTab]);
@@ -434,17 +448,15 @@ function App() {
             onChange={(_, v) => setSelectedTab(v)}
             variant="fullWidth"
           >
-            <Tooltip title="Status" arrow><Tab icon={<MonitorHeartIcon />} /></Tooltip>
+            <Tooltip title="Audio" arrow><Tab icon={<GraphicEqIcon />} /></Tooltip>
             <Tooltip title="Profiles" arrow><Tab icon={<LibraryMusicIcon />} /></Tooltip>
-            <Tooltip title="Application Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>
+            <Tooltip title="Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>
             <Tooltip title="Settings" arrow><Tab icon={<SettingsIcon />} /></Tooltip>
-            <Tooltip title="About" arrow><Tab icon={<HelpCenterIcon />} /></Tooltip>
+            <Tooltip title="Community" arrow><Tab icon={<ForumIcon />} /></Tooltip>
           </Tabs>
   
           {selectedTab === 0 && (
             <Status 
-              statusLoaded={statusLoaded}
-              status={status}
               profilesLoaded={profilesLoaded}
               profiles={profiles}
               selectedProfile={selectedProfile} 
@@ -474,6 +486,7 @@ function App() {
               appVersion={appVersion}
               backEndVersion={backEndVersion}
               runOnStartUp={runOnStartUp}
+              startSoundDaemonOnStartup={runSoundDaemonOnStartup}
               onRunOnStartUpChanged={handleRunOnStartupChanged}
               notifyOnLaunch={notifyOnLaunch}
               onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
@@ -481,6 +494,7 @@ function App() {
               onNotifyOnHideChanged={handleNotifyOnHideChanged}
               notifyOnUpdate={notifyOnUpdate}
               onNotifyOnUpdateChanged={handleNotifyOnUpdateChanged}
+              onStartSoundDaemonOnStartupChanged={handleStartSoundDaemonOnStartupChanged}
             />
           )}
 

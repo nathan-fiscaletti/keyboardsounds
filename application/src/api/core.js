@@ -6,7 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import yaml from 'js-yaml';
-
+import { spawn } from 'child_process';
+import fetch from 'node-fetch';
 import Store from 'electron-store';
 
 const store = new Store();
@@ -25,7 +26,8 @@ const kbs = {
     editorWindowCreateHandler: null,
     editorWindow: null,
     openFileDialogIsOpen: false,
-    appVersion: '1.5.1',
+    appVersion: null, // this is filed in in main.js from package.json
+    simulateProd: false,
 
     exec: function (cmd, print=true) {
         return new Promise((resolve, reject) => {
@@ -42,6 +44,10 @@ const kbs = {
                 resolve(stdout);
             });
         });
+    },
+
+    setSimulateProd: function(val) {
+        this.simulateProd = val;
     },
 
     getBackendVersion: function () {
@@ -142,6 +148,15 @@ const kbs = {
             .then(res => res.json())
             .then(release => {
                 if (release.tag_name !== this.appVersion) {
+                    // Don't count an update as new until it's assets are available.
+                    const asset = release.assets.find(
+                        asset => asset.name.includes('Keyboard-Sounds-Setup-windows-x64.exe')
+                    )
+
+                    if (asset === undefined) {
+                        return null;
+                    }
+
                     return release
                 }
 
@@ -289,6 +304,15 @@ const kbs = {
         return Promise.resolve(store.get('run_on_startup', false));
     },
 
+    storeStartSoundDaemonOnStartUp: async function(value) {
+        const runSoundsOnStartUp = value === 'true';
+        store.set('start_sound_daemon_on_start_up', runSoundsOnStartUp);
+    },
+
+    getStartSoundDaemonOnStartUp: async function() {
+        return Promise.resolve(store.get('start_sound_daemon_on_start_up', false));
+    },
+
     setVolume: async function(volume) {
         return this.executeDaemonCommand({
             action: 'set_volume',
@@ -352,6 +376,48 @@ const kbs = {
                 });
             });
         });
+    },
+
+    downloadUpdate: async function() {
+        const download = async (url, dest) => {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`download failed: ${res.status}`);
+          const fileStream = fs.createWriteStream(dest);
+          await new Promise((resolve, reject) => {
+            res.body.pipe(fileStream);
+            res.body.on('error', reject);
+            fileStream.on('finish', resolve);
+          });
+        };
+
+        const update = await this.checkForUpdate();
+
+        if (update.tag_name === this.appVersion) {
+            return;
+        }
+
+        const asset = update.assets.find(
+            asset => asset.name.includes('Keyboard-Sounds-Setup-windows-x64.exe')
+        )
+
+        if (asset === undefined) {
+            return;
+        }
+
+        const downloadUrl = asset.browser_download_url;
+        const filePath = path.join(app.getPath('temp'), 'Keyboard-Sounds-Setup-windows-x64.exe');
+
+        // Download the file
+        try {
+            await download(downloadUrl, filePath);
+            spawn(filePath, [], {
+                detached: true,
+                stdio: 'ignore'
+            }).unref();  
+            process.exit(0);
+        } catch (err) {
+            console.log(err);
+        }
     },
 
     installPythonPackage: function () {
@@ -419,7 +485,7 @@ const kbs = {
     },
 
     setHeight: function(newHeight) {
-        if (process.env.NODE_ENV !== 'development') {
+        if (process.env.NODE_ENV !== 'development' || this.simulateProd) {
             const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
             this.mainWindow.setResizable(true);

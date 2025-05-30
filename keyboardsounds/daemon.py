@@ -1,3 +1,4 @@
+import os
 from sys import platform
 
 import json
@@ -22,6 +23,7 @@ __am: AudioManager = None
 __dm = None
 __volume = 100
 __down = []
+__debug = False
 
 
 def on_command(command: dict) -> None:
@@ -107,6 +109,10 @@ if WIN32:
         Parameters:
         - app_path: The file path of the application that has just gained focus.
         """
+        global __debug
+        if __debug:
+            print(f"focused application changed: {app_path}")
+
         rules = app_rules.get_rules()
 
         global __am
@@ -124,7 +130,7 @@ if WIN32:
             __am.set_enabled(True)
 
 
-def run(dm, volume: int, profile: str):
+def run(dm, volume: int, profile: str, debug: bool):
     """
     Initializes and runs the keyboard sound application.
 
@@ -139,6 +145,9 @@ def run(dm, volume: int, profile: str):
     global __am
     global __volume
     global __dm
+    global __debug
+
+    __debug = debug
 
     __volume = volume
     __am = AudioManager(Profile(profile))
@@ -149,7 +158,16 @@ def run(dm, volume: int, profile: str):
 
     mixer.init()
     with Listener(on_press=__on_press, on_release=__on_release) as listener:
-        listener.join()
+        if __debug:
+            def stdin_loop(listener: Listener):
+                print("Run 'quit' to terminate the debug process")
+                while listener.running:
+                    cmd = input("")
+                    if cmd == "quit":
+                        os._exit(0)
+            stdin_loop(listener)
+        else:
+            listener.join()
 
 def one_shot(volume: int, press_sound: str, release_sound: str):
     global __am

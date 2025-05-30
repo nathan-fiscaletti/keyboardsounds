@@ -43,6 +43,7 @@ class ExternalAPI:
 
     def __listen(self):
         self.__socket.listen(9)
+        print(f"external API listening on localhost:{self.__port}")
 
         connection_handlers: list[tuple[_ConnectionHandler, Thread]] = []
 

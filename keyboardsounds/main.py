@@ -101,9 +101,15 @@ def main():
         "-p",
         "--profile",
         type=str,
-        default="apple-ios",
+        default="ios",
         metavar="profile",
-        help="sound profile to use, default 'apple-ios'",
+        help="sound profile to use, default 'ios'",
+    )
+    parser.add_argument(
+        "-D",
+        "--debug",
+        action="store_true",
+        help="used with kbs start to debug the daemon",
     )
 
     # Status Action
@@ -183,7 +189,7 @@ def main():
             print("Re-configuring running instance of Keyboard Sounds daemon...")
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
-        if not dm.try_start(volume=args.volume, profile=args.profile):
+        if not dm.try_start(volume=args.volume, profile=args.profile, debug=args.debug):
             print("Failed to start.")
             return
         print(f"Started Keyboard Sounds.")

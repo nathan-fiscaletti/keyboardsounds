@@ -29,6 +29,7 @@ class _ConnectionHandler:
         - None
         """
         remote_port = self.__connection.getpeername()[1]
+        print(f"new external api connection ::{remote_port}")
         with self.__connection.makefile("r") as f:
             # I want this to only loop while the connection is open
             while self.__continue:

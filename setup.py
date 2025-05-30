@@ -2,14 +2,14 @@ from setuptools import setup
 
 setup(
     name="keyboardsounds",
-    version="5.9.6",
+    version="5.9.7",
     description="Adds the ability to play sounds while typing on any system.",
     author="Nathan Fiscaletti",
     author_email="nate.fiscaletti@gmail.com",
     packages=["keyboardsounds"],
     install_requires=[
         "pygame==2.6.1",
-        "pynput==1.7.7",
+        "pynput==1.8.1",
         "psutil==6.1.0",
         "imageio-ffmpeg==0.5.1",
         "pyyaml==6.0.2",

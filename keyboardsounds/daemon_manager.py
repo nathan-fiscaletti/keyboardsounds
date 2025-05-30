@@ -240,7 +240,7 @@ class DaemonManager:
 
         return True
 
-    def try_start(self, volume: int, profile: str) -> None:
+    def try_start(self, volume: int, profile: str, debug: bool) -> None:
         """
         Attempts to start the daemon process with the specified volume and
         profile. Stops any existing daemon process before starting a new one.
@@ -267,25 +267,27 @@ class DaemonManager:
         if status == "stale":
             self.try_stop()
 
-        subprocess.Popen(
-            [sys.argv[0], "start-daemon", str(volume), profile],
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-            start_new_session=True,
-        )
-        time.sleep(1.0)
+        if debug:
+            self.run_daemon(volume, profile, debug=True)
+        else:
+            subprocess.Popen(
+                [sys.argv[0], "start-daemon", str(volume), profile],
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                start_new_session=True,
+            )
+            time.sleep(1.0)
         return True
 
     def update_lock_file(self, volume: int, profile: str):
+        lockData = {
+            "pid": os.getpid(),
+            "volume": volume,
+            "profile": profile,
+            "api_port": self.__api.port(),
+        }
+        print(f"updating lock-file with {lockData}")
         with open(self.__lock_file, "w") as f:
-            json.dump(
-                {
-                    "pid": os.getpid(),
-                    "volume": volume,
-                    "profile": profile,
-                    "api_port": self.__api.port(),
-                },
-                f,
-            )
+            json.dump(lockData, f)
 
     def capture_daemon_initialization(self):
         """
@@ -316,20 +318,24 @@ class DaemonManager:
             except:
                 pass
 
-            api_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            api_socket.bind(("localhost", 0))
-            self.__api = ExternalAPI(api_socket, daemon.on_command)
-            self.__api.listen()
+            self.run_daemon(volume, profile, debug=False)
+            return True
+        return False
 
-            self.update_lock_file(volume, profile)
+    def run_daemon(self, volume: int, profile: str, debug: bool):
+        api_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        api_socket.bind(("localhost", 0))
+        self.__api = ExternalAPI(api_socket, daemon.on_command)
+        self.__api.listen()
 
+        self.update_lock_file(volume, profile)
+
+        if not debug:
             LINE_BUFFERED = 1
             f = open(os.devnull, "w", buffering=LINE_BUFFERED)
             sys.stdout = f
             sys.stderr = f
-            daemon.run(self, volume, profile)
-            return True
-        return False
+        daemon.run(self, volume, profile, debug=debug)
 
     def capture_oneshot(self) -> bool:
         if self.__one_shot and (len(sys.argv) == 3 or len(sys.argv) == 4) and sys.argv[1] == "one-shot":

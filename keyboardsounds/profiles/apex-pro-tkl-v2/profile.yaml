@@ -1,0 +1,27 @@
+keys:
+  default:
+  - Key 1
+  - Key 2
+  - Key 4
+  other:
+  - keys:
+    - space
+    sound: Space
+  - keys:
+    - enter
+    sound: Enter
+profile:
+  author: Akira
+  description: Sampled audio from the Steelseries Apex Pro Keyboard
+  name: apex-pro-tkl-v2
+sources:
+- id: Key 1
+  source: key1.wav
+- id: Key 2
+  source: key3.wav
+- id: Key 4
+  source: key4.wav
+- id: Space
+  source: space.wav
+- id: Enter
+  source: enter.wav

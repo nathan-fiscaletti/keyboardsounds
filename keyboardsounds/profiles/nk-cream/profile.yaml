@@ -1,0 +1,54 @@
+keys:
+  default:
+  - Key 1
+  - Key 2
+  - Key 3
+  - Key 4
+  - Key 5
+  - Key 6
+  other:
+  - keys:
+    - space
+    sound: Space
+  - keys:
+    - tab
+    sound: Tab
+  - keys:
+    - shift_l
+    - shift_r
+    sound: Shift
+  - keys:
+    - enter
+    sound: Enter
+  - keys:
+    - backspace
+    sound: Back Space
+profile:
+  author: Mechvibes Community
+  description: Sample audio from NovelKeys Cream Switches
+  name: nk-cream
+sources:
+- id: Key 1
+  source: a.wav
+- id: Key 2
+  source: b.wav
+- id: Key 3
+  source: c.wav
+- id: Key 4
+  source: d.wav
+- id: Key 5
+  source: e.wav
+- id: Key 6
+  source: f.wav
+- id: Enter
+  source: enter.wav
+- id: Capslock
+  source: caps lock.wav
+- id: Back Space
+  source: backspace.wav
+- id: Shift
+  source: shift.wav
+- id: Space
+  source: space.wav
+- id: Tab
+  source: tab.wav

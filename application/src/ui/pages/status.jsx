@@ -48,10 +48,19 @@ const Status = ({
         <Select
           value={selectedProfile}
           onChange={onProfileChanged}
+          renderValue={(val) => <Typography>{val}</Typography>}
         >
           {profilesLoaded && profiles.map((profile) => (
             <MenuItem key={profile.name} value={profile.name}>
-              {profile.name}
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}>
+                <Typography variant="body1">
+                  {profile.name} <Typography variant="caption" color="text.secondary">by <i>{profile.author}</i></Typography>
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{profile.description}</Typography>
+              </Box>
             </MenuItem>
           ))}
         </Select>

@@ -8,7 +8,7 @@ https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
 [![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
 
-Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 11 built in profiles, a profile editor, and application rules.
+Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 15 built in profiles, a profile editor, and application rules.
 
 ### Getting Started
 

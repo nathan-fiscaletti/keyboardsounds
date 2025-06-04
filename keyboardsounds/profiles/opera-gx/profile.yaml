@@ -1,0 +1,60 @@
+keys:
+  default:
+  - Key 1
+  - Key 2
+  - Key 3
+  - Key 4
+  - Key 5
+  - Key 6
+  - Key 7
+  - Key 8
+  - Key 9
+  - Key 10
+  - Key 11
+  - Key 12
+  other:
+  - keys:
+    - space
+    sound: Space
+  - keys:
+    - enter
+    - enter
+    sound: Enter
+  - keys:
+    - backspace
+    sound: Backspace
+profile:
+  author: Mechvibes Community
+  description: Sample audio from the OperaGX Web Browser
+  name: opera-gx
+sources:
+- id: Backspace
+  source: backspace.wav
+- id: Enter
+  source: enter.wav
+- id: Space
+  source: space.wav
+- id: Key 1
+  source: 1real.wav
+- id: Key 2
+  source: 2real.wav
+- id: Key 3
+  source: 3real.wav
+- id: Key 4
+  source: 4real.wav
+- id: Key 5
+  source: 5real.wav
+- id: Key 6
+  source: 6real.wav
+- id: Key 7
+  source: 7real.wav
+- id: Key 8
+  source: 8real.wav
+- id: Key 9
+  source: 9real.wav
+- id: Key 10
+  source: 10real.wav
+- id: Key 11
+  source: 11real.wav
+- id: Key 12
+  source: 12real.wav

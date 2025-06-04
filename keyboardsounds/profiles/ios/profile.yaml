@@ -26,7 +26,7 @@ keys:
 profile:
   author: Apple Inc. (Sampled)
   description: Simulates the sounds made by the iPhone keyboard.
-  name: apple-ios
+  name: ios
 sources:
 - id: Default
   source: key.mp3

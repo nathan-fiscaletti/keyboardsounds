@@ -1,0 +1,29 @@
+keys:
+  default:
+  - Key 1
+  - Key 2
+  - Key 3
+  - Key 4
+  - Key 5
+  - Key 6
+  - Key 7
+  other: []
+profile:
+  author: Akira
+  description: Sampled audio from Banana Split switches.
+  name: banana-split
+sources:
+- id: Key 1
+  source: banana-l-1.wav
+- id: Key 2
+  source: banana-l-2.wav
+- id: Key 3
+  source: banana-l-3.wav
+- id: Key 4
+  source: banana-l-4.wav
+- id: Key 5
+  source: banana-l-5.wav
+- id: Key 6
+  source: banana-l-6.wav
+- id: Key 7
+  source: banana-l-7.wav

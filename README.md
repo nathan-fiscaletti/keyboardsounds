@@ -38,7 +38,7 @@ The desktop application still requires the [command line](#command-line-macos-li
 
 > [!IMPORTANT]\
 > **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
-> This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
+> This will allow you to run Python from the command line, which is a requirement for the application to function correctly.
 
 You may need to restart the application after doing this for the changes to take effect.
 
@@ -76,7 +76,7 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 > [!IMPORTANT]\
 > **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
-> This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
+> This will allow you to run Python from the command line, which is a requirement for the application to function correctly.
 
 2. **Install the Keyboard Sounds CLI**
 

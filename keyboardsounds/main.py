@@ -63,7 +63,7 @@ def main():
         (
             f"usage: %(prog)s <action> [params]{os.linesep *2}"
             f"  manage daemon:{os.linesep * 2}"
-            f"    %(prog)s start [-v <volume>] [-p <profile>]{os.linesep}"
+            f"    %(prog)s start [-v <volume>] [-p <profile>] [-D] [-w]{os.linesep}"
             f"    %(prog)s stop{os.linesep}"
             f"    %(prog)s status [-s]{os.linesep * 2}"
             f"  manage profiles:{os.linesep * 2}"
@@ -110,6 +110,12 @@ def main():
         "--debug",
         action="store_true",
         help="used with kbs start to debug the daemon",
+    )
+    parser.add_argument(
+        "-w",
+        "--window",
+        action="store_true",
+        help="used with kbs start to enable the daemon window"
     )
 
     # Status Action
@@ -189,7 +195,7 @@ def main():
             print("Re-configuring running instance of Keyboard Sounds daemon...")
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
-        if not dm.try_start(volume=args.volume, profile=args.profile, debug=args.debug):
+        if not dm.try_start(volume=args.volume, profile=args.profile, debug=args.debug, window=args.window):
             print("Failed to start.")
             return
         print(f"Started Keyboard Sounds.")

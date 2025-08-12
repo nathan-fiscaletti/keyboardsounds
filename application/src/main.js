@@ -337,6 +337,13 @@ app.whenReady().then(async () => {
         kbs.showEditorWindow();
       },
     },
+    {
+      label: 'Show Daemon Window',
+      type: 'normal',
+      click: () => {
+        kbs.showDaemonWindow();
+      }
+    },
     { 
       label: 'Quit',
       type: 'normal',

@@ -5,6 +5,8 @@ import subprocess
 import time
 import json
 import socket
+import threading
+import tkinter as tk
 
 import keyboardsounds.daemon as daemon
 from keyboardsounds.profile import Profile
@@ -30,6 +32,8 @@ class DaemonManager:
         self.__proc = None
         self.__api = None
         self.__one_shot = one_shot
+        self.__thread = None
+        self.__daemon_window_visible = False
         if not self.__one_shot:
             self.__load_status()
 
@@ -240,7 +244,7 @@ class DaemonManager:
 
         return True
 
-    def try_start(self, volume: int, profile: str, debug: bool) -> None:
+    def try_start(self, volume: int, profile: str, debug: bool, window: bool) -> None:
         """
         Attempts to start the daemon process with the specified volume and
         profile. Stops any existing daemon process before starting a new one.
@@ -248,6 +252,8 @@ class DaemonManager:
         Parameters:
         - volume (int): The volume level for the daemon.
         - profile (str): The profile name to be used by the daemon.
+        - debug (bool): Whether or not to enable debug mode.
+        - window (bool): Whether or not to display the daemon window.
 
         Returns:
         - bool: True if the daemon was started successfully, False if there was
@@ -268,10 +274,10 @@ class DaemonManager:
             self.try_stop()
 
         if debug:
-            self.run_daemon(volume, profile, debug=True)
+            self.run_daemon(volume, profile, debug=True, window=window)
         else:
             subprocess.Popen(
-                [sys.argv[0], "start-daemon", str(volume), profile],
+                [sys.argv[0], "start-daemon", str(volume), profile, str(window)],
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
                 start_new_session=True,
             )
@@ -302,7 +308,7 @@ class DaemonManager:
         - bool: True if the daemon was initialized successfully, False if the
                 conditions for initialization were not met.
         """
-        if len(sys.argv) == 4 and sys.argv[1] == "start-daemon":
+        if len(sys.argv) == 5 and sys.argv[1] == "start-daemon":
             if self.status() == "running":
                 return
 
@@ -318,11 +324,17 @@ class DaemonManager:
             except:
                 pass
 
-            self.run_daemon(volume, profile, debug=False)
+            window = False
+            try:
+                window = sys.argv[4] == str(True)
+            except:
+                pass
+
+            self.run_daemon(volume, profile, debug=False, window=window)
             return True
         return False
 
-    def run_daemon(self, volume: int, profile: str, debug: bool):
+    def run_daemon(self, volume: int, profile: str, debug: bool, window: bool):
         api_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         api_socket.bind(("localhost", 0))
         self.__api = ExternalAPI(api_socket, daemon.on_command)
@@ -335,7 +347,120 @@ class DaemonManager:
             f = open(os.devnull, "w", buffering=LINE_BUFFERED)
             sys.stdout = f
             sys.stderr = f
+
+        if window:
+            self.show_daemon_window()
+
         daemon.run(self, volume, profile, debug=debug)
+
+    def show_daemon_window(self):
+        if not self.__daemon_window_visible:
+            self.__thread = threading.Thread(target=self.start_daemon_window)
+            self.__thread.start()
+
+    def start_daemon_window(self):
+        self.__daemon_window_visible = True
+        root = tk.Tk()
+        root.title("Keyboard Sounds - Audio Daemon")
+        root.resizable(False, False)
+        root.attributes('-topmost', True)
+
+        # Main label at the top left
+        label_main = tk.Label(
+            root,
+            text="Keyboard Sounds - Audio Daemon",
+            font=("Arial", 16),
+            anchor="w",
+            justify="left"
+        )
+        label_main.pack(anchor="nw", padx=10, pady=(10, 5))
+
+        # Daemon Control group
+        group_daemon = tk.LabelFrame(
+            root,
+            text="What is this?",
+            font=("Arial", 11, "bold"),
+            padx=10,
+            pady=10
+        )
+        group_daemon.pack(anchor="nw", fill="x", padx=10, pady=5)
+
+        label_explain = tk.Label(
+            group_daemon,
+            text=(
+                "This window exists so you can select it as an audio source in apps "
+                "like OBS. This allows you to isolate keyboard sounds from other audio, "
+                "since apps like OBS can only select audio based on the active window, "
+                "not the running process."
+            ),
+            font=("Arial", 10),
+            wraplength=340,
+            anchor="w",
+            justify="left"
+        )
+        label_explain.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 5))
+
+        # Removed label_explain2
+
+        btn_stop = tk.Button(
+            group_daemon,
+            text="Stop Daemon & Close Window",
+            command=lambda: self.try_stop()
+        )
+        btn_stop.grid(row=1, column=1, sticky="e", pady=(5, 0))
+
+        group_daemon.grid_columnconfigure(0, weight=1)
+        group_daemon.grid_columnconfigure(1, weight=0)
+
+        # Hide Window group
+        group_hide = tk.LabelFrame(
+            root,
+            text="Hide Window",
+            font=("Arial", 11, "bold"),
+            padx=10,
+            pady=10
+        )
+        group_hide.pack(anchor="nw", fill="x", padx=10, pady=(5, 16))
+
+        label_hide_explain = tk.Label(
+            group_hide,
+            text=(
+                "Closing this window will not stop the sound daemon; it will continue "
+                "running in the background. To stop the daemon, you can either use your "
+                "Keyboard Sounds desktop application or run `kbs stop` command from your "
+                "system's terminal. (Or use the button above.)"
+            ),
+            font=("Arial", 9),
+            wraplength=340,
+            anchor="w",
+            justify="left"
+        )
+        label_hide_explain.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 5))
+
+        label_hide_explain2 = tk.Label(
+            group_hide,
+            text=(
+                "To make this window available again for apps that need it (such as OBS), "
+                "you must restart the daemon. If you have the Desktop Application installed, "
+                "you can simply opposite click on the Keyboard Sounds icon in your system tray "
+                "and select the 'Show Daemon Window' option."
+            ),
+            font=("Arial", 9),
+            wraplength=340,
+            anchor="w",
+            justify="left"
+        )
+        label_hide_explain2.grid(row=1, column=0, columnspan=2, sticky="w", pady=(5, 0))
+
+        btn_hide = tk.Button(group_hide, text="Hide Window", command=root.destroy)
+        btn_hide.grid(row=2, column=1, sticky="e", pady=(5, 0))
+
+        group_hide.grid_columnconfigure(0, weight=1)
+        group_hide.grid_columnconfigure(1, weight=0)
+
+        root.update_idletasks()
+        root.mainloop()
+        self.__daemon_window_visible = False
 
     def capture_oneshot(self) -> bool:
         if self.__one_shot and (len(sys.argv) == 3 or len(sys.argv) == 4) and sys.argv[1] == "one-shot":

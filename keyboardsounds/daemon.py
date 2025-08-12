@@ -45,7 +45,11 @@ def on_command(command: dict) -> None:
                     print(f"Profile set to {profile}")
                 except ValueError as err:
                     print(f"Error: {err}")
-
+        elif action == "show_daemon_window":
+            try:
+                __dm.show_daemon_window()
+            except err:
+                print(f"Error: {err}")
 
 def __on_press(key):
     """

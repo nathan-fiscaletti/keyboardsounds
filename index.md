@@ -14,6 +14,7 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 - [Install Keyboard Sounds](#installation)
 - [Create Custom Profiles](#custom-profiles)
 - [Application Rules](#application-rules)
+- [Using Keyboard Sounds with OBS](#using-keyboard-sounds-with-obs)
 - [Command Line Usage](#command-line-macos-linux-or-windows)
 
 ### Helpful Links

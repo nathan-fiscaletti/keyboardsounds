@@ -79,6 +79,8 @@ To enable this window you have several options:
 2. **If you only want the daemon window on demand**: You can opposite click the Keyboard Sounds tray icon in your system tray and select the "Show Daemon Window" option. This will only work when the daemon is currently running.
 3. **If you are using the command line**: Run your `kbs start` command with the `-w` flag.
 
+> On linux, you will need to run `sudo apt install python3-tk` in order to use the `-w` flag with `kbs start`.
+
 ## Command Line (macOS, Linux or Windows)
 
 1. **Install Python**

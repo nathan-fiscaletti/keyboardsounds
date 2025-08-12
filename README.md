@@ -15,6 +15,7 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 - [Install Keyboard Sounds](#installation)
 - [Create Custom Profiles](#custom-profiles)
 - [Application Rules](#application-rules)
+- [Using Keyboard Sounds with OBS](#using-keyboard-sounds-with-obs)
 - [Command Line Usage](#command-line-macos-linux-or-windows)
 
 ### Helpful Links
@@ -67,6 +68,18 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 - _Application rules are currently only available for the Windows platform._
 
 <br><br><br><br><br>
+
+### Using Keyboard Sounds with OBS
+
+![Daemon Window](./daemon-window.png)
+
+In order to use Keyboard Sounds with OBS as an isolated audio source, OBS needs a window that it can attach to that's connected to the process running the Daemon. _This is not the same process as the desktop application._ To work with this, Keyboard Sounds provides a window that can be enabled for the audio daemon.
+
+To enable this window you have several options:
+
+1. **If you ALWAYS want the daemon window**: In the **Settings** tab of the Keyboard Sounds Desktop Application, check the "Enable Daemon Window" option. This will start the daemon window each time that the sound daemon is started by the desktop application.
+2. **If you only want the daemon window on demand**: You can opposite click the Keyboard Sounds tray icon in your system tray and select the "Show Daemon Window" option. This will only work when the daemon is currently running.
+3. **If you are using the command line**: Run your `kbs start` command with the `-w` flag.
 
 ## Command Line (macOS, Linux or Windows)
 

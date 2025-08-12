@@ -158,9 +158,11 @@ const Settings = ({
   appVersion,
   backEndVersion,
   runOnStartUp,
-  startSoundDaemonOnStartup,
   onRunOnStartUpChanged,
+  startSoundDaemonOnStartup,
   onStartSoundDaemonOnStartupChanged,
+  startDaemonWindow,
+  onStartDaemonWindowChanged,
   notifyOnLaunch,
   notifyOnHide,
   notifyOnUpdate,
@@ -226,6 +228,12 @@ const Settings = ({
           onChange={onStartSoundDaemonOnStartupChanged}
           title="Start playing sounds when launched"
           tip="If enabled, Keyboard Sounds will start listening for keystrokes and playing sounds immediately after the application launches."
+          first />
+        <InputCheckbox
+          checked={startDaemonWindow}
+          onChange={onStartDaemonWindowChanged}
+          title="Enable Daemon Window (useful for OBS)"
+          tip="If enabled the Daemon Window will be launched when the daemon is started. This is useful for apps like OBS that require a window for an audio source."
           first />
       </Box>
 

@@ -51,6 +51,7 @@ function ControlButton({
   isLoading,
   selectedProfile,
   volume,
+  enableDaemonWindow,
   handleCommand,
 }) {
   return (
@@ -80,7 +81,9 @@ function ControlButton({
                 <PlayArrowIcon />
               )
             }
-            onClick={handleCommand(`start -p ${selectedProfile} -v ${volume}`)}
+            onClick={
+              handleCommand(`start -p ${selectedProfile} -v ${volume} ${enableDaemonWindow ? '-w' : ''}`)
+            }
           />
         </Tooltip>
       )}
@@ -142,6 +145,7 @@ function App() {
   const [notifyOnHide, setNotifyOnHide] = useState(true);
   const [notifyOnUpdate, setNotifyOnUpdate] = useState(true);
   const [runOnStartUp, setRunOnStartup] = useState(true);
+  const [enableDaemonWindow, setEnableDaemonWindow] = useState(true);
   const [runSoundDaemonOnStartup, setRunSoundDaemonOnStartup] = useState(true);
 
   // Get the version from the backend
@@ -170,6 +174,7 @@ function App() {
       const notifyOnHide = await execute("getNotifyOnHide");
       const notifyOnUpdate = await execute("getNotifyOnUpdate");
       const runOnStartUp = await execute("getRunOnStartUp");
+      const enableDaemonWindow = await execute("getEnableDaemonWindow");
       const startSoundDaemonOnStartUp = await execute("getStartSoundDaemonOnStartUp");
 
       setVolume(volume);
@@ -179,10 +184,11 @@ function App() {
       setNotifyOnHide(notifyOnHide);
       setNotifyOnUpdate(notifyOnUpdate);
       setRunOnStartup(runOnStartUp);
+      setEnableDaemonWindow(enableDaemonWindow);
       setRunSoundDaemonOnStartup(startSoundDaemonOnStartUp);
 
       if (startSoundDaemonOnStartUp) {
-        await execute(`start -p ${profile} -v ${volume}`);
+        await execute(`start -p ${profile} -v ${volume} ${enableDaemonWindow ? '-w' : ''}`);
       }
     };
     run();
@@ -334,6 +340,11 @@ function App() {
     execute(`storeRunOnStartUp ${r}`);
   });
 
+  const handleEnableDaemonWindowChanged = (r => {
+    setEnableDaemonWindow(r);
+    execute(`storeEnableDaemonWindow ${r}`);
+  })
+
   const handleStartSoundDaemonOnStartupChanged = (r => {
     setRunSoundDaemonOnStartup(r);
     execute(`storeStartSoundDaemonOnStartUp ${r}`);
@@ -345,7 +356,7 @@ function App() {
     if (selectedTab === 0) {        // Audio
       execute(`setHeight 414`);
     } else if (selectedTab === 3) { // Settings
-      execute(`setHeight 888`);
+      execute(`setHeight 932`);
     } else if (selectedTab === 4) { // Community
       execute(`setHeight 796`);
     } else {                        // All Other Pages
@@ -404,6 +415,7 @@ function App() {
             isLoading={isLoading}
             selectedProfile={selectedProfile}
             volume={volume}
+            enableDaemonWindow={enableDaemonWindow}
             handleCommand={handleCommand} />
         </Box>
       </Card>
@@ -488,6 +500,8 @@ function App() {
               runOnStartUp={runOnStartUp}
               startSoundDaemonOnStartup={runSoundDaemonOnStartup}
               onRunOnStartUpChanged={handleRunOnStartupChanged}
+              startDaemonWindow={enableDaemonWindow}
+              onStartDaemonWindowChanged={handleEnableDaemonWindowChanged}
               notifyOnLaunch={notifyOnLaunch}
               onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
               notifyOnHide={notifyOnHide}

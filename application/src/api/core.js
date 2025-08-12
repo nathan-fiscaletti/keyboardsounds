@@ -13,7 +13,7 @@ import Store from 'electron-store';
 const store = new Store();
 
 const MinimumPythonVersion = '3.8.0';
-const MinimumPythonPackageVersion = '5.9.2';
+const MinimumPythonPackageVersion = '5.9.9';
 
 const ErrPythonVersionUnknown = 'Failed to parse python version';
 const ErrPythonMissing = 'Python is not installed';
@@ -304,6 +304,15 @@ const kbs = {
         return Promise.resolve(store.get('run_on_startup', false));
     },
 
+    storeEnableDaemonWindow: async function(value) {
+        const enableDaemonWindow = value === 'true';
+        store.set('enable_daemon_window', enableDaemonWindow);
+    },
+
+    getEnableDaemonWindow: async function() {
+        return Promise.resolve(store.get('enable_daemon_window', false));
+    },
+
     storeStartSoundDaemonOnStartUp: async function(value) {
         const runSoundsOnStartUp = value === 'true';
         store.set('start_sound_daemon_on_start_up', runSoundsOnStartUp);
@@ -333,6 +342,12 @@ const kbs = {
             action: 'set_profile',
             profile: profile
         });
+    },
+
+    showDaemonWindow: async function(profile) {
+        return this.executeDaemonCommand({
+            action: 'show_daemon_window',
+        })
     },
 
     checkPythonInstallation: function () {

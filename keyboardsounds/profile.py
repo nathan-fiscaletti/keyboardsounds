@@ -14,12 +14,26 @@ PROFILES_REMOTE_URL = "https://api.github.com/repos/nathan-fiscaletti/keyboardso
 PROFILE_REMOTE_URL = "https://api.github.com/repos/nathan-fiscaletti/keyboardsounds/contents/keyboardsounds/profiles/{name}?ref=master"
 PROFILE_DETAIL_URL = "https://raw.githubusercontent.com/nathan-fiscaletti/keyboardsounds/master/keyboardsounds/profiles/{name}/profile.yaml"
 
-def OneShotProfile(press_sound: str = None, release_sound: str = None):
-    return Profile("one-shot", one_shot=True, one_shot_press_sound=press_sound, one_shot_release_sound=release_sound)
+
+def OneShotProfile(press_sound: str | None = None, release_sound: str | None = None):
+    return Profile(
+        "one-shot",
+        one_shot=True,
+        one_shot_press_sound=press_sound,
+        one_shot_release_sound=release_sound,
+    )
+
+
 class Profile(PathResolver):
-    def __init__(self, name: str, one_shot: bool = False, one_shot_press_sound:str = None, one_shot_release_sound:str = None):
+    def __init__(
+        self,
+        name: str,
+        one_shot: bool = False,
+        one_shot_press_sound: str | None = None,
+        one_shot_release_sound: str | None = None,
+    ):
         super().__init__(os.path.join(ROOT, "profiles", name))
-        
+
         self.name = name
         self.__one_shot = one_shot
         self.__one_shot_press_sound = one_shot_press_sound
@@ -27,15 +41,15 @@ class Profile(PathResolver):
         self.__validate()
 
     def __validate(self):
-        
+
         # Check for Oneshot
-        
+
         if self.__one_shot:
             self.__data = {
-                'profile': {
-                    'type': "one-shot",
-                    'press': self.__one_shot_press_sound,
-                    'release': self.__one_shot_release_sound
+                "profile": {
+                    "type": "one-shot",
+                    "press": self.__one_shot_press_sound,
+                    "release": self.__one_shot_release_sound,
                 }
             }
             return
@@ -77,7 +91,17 @@ class Profile(PathResolver):
             if "description" in self.__data["profile"]
             else None
         )
-        return {"name": name, "author": author, "description": description}
+        device = (
+            self.__data["profile"].get("device")
+            if "device" in self.__data["profile"]
+            else "keyboard"
+        )
+        return {
+            "name": name,
+            "author": author,
+            "description": description,
+            "device": device,
+        }
 
     def export(self, output: str):
         # export profile to zip file
@@ -88,7 +112,15 @@ class Profile(PathResolver):
         names = [
             f.name for f in os.scandir(os.path.join(ROOT, "profiles")) if f.is_dir()
         ]
-        return [Profile(name, one_shot=False, one_shot_press_sound=None, one_shot_release_sound=None) for name in names]
+        return [
+            Profile(
+                name,
+                one_shot=False,
+                one_shot_press_sound=None,
+                one_shot_release_sound=None,
+            )
+            for name in names
+        ]
 
     @classmethod
     def remove_profile(cls, name: str):
@@ -114,7 +146,10 @@ class Profile(PathResolver):
                 raise ValueError(f"Failed to fetch remote profile '{profile_name}'.")
             # parse the yaml file
             profile_data = yaml.safe_load(response.text)
-            result.append(profile_data["profile"])
+            prof = profile_data["profile"]
+            if "device" not in prof:
+                prof["device"] = "keyboard"
+            result.append(prof)
         return result
 
     @classmethod

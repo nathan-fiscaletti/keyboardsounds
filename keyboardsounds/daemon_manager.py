@@ -14,7 +14,7 @@ from keyboardsounds.external_api import ExternalAPI
 
 
 class DaemonManager:
-    def __init__(self, lock_file, one_shot = False) -> None:
+    def __init__(self, lock_file, one_shot=False) -> None:
         """
         Initializes the DaemonManager object with a specified lock file.
 
@@ -40,7 +40,7 @@ class DaemonManager:
     def __load_status(self):
         if self.__one_shot:
             return
-        
+
         """
         Loads the daemon's current status from the lock file, if it exists, and
         updates internal state accordingly. This includes checking if the lock
@@ -105,17 +105,29 @@ class DaemonManager:
             volume_status = f", Volume: {volume}%" if volume is not None else ""
             pid = self.get_pid()
             pid_status = f", PID: {pid}" if pid is not None else ""
-            prof = self.get_profile()
-            profile_status = f", Profile: {prof}" if prof is not None else ""
+            daemon_status = self.status()
+            kb_status = ""
+            mouse_status = ""
+            if daemon_status == "running":
+                prof_kb = self.get_profile()
+                prof_mouse = self.get_mouse_profile()
+                kb_status = (
+                    f", Keyboard Profile: {prof_kb}" if prof_kb is not None else ""
+                )
+                mouse_label = prof_mouse if prof_mouse is not None else "None"
+                mouse_status = f", Mouse Profile: {mouse_label}"
             status_text = {"running": "Running", "stale": "Stale"}.get(
-                self.status(), "Not running"
+                daemon_status, "Not running"
             )
-            status = f"{status_text}{volume_status}{pid_status}{profile_status}"
+            status = (
+                f"{status_text}{volume_status}{pid_status}{kb_status}{mouse_status}"
+            )
             return f"Status: {status}"
         elif short:
             volume = self.get_volume()
             pid = self.get_pid()
-            prof = self.get_profile()
+            prof_kb = self.get_profile()
+            prof_mouse = self.get_mouse_profile()
             daemon_status = self.status()
             api_port = self.get_api_port()
 
@@ -130,13 +142,27 @@ class DaemonManager:
                 "user_status": user_status,
                 "volume": volume,
                 "pid": pid,
-                "profile": prof,
                 "api_port": api_port,
                 "lock": {
                     "active": self.__lock_exists,
                     "file": os.path.abspath(self.__lock_file),
                 },
             }
+            # Include profiles conditionally; only expose 'profile' (keyboard) and 'mouse_profile'
+            if daemon_status == "running":
+                status.update(
+                    {
+                        "profile": prof_kb,
+                        "mouse_profile": prof_mouse,
+                    }
+                )
+            else:
+                status.update(
+                    {
+                        "profile": prof_kb,
+                        "mouse_profile": prof_mouse,
+                    }
+                )
             return json.dumps(status)
         else:
             self.__load_status()
@@ -148,7 +174,7 @@ class DaemonManager:
             else:
                 return "free"
 
-    def get_volume(self) -> int:
+    def get_volume(self) -> int | None:
         """
         Retrieves the current volume level of the daemon if it is running.
 
@@ -161,11 +187,11 @@ class DaemonManager:
         """
         self.__load_status()
         status = self.status()
-        if status == "running":
-            return self.__proc_info["volume"]
+        if status == "running" and self.__proc_info is not None:
+            return self.__proc_info.get("volume")
         return None
 
-    def get_pid(self) -> int:
+    def get_pid(self) -> int | None:
         """
         Retrieves the PID (Process ID) of the daemon if it is running.
 
@@ -178,11 +204,11 @@ class DaemonManager:
         """
         self.__load_status()
         status = self.status()
-        if status == "running":
-            return self.__proc_info["pid"]
+        if status == "running" and self.__proc_info is not None:
+            return self.__proc_info.get("pid")
         return None
 
-    def get_profile(self) -> str:
+    def get_profile(self) -> str | None:
         """
         Retrieves the profile name used by the daemon if it is running.
 
@@ -194,8 +220,15 @@ class DaemonManager:
         """
         self.__load_status()
         status = self.status()
-        if status == "running":
-            return self.__proc_info["profile"]
+        if status == "running" and self.__proc_info is not None:
+            return self.__proc_info.get("profile")
+        return None
+
+    def get_mouse_profile(self) -> str | None:
+        self.__load_status()
+        status = self.status()
+        if status == "running" and self.__proc_info is not None:
+            return self.__proc_info.get("mouse_profile")
         return None
 
     def get_api_port(self) -> int | None:
@@ -210,11 +243,15 @@ class DaemonManager:
         """
         self.__load_status()
         status = self.status()
-        if status == "running":
+        if (
+            status == "running"
+            and self.__proc_info is not None
+            and "api_port" in self.__proc_info
+        ):
             return int(self.__proc_info["api_port"])
         return None
 
-    def try_stop(self) -> None:
+    def try_stop(self) -> bool:
         """
         Attempts to stop the daemon process if it is running or stale. Cleans up
         the lock file if necessary.
@@ -230,7 +267,7 @@ class DaemonManager:
         if status == "free":
             return False
 
-        if status == "running":
+        if status == "running" and self.__proc is not None:
             self.__proc.kill()
             status = self.status()
 
@@ -244,7 +281,14 @@ class DaemonManager:
 
         return True
 
-    def try_start(self, volume: int, profile: str, debug: bool, window: bool) -> None:
+    def try_start(
+        self,
+        volume: int,
+        profile: str | None,
+        debug: bool,
+        window: bool,
+        mouse_profile: str | None = None,
+    ) -> bool:
         """
         Attempts to start the daemon process with the specified volume and
         profile. Stops any existing daemon process before starting a new one.
@@ -259,11 +303,31 @@ class DaemonManager:
         - bool: True if the daemon was started successfully, False if there was
                 an error during startup.
         """
-        try:
-            Profile(profile)
-        except ValueError as err:
-            print(f"Error: {err}")
-            return False
+        # Validate profiles if provided and ensure device matches the flag
+        if profile is not None:
+            try:
+                kb_prof = Profile(profile)
+                device = kb_prof.value("profile.device") or "keyboard"
+                if device != "keyboard":
+                    print(
+                        f"Error: '{profile}' is a '{device}' profile. Use -m/--mouse-profile for mouse profiles."
+                    )
+                    return False
+            except ValueError as err:
+                print(f"Error: {err}")
+                return False
+        if mouse_profile is not None:
+            try:
+                m_prof = Profile(mouse_profile)
+                device = m_prof.value("profile.device") or "keyboard"
+                if device != "mouse":
+                    print(
+                        f"Error: '{mouse_profile}' is a '{device}' profile. Use -p/--profile for keyboard profiles."
+                    )
+                    return False
+            except ValueError as err:
+                print(f"Error: {err}")
+                return False
 
         status = self.status()
         if status == "running":
@@ -274,22 +338,36 @@ class DaemonManager:
             self.try_stop()
 
         if debug:
-            self.run_daemon(volume, profile, debug=True, window=window)
+            self.run_daemon(
+                volume, profile, debug=True, window=window, mouse_profile=mouse_profile
+            )
         else:
+            args = [
+                sys.argv[0],
+                "start-daemon",
+                str(volume),
+                profile if profile is not None else "",
+                str(window),
+            ]
+            if mouse_profile is not None:
+                args.append(mouse_profile)
             subprocess.Popen(
-                [sys.argv[0], "start-daemon", str(volume), profile, str(window)],
+                args,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
                 start_new_session=True,
             )
             time.sleep(1.0)
         return True
 
-    def update_lock_file(self, volume: int, profile: str):
+    def update_lock_file(
+        self, volume: int, profile: str | None, mouse_profile: str | None = None
+    ):
         lockData = {
             "pid": os.getpid(),
             "volume": volume,
             "profile": profile,
-            "api_port": self.__api.port(),
+            "mouse_profile": mouse_profile,
+            "api_port": self.__api.port() if self.__api is not None else None,
         }
         print(f"updating lock-file with {lockData}")
         with open(self.__lock_file, "w") as f:
@@ -308,7 +386,7 @@ class DaemonManager:
         - bool: True if the daemon was initialized successfully, False if the
                 conditions for initialization were not met.
         """
-        if len(sys.argv) == 5 and sys.argv[1] == "start-daemon":
+        if (len(sys.argv) == 5 or len(sys.argv) == 6) and sys.argv[1] == "start-daemon":
             if self.status() == "running":
                 return
 
@@ -318,9 +396,10 @@ class DaemonManager:
             except:
                 pass
 
-            profile = "ios"
+            profile = None
             try:
-                profile = sys.argv[3]
+                profile_arg = sys.argv[3]
+                profile = profile_arg if profile_arg != "" else None
             except:
                 pass
 
@@ -330,17 +409,32 @@ class DaemonManager:
             except:
                 pass
 
-            self.run_daemon(volume, profile, debug=False, window=window)
+            mouse_profile = None
+            try:
+                mouse_profile = sys.argv[5]
+            except:
+                pass
+
+            self.run_daemon(
+                volume, profile, debug=False, window=window, mouse_profile=mouse_profile
+            )
             return True
         return False
 
-    def run_daemon(self, volume: int, profile: str, debug: bool, window: bool):
+    def run_daemon(
+        self,
+        volume: int,
+        profile: str | None,
+        debug: bool,
+        window: bool,
+        mouse_profile: str | None = None,
+    ):
         api_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         api_socket.bind(("localhost", 0))
         self.__api = ExternalAPI(api_socket, daemon.on_command)
         self.__api.listen()
 
-        self.update_lock_file(volume, profile)
+        self.update_lock_file(volume, profile, mouse_profile)
 
         if not debug:
             LINE_BUFFERED = 1
@@ -351,7 +445,7 @@ class DaemonManager:
         if window:
             self.show_daemon_window()
 
-        daemon.run(self, volume, profile, debug=debug)
+        daemon.run(self, volume, profile, debug=debug, mouse_profile=mouse_profile)
 
     def show_daemon_window(self):
         if not self.__daemon_window_visible:
@@ -363,7 +457,7 @@ class DaemonManager:
         root = tk.Tk()
         root.title("Keyboard Sounds - Audio Daemon")
         root.resizable(False, False)
-        root.attributes('-topmost', True)
+        root.attributes("-topmost", True)
 
         # Main label at the top left
         label_main = tk.Label(
@@ -371,17 +465,13 @@ class DaemonManager:
             text="Keyboard Sounds - Audio Daemon",
             font=("Arial", 16),
             anchor="w",
-            justify="left"
+            justify="left",
         )
         label_main.pack(anchor="nw", padx=10, pady=(10, 5))
 
         # Daemon Control group
         group_daemon = tk.LabelFrame(
-            root,
-            text="What is this?",
-            font=("Arial", 11, "bold"),
-            padx=10,
-            pady=10
+            root, text="What is this?", font=("Arial", 11, "bold"), padx=10, pady=10
         )
         group_daemon.pack(anchor="nw", fill="x", padx=10, pady=5)
 
@@ -396,7 +486,7 @@ class DaemonManager:
             font=("Arial", 10),
             wraplength=340,
             anchor="w",
-            justify="left"
+            justify="left",
         )
         label_explain.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 5))
 
@@ -405,7 +495,7 @@ class DaemonManager:
         btn_stop = tk.Button(
             group_daemon,
             text="Stop Daemon & Close Window",
-            command=lambda: self.try_stop()
+            command=lambda: self.try_stop(),
         )
         btn_stop.grid(row=1, column=1, sticky="e", pady=(5, 0))
 
@@ -414,11 +504,7 @@ class DaemonManager:
 
         # Hide Window group
         group_hide = tk.LabelFrame(
-            root,
-            text="Hide Window",
-            font=("Arial", 11, "bold"),
-            padx=10,
-            pady=10
+            root, text="Hide Window", font=("Arial", 11, "bold"), padx=10, pady=10
         )
         group_hide.pack(anchor="nw", fill="x", padx=10, pady=(5, 16))
 
@@ -433,7 +519,7 @@ class DaemonManager:
             font=("Arial", 9),
             wraplength=340,
             anchor="w",
-            justify="left"
+            justify="left",
         )
         label_hide_explain.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 5))
 
@@ -448,7 +534,7 @@ class DaemonManager:
             font=("Arial", 9),
             wraplength=340,
             anchor="w",
-            justify="left"
+            justify="left",
         )
         label_hide_explain2.grid(row=1, column=0, columnspan=2, sticky="w", pady=(5, 0))
 
@@ -463,7 +549,11 @@ class DaemonManager:
         self.__daemon_window_visible = False
 
     def capture_oneshot(self) -> bool:
-        if self.__one_shot and (len(sys.argv) == 3 or len(sys.argv) == 4) and sys.argv[1] == "one-shot":
+        if (
+            self.__one_shot
+            and (len(sys.argv) == 3 or len(sys.argv) == 4)
+            and sys.argv[1] == "one-shot"
+        ):
             pressSound = sys.argv[2]
             releaseSound = None
             if len(sys.argv) == 4:

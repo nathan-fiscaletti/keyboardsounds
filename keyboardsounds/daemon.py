@@ -8,9 +8,11 @@ import time
 from pygame import mixer
 
 from pynput.keyboard import Listener
+from pynput.mouse import Listener as MouseListener, Button
 
 from keyboardsounds.profile import Profile, OneShotProfile
 from keyboardsounds.audio_manager import AudioManager
+from typing import Optional, Any
 
 WIN32 = platform.lower().startswith("win")
 
@@ -19,8 +21,9 @@ if WIN32:
     from keyboardsounds import app_rules
     from keyboardsounds.app_rules import Action
 
-__am: AudioManager = None
-__dm = None
+__am: Optional[AudioManager] = None  # keyboard audio manager
+__mam: Optional[AudioManager] = None  # mouse audio manager
+__dm: Optional[Any] = None
 __volume = 100
 __down = []
 __debug = False
@@ -34,22 +37,27 @@ def on_command(command: dict) -> None:
         if action == "set_volume":
             if "volume" in command:
                 __volume = command["volume"]
-                __dm.update_lock_file(__volume, __am.profile.name)
+                if __dm is not None and __am is not None:
+                    __dm.update_lock_file(__volume, __am.profile.name)
                 print(f"Volume set to {__volume}%")
         elif action == "set_profile":
             if "profile" in command:
                 profile = command["profile"]
                 try:
-                    __am.set_profile(Profile(profile))
-                    __dm.update_lock_file(__volume, profile)
+                    if __am is not None:
+                        __am.set_profile(Profile(profile))
+                    if __dm is not None:
+                        __dm.update_lock_file(__volume, profile)
                     print(f"Profile set to {profile}")
                 except ValueError as err:
                     print(f"Error: {err}")
         elif action == "show_daemon_window":
             try:
-                __dm.show_daemon_window()
-            except err:
-                print(f"Error: {err}")
+                if __dm is not None:
+                    __dm.show_daemon_window()
+            except Exception as e:
+                print(f"Error: {e}")
+
 
 def __on_press(key):
     """
@@ -69,6 +77,8 @@ def __on_press(key):
     if key in __down:
         return
 
+    if __am is None:
+        return
     sound = __am.get_sound(key, action="press")
     if sound is not None:
         clip = mixer.Sound(sound)
@@ -92,6 +102,8 @@ def __on_release(key):
     global __down
     global __am
 
+    if __am is None:
+        return
     sound = __am.get_sound(key, action="release")
     if sound is not None:
         clip = mixer.Sound(sound)
@@ -99,6 +111,28 @@ def __on_release(key):
         clip.play()
 
     __down = [k for k in __down if k != key]
+
+
+def __on_mouse_click(x, y, button: Button, pressed: bool):
+    """
+    Callback for mouse click events. Plays sounds for mouse profiles.
+    """
+    global __mam
+    global __volume
+
+    action = "press" if pressed else "release"
+    if __mam is None:
+        return
+    sound = __mam.get_sound(button, action=action)
+    if sound is not None and pressed:
+        # Only play on press by default; release will play if configured
+        clip = mixer.Sound(sound)
+        clip.set_volume(float(__volume) / float(100))
+        clip.play()
+    elif sound is not None and not pressed:
+        clip = mixer.Sound(sound)
+        clip.set_volume(float(__volume) / float(100))
+        clip.play()
 
 
 if WIN32:
@@ -119,22 +153,43 @@ if WIN32:
 
         rules = app_rules.get_rules()
 
-        global __am
-        if rules.has_exclusive_rule():
-            if app_path == rules.get_exclusive_rule().app_path:
-                __am.set_enabled(True)
+        global __am, __mam
+        if __am is None and __mam is None:
+            return
+        if rules is not None and rules.has_exclusive_rule():
+            exclusive = rules.get_exclusive_rule()
+            if exclusive is not None and app_path == exclusive.app_path:
+                if __am is not None:
+                    __am.set_enabled(True)
+                if __mam is not None:
+                    __mam.set_enabled(True)
             else:
-                __am.set_enabled(False)
+                if __am is not None:
+                    __am.set_enabled(False)
+                if __mam is not None:
+                    __mam.set_enabled(False)
             return
 
-        action = rules.get_action(app_path)
+        action = rules.get_action(app_path) if rules is not None else None
         if action == Action.DISABLE:
-            __am.set_enabled(False)
+            if __am is not None:
+                __am.set_enabled(False)
+            if __mam is not None:
+                __mam.set_enabled(False)
         elif action in [Action.ENABLE, Action.EXCLUSIVE]:
-            __am.set_enabled(True)
+            if __am is not None:
+                __am.set_enabled(True)
+            if __mam is not None:
+                __mam.set_enabled(True)
 
 
-def run(dm, volume: int, profile: str, debug: bool):
+def run(
+    dm,
+    volume: int,
+    profile: Optional[str],
+    debug: bool,
+    mouse_profile: Optional[str] = None,
+):
     """
     Initializes and runs the keyboard sound application.
 
@@ -146,7 +201,7 @@ def run(dm, volume: int, profile: str, debug: bool):
     - volume: The volume level for the sound playback.
     - profile: The sound profile to use for the AudioManager.
     """
-    global __am
+    global __am, __mam
     global __volume
     global __dm
     global __debug
@@ -154,29 +209,52 @@ def run(dm, volume: int, profile: str, debug: bool):
     __debug = debug
 
     __volume = volume
-    __am = AudioManager(Profile(profile))
+    __am = AudioManager(Profile(profile)) if profile is not None else None
+    if mouse_profile is not None:
+        __mam = AudioManager(Profile(mouse_profile))
+    else:
+        __mam = None
     __dm = dm
 
     if WIN32:
         app_detector.start_listening(__on_focused_application_changed)
 
     mixer.init()
-    with Listener(on_press=__on_press, on_release=__on_release) as listener:
-        if __debug:
-            def stdin_loop(listener: Listener):
-                print("Run 'quit' to terminate the debug process")
-                while listener.running:
-                    cmd = input("")
-                    if cmd == "quit":
-                        os._exit(0)
-            stdin_loop(listener)
-        else:
-            listener.join()
+    kb_listener = (
+        Listener(on_press=__on_press, on_release=__on_release)
+        if __am is not None
+        else None
+    )
+    mouse_listener = (
+        MouseListener(on_click=__on_mouse_click) if __mam is not None else None
+    )
+    if kb_listener is not None:
+        kb_listener.start()
+    if mouse_listener is not None:
+        mouse_listener.start()
+    if __debug:
+
+        def stdin_loop(listener: Listener):
+            print("Run 'quit' to terminate the debug process")
+            while listener.running:
+                cmd = input("")
+                if cmd == "quit":
+                    os._exit(0)
+
+        stdin_loop(kb_listener or mouse_listener)  # type: ignore[arg-type]
+    else:
+        if kb_listener is not None:
+            kb_listener.join()
+        if mouse_listener is not None:
+            mouse_listener.join()
+
 
 def one_shot(volume: int, press_sound: str, release_sound: str):
     global __am
 
-    __am = AudioManager(OneShotProfile(press_sound=press_sound, release_sound=release_sound))
+    __am = AudioManager(
+        OneShotProfile(press_sound=press_sound, release_sound=release_sound)
+    )
 
     sounds = __am.get_one_shot_sounds()
 
@@ -199,6 +277,7 @@ def one_shot(volume: int, press_sound: str, release_sound: str):
 
     time.sleep(waitlen)
 
+
 def get_audio_manager() -> AudioManager:
     """
     Retrieves the AudioManager instance.
@@ -211,4 +290,4 @@ def get_audio_manager() -> AudioManager:
     - AudioManager: The AudioManager instance.
     """
     global __am
-    return __am
+    return __am  # type: ignore[return-value]

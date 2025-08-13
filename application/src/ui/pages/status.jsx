@@ -6,13 +6,19 @@ import { Box, Typography, FormControl, Select, Slider, MenuItem, Tooltip, IconBu
 
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import KeyboardIcon from '@mui/icons-material/Keyboard';
+import MouseIcon from '@mui/icons-material/Mouse';
 
 const Status = ({
-    profilesLoaded,
-    profiles,
-    selectedProfile,
+    profilesKeyboardLoaded,
+    profilesMouseLoaded,
+    keyboardProfiles,
+    mouseProfiles,
+    selectedKeyboardProfile,
+    selectedMouseProfile,
     displayVolume,
-    onProfileChanged,
+    onKeyboardProfileChanged,
+    onMouseProfileChanged,
     onVolumeChanged,
     onDisplayVolumeChanged,
 }) => {
@@ -42,28 +48,73 @@ const Status = ({
             mb: 2,
         }}
       >
-        Profile
+        Sound Profiles
       </Typography>
       <FormControl size="small" fullWidth>
-        <Select
-          value={selectedProfile}
-          onChange={onProfileChanged}
-          renderValue={(val) => <Typography>{val}</Typography>}
-        >
-          {profilesLoaded && profiles.map((profile) => (
-            <MenuItem key={profile.name} value={profile.name}>
-              <Box sx={{
-                display: 'flex',
-                flexDirection: 'column',
-              }}>
-                <Typography variant="body1">
-                  {profile.name} <Typography variant="caption" color="text.secondary">by <i>{profile.author}</i></Typography>
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{profile.description}</Typography>
-              </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <Select
+            value={selectedKeyboardProfile}
+            onChange={onKeyboardProfileChanged}
+            renderValue={(val) => <Typography>{val === '' ? 'None' : val}</Typography>}
+            displayEmpty
+            sx={{ flex: 1 }}
+            startAdornment={
+              <Tooltip title="Keyboard Profile" placement="top" arrow>
+                <KeyboardIcon sx={{ mr: 1, fontSize: '1.25rem' }} />
+              </Tooltip>
+            }
+          >
+            <MenuItem key="__none_kb" value="" disabled={selectedMouseProfile === ''}>
+              <Typography variant="body1">None</Typography>
             </MenuItem>
-          ))}
-        </Select>
+            {profilesKeyboardLoaded && keyboardProfiles.map((profile) => (
+              <MenuItem key={profile.name} value={profile.name}>
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}>
+                  <Typography variant="body1">
+                    {profile.name} <Typography variant="caption" color="text.secondary">by <i>{profile.author}</i></Typography>
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{profile.description}</Typography>
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+      </FormControl>
+      <FormControl size="small" fullWidth sx={{ mt: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <Select
+            value={selectedMouseProfile}
+            onChange={onMouseProfileChanged}
+            renderValue={(val) => <Typography>{val === '' ? 'None' : val}</Typography>}
+            displayEmpty
+            sx={{ flex: 1 }}
+            startAdornment={
+              <Tooltip title="Mouse Profile" placement="top" arrow>
+                <MouseIcon sx={{ mr: 1, fontSize: '1.25rem' }} size="small" />
+              </Tooltip>
+            }
+          >
+            <MenuItem key="__none_mouse" value="" disabled={selectedKeyboardProfile === ''}>
+              <Typography variant="body1">None</Typography>
+            </MenuItem>
+            {profilesMouseLoaded && mouseProfiles.map((profile) => (
+              <MenuItem key={profile.name} value={profile.name}>
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}>
+                  <Typography variant="body1">
+                    {profile.name} <Typography variant="caption" color="text.secondary">by <i>{profile.author}</i></Typography>
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{profile.description}</Typography>
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
       </FormControl>
       <Typography
         variant="body1"

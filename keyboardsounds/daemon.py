@@ -28,27 +28,106 @@ __volume = 100
 __down = []
 __debug = False
 
+# Keep references to listeners so they can be started/stopped dynamically
+__kb_listener: Optional[Listener] = None
+__mouse_listener: Optional[MouseListener] = None
+
 
 def on_command(command: dict) -> None:
     global __volume
+    global __am, __mam
+    global __kb_listener, __mouse_listener
 
     if "action" in command:
         action = command["action"]
         if action == "set_volume":
             if "volume" in command:
                 __volume = command["volume"]
-                if __dm is not None and __am is not None:
-                    __dm.update_lock_file(__volume, __am.profile.name)
+                if __dm is not None:
+                    __dm.update_lock_file(
+                        __volume,
+                        __am.profile.name if __am is not None else None,
+                        __mam.profile.name if __mam is not None else None,
+                    )
                 print(f"Volume set to {__volume}%")
         elif action == "set_profile":
             if "profile" in command:
                 profile = command["profile"]
                 try:
-                    if __am is not None:
-                        __am.set_profile(Profile(profile))
-                    if __dm is not None:
-                        __dm.update_lock_file(__volume, profile)
-                    print(f"Profile set to {profile}")
+                    if profile is None or profile == "":
+                        __am = None
+                        # Stop keyboard listener if running
+                        if __kb_listener is not None:
+                            try:
+                                __kb_listener.stop()
+                            except Exception:
+                                pass
+                            __kb_listener = None
+                        if __dm is not None:
+                            __dm.update_lock_file(
+                                __volume,
+                                None,
+                                __mam.profile.name if __mam is not None else None,
+                            )
+                        print("Keyboard profile disabled")
+                    else:
+                        if __am is not None:
+                            __am.set_profile(Profile(profile))
+                        else:
+                            __am = AudioManager(Profile(profile))
+                            # Start keyboard listener if not running
+                            if __kb_listener is None:
+                                __kb_listener = Listener(
+                                    on_press=__on_press, on_release=__on_release
+                                )
+                                __kb_listener.start()
+                        if __dm is not None:
+                            __dm.update_lock_file(
+                                __volume,
+                                profile,
+                                __mam.profile.name if __mam is not None else None,
+                            )
+                        print(f"Profile set to {profile}")
+                except ValueError as err:
+                    print(f"Error: {err}")
+        elif action == "set_mouse_profile":
+            if "profile" in command:
+                profile = command["profile"]
+                try:
+                    if profile is None or profile == "":
+                        __mam = None
+                        # Stop mouse listener if running
+                        if __mouse_listener is not None:
+                            try:
+                                __mouse_listener.stop()
+                            except Exception:
+                                pass
+                            __mouse_listener = None
+                        if __dm is not None:
+                            __dm.update_lock_file(
+                                __volume,
+                                __am.profile.name if __am is not None else None,
+                                None,
+                            )
+                        print("Mouse profile disabled")
+                    else:
+                        if __mam is not None:
+                            __mam.set_profile(Profile(profile))
+                        else:
+                            __mam = AudioManager(Profile(profile))
+                            # Start mouse listener if not running
+                            if __mouse_listener is None:
+                                __mouse_listener = MouseListener(
+                                    on_click=__on_mouse_click
+                                )
+                                __mouse_listener.start()
+                        if __dm is not None:
+                            __dm.update_lock_file(
+                                __volume,
+                                __am.profile.name if __am is not None else None,
+                                profile,
+                            )
+                        print(f"Mouse profile set to {profile}")
                 except ValueError as err:
                     print(f"Error: {err}")
         elif action == "show_daemon_window":
@@ -205,6 +284,7 @@ def run(
     global __volume
     global __dm
     global __debug
+    global __kb_listener, __mouse_listener
 
     __debug = debug
 
@@ -220,36 +300,36 @@ def run(
         app_detector.start_listening(__on_focused_application_changed)
 
     mixer.init()
-    kb_listener = (
+    __kb_listener = (
         Listener(on_press=__on_press, on_release=__on_release)
         if __am is not None
         else None
     )
-    mouse_listener = (
+    __mouse_listener = (
         MouseListener(on_click=__on_mouse_click) if __mam is not None else None
     )
-    if kb_listener is not None:
-        kb_listener.start()
-    if mouse_listener is not None:
-        mouse_listener.start()
+    if __kb_listener is not None:
+        __kb_listener.start()
+    if __mouse_listener is not None:
+        __mouse_listener.start()
     if __debug:
 
-        def stdin_loop(listener: Listener):
+        def stdin_loop(listener):
             print("Run 'quit' to terminate the debug process")
-            while listener.running:
+            while (listener is not None) and listener.running:  # type: ignore[attr-defined]
                 cmd = input("")
                 if cmd == "quit":
                     os._exit(0)
 
-        stdin_loop(kb_listener or mouse_listener)  # type: ignore[arg-type]
+        stdin_loop(__kb_listener or __mouse_listener)
     else:
-        if kb_listener is not None:
-            kb_listener.join()
-        if mouse_listener is not None:
-            mouse_listener.join()
+        if __kb_listener is not None:
+            __kb_listener.join()
+        if __mouse_listener is not None:
+            __mouse_listener.join()
 
 
-def one_shot(volume: int, press_sound: str, release_sound: str):
+def one_shot(volume: int, press_sound: str, release_sound: str | None):
     global __am
 
     __am = AudioManager(

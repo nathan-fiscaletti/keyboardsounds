@@ -20,18 +20,27 @@ import FileOpenIcon from '@mui/icons-material/FileOpenOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import KeyboardIcon from '@mui/icons-material/Keyboard';
+import MouseIcon from '@mui/icons-material/Mouse';
 import { Chip, CircularProgress, Link } from "@mui/material";
 import { execute } from "../execute";
 
-function ProfileListItem({ statusLoaded, status, profile: { name, author, description }, onExport }) {  
+function ProfileListItem({ statusLoaded, status, profile: { name, author, description, device }, onExport }) {  
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const activeKeyboard = statusLoaded && status && status.profile === name;
+  const activeMouse = statusLoaded && status && status.mouse_profile === name;
+  const deviceLabel = device === 'mouse' ? 'mouse' : 'keyboard';
 
   return (
     <ListItem
       disableGutters
       secondaryAction={
         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          {statusLoaded && status.profile === name && (
+          {activeKeyboard && (
+            <Chip sx={{ mr: 1 }} size="small" label="Active" variant="filled" color="success" />
+          )}
+          {activeMouse && (
             <Chip sx={{ mr: 1 }} size="small" label="Active" variant="filled" color="success" />
           )}
           <Tooltip title="Export & Share" placement="top" arrow>
@@ -49,7 +58,7 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
                 <IconButton
                   color="primary"
                   sx={{ mr: 1 }}
-                  disabled={status.profile === name}
+                  disabled={activeKeyboard || activeMouse}
                   onClick={() => {
                     setIsDeleting(true);
                     execute(`remove-profile --name "${name}"`, (_) => {
@@ -83,8 +92,9 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
       )}>
       <ListItemText
         primary={(
-          <Typography variant="body1">
-            {name} <Typography variant="caption" color="text.secondary">by <i>{author}</i></Typography>
+          <Typography variant="body1" sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            {device === 'mouse' ? <MouseIcon sx={{ mr: 1, fontSize: '1.00rem' }} size="small" /> : <KeyboardIcon sx={{ mr: 1, fontSize: '1.25rem' }} size="small" />}
+            {name} <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>by <i>{author}</i></Typography>
           </Typography>
         )}
         secondary={description}
@@ -96,6 +106,7 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
             maxWidth: 'calc(100vw - 275px)',
+            marginTop: '4px',
           }
         }}
       />
@@ -276,7 +287,7 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
         </Box>
       </Box>
       <Typography variant="body2" color="GrayText" sx={{ mb: 0.5, mt: 0.5, mr: 2 }}>
-        Manage your keyboard sound profiles here. You can import, export, and delete profiles.
+        Manage your sound profiles here. You can import, export, and delete profiles.
       </Typography>
       <Box sx={{ pr: 2 }}>
       <TextField

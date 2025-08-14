@@ -179,6 +179,9 @@ app.whenReady().then(async () => {
     kbs.checkInstallation().then(() => {
       kbs.getBackendVersion().then(version => {
         console.log(`Found Keyboard Sounds backend installation with version: ${version}`);
+
+        // Ensure the application adds itself to the rules once on first run
+        kbs.ensureSelfAppRule();
       }).catch((err) => {
         console.error('Failed to get Keyboard Sounds backend version:', err);
         dialog.showErrorBox('Keyboard Sounds: Error', 'Failed to retrieve Keyboard Sounds backend version.');

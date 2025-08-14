@@ -48,7 +48,7 @@ const Status = ({
             mb: 2,
         }}
       >
-        Sound Profiles
+        Keyboard & Mouse Profiles
       </Typography>
       <FormControl size="small" fullWidth>
         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

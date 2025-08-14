@@ -143,6 +143,76 @@ const kbs = {
 		return this.exec(`set-global-rule --rule ${action}`);
 	},
 
+		getSelfAppPath: function() {
+			return Promise.resolve(app.getPath('exe'));
+		},
+
+		getSelfRulePath: async function() {
+			let p = store.get('self_rule_path', '');
+			if (p) { return p; }
+			try {
+				const rules = await this.rules();
+				const exe = app.getPath('exe').toLowerCase();
+				const exact = rules.find(r => (r.app_path || '').toLowerCase() === exe);
+				if (exact) {
+					store.set('self_rule_path', exact.app_path);
+					return exact.app_path;
+				}
+				const fallback = rules.find(r => (r.app_path || '').toLowerCase().endsWith('keyboard sounds.exe'));
+				if (fallback) {
+					store.set('self_rule_path', fallback.app_path);
+					return fallback.app_path;
+				}
+			} catch (e) {}
+			return '';
+		},
+
+		setSelfAppRule: async function(mode) {
+			try {
+				let targetPath = store.get('self_rule_path', '');
+				if (!targetPath) {
+					try {
+						targetPath = await this.getSelfRulePath();
+					} catch (_) {}
+					if (!targetPath) {
+						targetPath = app.getPath('exe');
+					}
+				}
+
+				if (mode === 'default') {
+					try { await this.exec(`remove-rule --app "${targetPath}"`); } catch (_) {}
+					store.set('self_rule_path', targetPath);
+					return true;
+				}
+
+				const rule = mode === 'always' ? 'enable' : 'disable';
+				await this.exec(`add-rule --app "${targetPath}" --rule ${rule}`);
+				store.set('self_rule_path', targetPath);
+				return true;
+			} catch (err) {
+				console.log('Failed to set self application rule:', err);
+				return false;
+			}
+		},
+
+	ensureSelfAppRule: async function() {
+		console.log('Ensuring self application rule is added...');
+		const alreadyAdded = store.get('self_rule_added', false);
+		if (alreadyAdded) {
+			return;
+		}
+
+		try {
+			const exePath = app.getPath('exe');
+			await this.exec(`add-rule --app "${exePath}" --rule enable`);
+			store.set('self_rule_added', true);
+			store.set('self_rule_path', exePath);
+			console.log('Added self application rule and persisted flag.');
+		} catch (err) {
+			console.log('Failed to add self application rule:', err);
+		}
+	},
+
 	checkForUpdate: async function() {
 		return fetch("https://api.github.com/repos/nathan-fiscaletti/keyboardsounds/releases/latest")
 			.then(res => res.json())

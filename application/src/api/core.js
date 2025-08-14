@@ -193,7 +193,15 @@ const kbs = {
 			]
 		});
 
-		this.editorWindow.focus();
+		// Focus the appropriate window if available
+		try {
+			if (this.editorWindow) {
+				this.editorWindow.focus();
+			} else if (this.mainWindow) {
+				this.mainWindow.show();
+				this.mainWindow.focus();
+			}
+		} catch (e) {}
 		if (!res.canceled) {
 			return res.filePaths[0];
 		}

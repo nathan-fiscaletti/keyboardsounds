@@ -315,6 +315,10 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
       sx={{
         ml: 2,
         mt: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
       }}
     >
       <Dialog open={addAppRuleDialogOpen} fullWidth>
@@ -530,8 +534,8 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
         <List
           sx={{
             overflow: "auto",
-            maxHeight: "calc(100vh - 410px)",
             pr: 2,
+            flex: 1,
             "&::-webkit-scrollbar": {
               width: "8px",
             },

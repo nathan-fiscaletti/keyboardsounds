@@ -8,6 +8,7 @@ import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import MouseIcon from '@mui/icons-material/Mouse';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 
 const Status = ({
     profilesKeyboardLoaded,
@@ -22,6 +23,22 @@ const Status = ({
     onVolumeChanged,
     onDisplayVolumeChanged,
 }) => {
+  const tips = React.useMemo(() => [
+    'Use Application Rules to enable or disable sounds based on the focused app.',
+    'Create your own keyboard profiles with the built-in Editor from the Profiles page.',
+    'Enable the Daemon Window in Settings if you need a visible audio source for OBS.',
+    'Start Keyboard Sounds with your system from Settings for a seamless experience.',
+    'You can import and export profiles from the Profiles page to share with others.',
+    'Try mouse profiles too — assign custom clicks for left, right, and middle buttons.',
+  ], []);
+
+  const [tipIndex, setTipIndex] = React.useState(0);
+  React.useEffect(() => {
+    const id = setInterval(() => {
+      setTipIndex((i) => (i + 1) % tips.length);
+    }, 10000);
+    return () => clearInterval(id);
+  }, [tips.length]);
   return (
     <Box
       sx={{
@@ -163,6 +180,13 @@ const Status = ({
             {displayVolume > 0 ? <VolumeUpIcon /> : <VolumeOffIcon />}
           </IconButton>
         </Tooltip>
+      </Box>
+      <Divider sx={{ mt: 2, mb: 1.5 }} />
+      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+        <TipsAndUpdatesIcon sx={{ color: green[400], mr: 1 }} fontSize="small" />
+        <Typography variant="body2" color="text.secondary" sx={{ cursor: 'default' }}>
+          Tip: {tips[tipIndex]}
+        </Typography>
       </Box>
       </Box>
     </Box>

@@ -390,7 +390,7 @@ function App() {
 
   useEffect(() => {
     if (selectedTab === 0) {        // Audio
-      execute(`setHeight 460`);
+      execute(`setHeight 546`);
     } else if (selectedTab === 3) { // Settings
       execute(`setHeight 932`);
     } else if (selectedTab === 4) { // Community
@@ -487,7 +487,9 @@ function App() {
           mt: 1,
           height: "100%",
           minHeight: "calc(100vh - 124px)",
-          maxHeight: "calc(100vh - 124px)"
+          maxHeight: "calc(100vh - 124px)",
+          display: "flex",
+          flexDirection: "column"
         }}>
           <Tabs 
             value={selectedTab}
@@ -500,60 +502,62 @@ function App() {
             <Tooltip title="Settings" arrow><Tab icon={<SettingsIcon />} /></Tooltip>
             <Tooltip title="Community" arrow><Tab icon={<ForumIcon />} /></Tooltip>
           </Tabs>
-  
-          {selectedTab === 0 && (
-            <Status 
-              profilesKeyboardLoaded={profilesKeyboard.length > 0}
-              profilesMouseLoaded={profilesMouse.length > 0}
-              keyboardProfiles={profilesKeyboard}
-              mouseProfiles={profilesMouse}
-              selectedKeyboardProfile={selectedKeyboardProfile}
-              selectedMouseProfile={selectedMouseProfile}
-              displayVolume={displayVolume}
-              onKeyboardProfileChanged={handleKeyboardProfileChanged}
-              onMouseProfileChanged={handleMouseProfileChanged}
-              onVolumeChanged={handleVolumeChanged}
-              onDisplayVolumeChanged={setDisplayVolume}
-            />
-          )}
-  
-          {selectedTab === 1 && (
-            <Profiles statusLoaded={statusLoaded} status={status} profilesLoaded={profilesLoaded} profiles={profiles} />
-          )}
-  
-          {selectedTab === 2 && (
-            <AppRules
-              appRules={appRules}
-              appRulesLoaded={appRulesLoaded}
-              enabledRulesAreExclusive={enabledRulesAreExclusive}
-              globalAction={globalAction}
-              onGlobalActionChanged={handleGlobalActionChanged}
-            />
-          )}
-  
-          {selectedTab === 3 && (
-            <Settings
-              appVersion={appVersion}
-              backEndVersion={backEndVersion}
-              runOnStartUp={runOnStartUp}
-              startSoundDaemonOnStartup={runSoundDaemonOnStartup}
-              onRunOnStartUpChanged={handleRunOnStartupChanged}
-              startDaemonWindow={enableDaemonWindow}
-              onStartDaemonWindowChanged={handleEnableDaemonWindowChanged}
-              notifyOnLaunch={notifyOnLaunch}
-              onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
-              notifyOnHide={notifyOnHide}
-              onNotifyOnHideChanged={handleNotifyOnHideChanged}
-              notifyOnUpdate={notifyOnUpdate}
-              onNotifyOnUpdateChanged={handleNotifyOnUpdateChanged}
-              onStartSoundDaemonOnStartupChanged={handleStartSoundDaemonOnStartupChanged}
-            />
-          )}
 
-          {selectedTab === 4 && (
-            <About />
-          )}
-  
+          <Box sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
+            {selectedTab === 0 && (
+              <Status 
+                profilesKeyboardLoaded={profilesKeyboard.length > 0}
+                profilesMouseLoaded={profilesMouse.length > 0}
+                keyboardProfiles={profilesKeyboard}
+                mouseProfiles={profilesMouse}
+                selectedKeyboardProfile={selectedKeyboardProfile}
+                selectedMouseProfile={selectedMouseProfile}
+                displayVolume={displayVolume}
+                onKeyboardProfileChanged={handleKeyboardProfileChanged}
+                onMouseProfileChanged={handleMouseProfileChanged}
+                onVolumeChanged={handleVolumeChanged}
+                onDisplayVolumeChanged={setDisplayVolume}
+              />
+            )}
+
+            {selectedTab === 1 && (
+              <Profiles statusLoaded={statusLoaded} status={status} profilesLoaded={profilesLoaded} profiles={profiles} />
+            )}
+
+            {selectedTab === 2 && (
+              <AppRules
+                appRules={appRules}
+                appRulesLoaded={appRulesLoaded}
+                enabledRulesAreExclusive={enabledRulesAreExclusive}
+                globalAction={globalAction}
+                onGlobalActionChanged={handleGlobalActionChanged}
+              />
+            )}
+
+            {selectedTab === 3 && (
+              <Settings
+                appVersion={appVersion}
+                backEndVersion={backEndVersion}
+                runOnStartUp={runOnStartUp}
+                startSoundDaemonOnStartup={runSoundDaemonOnStartup}
+                onRunOnStartUpChanged={handleRunOnStartupChanged}
+                startDaemonWindow={enableDaemonWindow}
+                onStartDaemonWindowChanged={handleEnableDaemonWindowChanged}
+                notifyOnLaunch={notifyOnLaunch}
+                onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
+                notifyOnHide={notifyOnHide}
+                onNotifyOnHideChanged={handleNotifyOnHideChanged}
+                notifyOnUpdate={notifyOnUpdate}
+                onNotifyOnUpdateChanged={handleNotifyOnUpdateChanged}
+                onStartSoundDaemonOnStartupChanged={handleStartSoundDaemonOnStartupChanged}
+              />
+            )}
+
+            {selectedTab === 4 && (
+              <About />
+            )}
+          </Box>
+
         </Card>
       )}
       

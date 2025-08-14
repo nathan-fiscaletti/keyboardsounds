@@ -6,6 +6,10 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import TextField from '@mui/material/TextField';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -23,6 +27,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import MouseIcon from '@mui/icons-material/Mouse';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Chip, CircularProgress, Link } from "@mui/material";
@@ -120,6 +125,10 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
 
 const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
   const [profileSearchValue, setProfileSearchValue] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersAnchorEl, setFiltersAnchorEl] = useState(null);
+  const [filterKeyboard, setFilterKeyboard] = useState(true);
+  const [filterMouse, setFilterMouse] = useState(true);
   const [exportProfileDialogOpen, setExportProfileDialogOpen] = useState(false);
   const [exportPath, setExportPath] = useState("");
   const [exportingProfile, setExportingProfile] = useState(false);
@@ -254,10 +263,16 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
     }
   };
 
+  const filtersApplied = !(filterKeyboard && filterMouse);
+
   return (
     <Box sx={{
       ml: 2,
       mt: 2,
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      minHeight: 0,
     }}>
       {/* Select Profile Type Dialog */}
       <Dialog open={selectTypeDialogOpen} onClose={() => setSelectTypeDialogOpen(false)}>
@@ -632,27 +647,95 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
         Manage your sound profiles here. You can import, export, and delete profiles.
       </Typography>
       <Box sx={{ pr: 2 }}>
-      <TextField
-        label="Search"
-        size="small"
-        fullWidth
-        sx={{
-          mt: 1,
-          mb: 1,
-        }}
-        value={profileSearchValue}
-        onChange={
-          e => setProfileSearchValue(e.target.value)
-        }
-        InputProps={{
-          endAdornment: <InputAdornment position="end"><SearchIcon /></InputAdornment>,
-        }}
-      />
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <TextField
+            label="Search"
+            size="small"
+            sx={{
+              mt: 1,
+              mb: 1,
+              flex: 1,
+            }}
+            value={profileSearchValue}
+            onChange={(e) => setProfileSearchValue(e.target.value)}
+            InputProps={{
+              endAdornment: <InputAdornment position="end"><SearchIcon /></InputAdornment>,
+            }}
+          />
+          <Tooltip title="Filter" placement="top" arrow>
+            <IconButton
+              sx={{ ml: 1, mt: 0.5 }}
+              color={filtersApplied ? 'primary' : 'default'}
+              onClick={(e) => { setFiltersAnchorEl(e.currentTarget); setFiltersOpen(true); }}
+            >
+              <FilterListIcon />
+            </IconButton>
+          </Tooltip>
+          <Menu
+            anchorEl={filtersAnchorEl}
+            open={filtersOpen}
+            onClose={() => setFiltersOpen(false)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MenuItem disableRipple>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={filterKeyboard}
+                    disabled={!filterMouse && filterKeyboard}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      if (!next && !filterMouse) return; // prevent neither selected
+                      setFilterKeyboard(next);
+                    }}
+                  />
+                }
+                label="Keyboard"
+              />
+            </MenuItem>
+            <MenuItem disableRipple>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={filterMouse}
+                    disabled={!filterKeyboard && filterMouse}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      if (!next && !filterKeyboard) return; // prevent neither selected
+                      setFilterMouse(next);
+                    }}
+                  />
+                }
+                label="Mouse"
+              />
+            </MenuItem>
+          </Menu>
+        </Box>
+
+        {filtersApplied && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>Filters:</Typography>
+            <Chip
+              size="small"
+              label={`Type: ${filterKeyboard && filterMouse ? 'All' : filterKeyboard ? 'Keyboard' : filterMouse ? 'Mouse' : 'None'}`}
+              sx={{ mr: 1 }}
+            />
+            <Chip
+              size="small"
+              label="Clear"
+              onClick={() => { setFilterKeyboard(true); setFilterMouse(true); }}
+              onDelete={() => { setFilterKeyboard(true); setFilterMouse(true); }}
+            />
+          </Box>
+        )}
       </Box>
       <List sx={{
         overflow: 'auto',
         pr: 2, 
-        maxHeight: 'calc(100vh - 338px)',
+        flex: 1,
         '&::-webkit-scrollbar': {
           width: '8px',
         },
@@ -663,7 +746,14 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
           backgroundColor: 'rgba(255, 255, 255, 0.2)',
         },
       }}>
-        {profilesLoaded && profiles.filter(p => profileSearchValue === "" || p.name.toLowerCase().includes(profileSearchValue.toLowerCase())).map((profile) => (
+        {profilesLoaded && profiles
+          .filter((p) => {
+            const nameMatches = profileSearchValue === '' || p.name.toLowerCase().includes(profileSearchValue.toLowerCase());
+            const device = (p.device || 'keyboard').toLowerCase();
+            const typeMatches = (device === 'keyboard' && filterKeyboard) || (device === 'mouse' && filterMouse);
+            return nameMatches && typeMatches;
+          })
+          .map((profile) => (
           <ProfileListItem 
             statusLoaded={statusLoaded}
             status={status}

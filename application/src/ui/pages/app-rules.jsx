@@ -156,7 +156,7 @@ const SelfAppRule = ({ mode, setting, onChange }) => {
             alignItems: "center",
           }}
         >
-          <FormControl size="small" sx={{ width: 120, mr: 2 }}>
+          <FormControl size="small" sx={{ width: 131, mr: 2 }}>
             <Select
               value={mode}
               disabled={setting}

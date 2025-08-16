@@ -256,13 +256,19 @@ const kbs = {
 	},
 
 	selectAudioFile: async function() {
+		if (this.openFileDialogIsOpen) {
+			return "";
+		}
+
+		this.openFileDialogIsOpen = true;
 		const res = await dialog.showOpenDialog(this.mainWindow, {
 			properties: ['openFile'],
 			filters: [
 				{ name: 'Audio File', extensions: ['wav', 'mp3'] }
 			]
 		});
-
+		this.openFileDialogIsOpen = false;
+		
 		// Focus the appropriate window if available
 		try {
 			if (this.editorWindow) {

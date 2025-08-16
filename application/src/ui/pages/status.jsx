@@ -44,7 +44,6 @@ const Status = ({
       sx={{
         ml: 2,
         mr: 2,
-        mt: 2,
       }}
     >
       <Box
@@ -65,7 +64,7 @@ const Status = ({
             mb: 2,
         }}
       >
-        Keyboard & Mouse Profiles
+        Audio Profiles
       </Typography>
       <FormControl size="small" fullWidth>
         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

@@ -131,7 +131,7 @@ const About = () => {
         </Link>
       </Box>
 
-      <Typography variant="h6" sx={{ mt: 2 }}>Feedback & Support</Typography>
+      <Typography variant="h6" sx={{ mt: 2 }}>Feedback & Contributions</Typography>
       <Box
         sx={{
           mt: 2,

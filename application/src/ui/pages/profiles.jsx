@@ -34,21 +34,23 @@ import { Chip, CircularProgress, Link } from "@mui/material";
 import { execute } from "../execute";
 import { Buffer } from "buffer";
 
-function ProfileListItem({ statusLoaded, status, profile: { name, author, description, device }, onExport }) {  
+function ProfileListItem({ statusLoaded, status, profile: { name, author, description, device }, onExport, isActive, selectedKeyboardProfile, selectedMouseProfile }) {  
   const [isDeleting, setIsDeleting] = useState(false);
 
   const activeKeyboard = statusLoaded && status && status.profile === name;
   const activeMouse = statusLoaded && status && status.mouse_profile === name;
+  const selectedKeyboard = name === selectedKeyboardProfile;
+  const selectedMouse = name === selectedMouseProfile;
 
   return (
     <ListItem
       disableGutters
       secondaryAction={
         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          {activeKeyboard && (
+          {(activeKeyboard || selectedKeyboard) && (
             <Chip sx={{ mr: 1 }} size="small" label="Active" variant="filled" color="success" />
           )}
-          {activeMouse && (
+          {(activeMouse || selectedMouse) && (
             <Chip sx={{ mr: 1 }} size="small" label="Active" variant="filled" color="success" />
           )}
           <Tooltip title="Export & Share" placement="top" arrow>
@@ -61,12 +63,11 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
             <CircularProgress size={18} sx={{mr: 2, ml: 1}} />
           )}
 
-          {!isDeleting && (
+          {!isDeleting && !isActive && (
             <Tooltip title="Delete Profile" placement="top" arrow>
                 <IconButton
                   color="primary"
                   sx={{ mr: 1 }}
-                  disabled={activeKeyboard || activeMouse}
                   onClick={() => {
                     setIsDeleting(true);
                     execute(`remove-profile --name "${name}"`, (_) => {
@@ -123,7 +124,7 @@ function ProfileListItem({ statusLoaded, status, profile: { name, author, descri
   );
 }
 
-const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
+const Profiles = ({statusLoaded, status, profilesLoaded, profiles, selectedKeyboardProfile, selectedMouseProfile}) => {
   const [profileSearchValue, setProfileSearchValue] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filtersAnchorEl, setFiltersAnchorEl] = useState(null);
@@ -145,6 +146,8 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
   const [mouseRightRelease, setMouseRightRelease] = useState("");
   const [mouseMiddlePress, setMouseMiddlePress] = useState("");
   const [mouseMiddleRelease, setMouseMiddleRelease] = useState("");
+  const [mouseDefaultPress, setMouseDefaultPress] = useState("");
+  const [mouseDefaultRelease, setMouseDefaultRelease] = useState("");
 
   useEffect(() => {
     if (!exportProfileDialogOpen) {
@@ -176,10 +179,28 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
 
   const fileNameOnly = (p) => (p || "").replace(/\\/g, "/").split("/").pop();
 
+  const clearMouseProfileState = () => {
+    setMouseProfileName("");
+    setMouseProfileAuthor("");
+    setMouseProfileDescription("");
+    setMouseDefaultPress("");
+    setMouseDefaultRelease("");
+    setMouseLeftPress("");
+    setMouseLeftRelease("");
+    setMouseRightPress("");
+    setMouseRightRelease("");
+    setMouseMiddlePress("");
+    setMouseMiddleRelease("");
+  };
+
   const saveMouseProfile = async () => {
-    const canSave =
-      mouseLeftPress !== '' && mouseRightPress !== '' && mouseMiddlePress !== '' &&
-      mouseProfileName !== '' && mouseProfileAuthor !== '' && mouseProfileDescription !== '';
+    // New validation logic: if default is provided, no other files required
+    // If no default, at least one press is required
+    const hasDefault = mouseDefaultPress !== '';
+    const hasAtLeastOnePress = mouseLeftPress !== '' || mouseRightPress !== '' || mouseMiddlePress !== '';
+    const canSave = 
+      mouseProfileName !== '' && mouseProfileAuthor !== '' && mouseProfileDescription !== '' &&
+      (hasDefault || hasAtLeastOnePress);
     if (!canSave || savingMouseProfile) {
       return;
     }
@@ -194,39 +215,48 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
           device: 'mouse',
         },
         sources: [
-          {
+          ...(mouseDefaultPress ? [{
+            id: 'click_default',
+            source: {
+              press: fileNameOnly(mouseDefaultPress),
+              ...(mouseDefaultRelease ? { release: fileNameOnly(mouseDefaultRelease) } : {}),
+            },
+          }] : []),
+          ...(mouseLeftPress ? [{
             id: 'click_left',
             source: {
               press: fileNameOnly(mouseLeftPress),
               ...(mouseLeftRelease ? { release: fileNameOnly(mouseLeftRelease) } : {}),
             },
-          },
-          {
+          }] : []),
+          ...(mouseRightPress ? [{
             id: 'click_right',
             source: {
               press: fileNameOnly(mouseRightPress),
               ...(mouseRightRelease ? { release: fileNameOnly(mouseRightRelease) } : {}),
             },
-          },
-          {
+          }] : []),
+          ...(mouseMiddlePress ? [{
             id: 'click_middle',
             source: {
               press: fileNameOnly(mouseMiddlePress),
               ...(mouseMiddleRelease ? { release: fileNameOnly(mouseMiddleRelease) } : {}),
             },
-          },
+          }] : []),
         ],
         buttons: {
-          default: 'click_left',
+          default: mouseDefaultPress ? 'click_default' : (mouseLeftPress ? 'click_left' : 'click_right'),
           other: [
-            { sound: 'click_left', buttons: ['left'] },
-            { sound: 'click_right', buttons: ['right'] },
-            { sound: 'click_middle', buttons: ['middle'] },
+            ...(mouseLeftPress ? [{ sound: 'click_left', buttons: ['left'] }] : []),
+            ...(mouseRightPress ? [{ sound: 'click_right', buttons: ['right'] }] : []),
+            ...(mouseMiddlePress ? [{ sound: 'click_middle', buttons: ['middle'] }] : []),
           ],
         },
       };
 
       const uniqueSources = [
+        mouseDefaultPress,
+        mouseDefaultRelease,
         mouseLeftPress,
         mouseLeftRelease,
         mouseRightPress,
@@ -246,15 +276,7 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
 
       // Reset and close
       setCreateMouseDialogOpen(false);
-      setMouseProfileName("");
-      setMouseProfileAuthor("");
-      setMouseProfileDescription("");
-      setMouseLeftPress("");
-      setMouseLeftRelease("");
-      setMouseRightPress("");
-      setMouseRightRelease("");
-      setMouseMiddlePress("");
-      setMouseMiddleRelease("");
+      clearMouseProfileState();
     } catch (e) {
       // Optionally, we could surface an error dialog in this page later
       console.error('Failed to save mouse profile:', e);
@@ -325,8 +347,11 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
         </Box>
       </Dialog>
 
-      {/* Create Mouse Profile Dialog */}
-      <Dialog open={createMouseDialogOpen} onClose={() => setCreateMouseDialogOpen(false)} fullWidth maxWidth="sm">
+             {/* Create Mouse Profile Dialog */}
+       <Dialog open={createMouseDialogOpen} onClose={() => {
+         setCreateMouseDialogOpen(false);
+         clearMouseProfileState();
+       }} fullWidth maxWidth="sm">
         <Box sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -344,7 +369,10 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
               <MouseIcon sx={{ mr: 1 }} />
               <Typography variant="h6">Create Mouse Profile</Typography>
             </Box>
-            <IconButton onClick={() => setCreateMouseDialogOpen(false)}>
+                         <IconButton onClick={() => {
+               setCreateMouseDialogOpen(false);
+               clearMouseProfileState();
+             }}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -395,6 +423,140 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
             Files
           </Typography>
 
+          {/* Default Section */}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Default</Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                             {/* Press */}
+                               <Button
+                  variant={mouseDefaultPress ? 'contained' : 'outlined'}
+                  size="small"
+                  onClick={() => {
+                    if (mouseDefaultPress) {
+                      setMouseDefaultPress("");
+                    } else {
+                      execute('selectAudioFile').then((result) => {
+                        if (typeof result === 'string' && result.length > 0) {
+                          setMouseDefaultPress(result);
+                        }
+                      });
+                    }
+                  }}
+                  sx={{ 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    display: 'inline-flex',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                >
+                  <Tooltip
+                    placement="top"
+                    arrow
+                    title={
+                      mouseDefaultPress
+                        ? (
+                          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="caption">Click To Change</Typography>
+                            <Typography variant="caption">{mouseDefaultPress}</Typography>
+                          </Box>
+                        )
+                        : 'Select Audio File'
+                    }
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {mouseDefaultPress ? <CheckCircleIcon sx={{ fontSize: 18, mr: 1 }} /> : <GraphicEqIcon sx={{ fontSize: 18, mr: 1 }} />}
+                      <Typography variant="body2">Press</Typography>
+                    </Box>
+                  </Tooltip>
+                  {mouseDefaultPress && (
+                    <Tooltip title="Clear" placement="top" arrow>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '50%',
+                          width: 20,
+                          height: 20,
+                          transition: 'background-color 0.2s',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          },
+                        }}
+                      >
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </Box>
+                    </Tooltip>
+                  )}
+                </Button>
+
+                             {/* Release */}
+                               <Button
+                  variant={mouseDefaultRelease ? 'contained' : 'outlined'}
+                  size="small"
+                  onClick={() => {
+                    if (mouseDefaultRelease) {
+                      setMouseDefaultRelease("");
+                    } else {
+                      execute('selectAudioFile').then((result) => {
+                        if (typeof result === 'string' && result.length > 0) {
+                          setMouseDefaultRelease(result);
+                        }
+                      });
+                    }
+                  }}
+                  sx={{ 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    display: 'inline-flex',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                >
+                  <Tooltip
+                    placement="top"
+                    arrow
+                    title={
+                      mouseDefaultRelease
+                        ? (
+                          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Typography variant="caption">Click To Change</Typography>
+                            <Typography variant="caption">{mouseDefaultRelease}</Typography>
+                          </Box>
+                        )
+                        : 'Select Audio File'
+                    }
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {mouseDefaultRelease ? <CheckCircleIcon sx={{ fontSize: 18, mr: 1 }} /> : <GraphicEqIcon sx={{ fontSize: 18, mr: 1 }} />}
+                      <Typography variant="body2">Release</Typography>
+                    </Box>
+                  </Tooltip>
+                  {mouseDefaultRelease && (
+                    <Tooltip title="Clear" placement="top" arrow>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '50%',
+                          width: 20,
+                          height: 20,
+                          transition: 'background-color 0.2s',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          },
+                        }}
+                      >
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </Box>
+                    </Tooltip>
+                  )}
+                </Button>
+            </Box>
+          </Box>
+
           {[
             {
               title: 'Left',
@@ -415,83 +577,149 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
             <Box key={title} sx={{ mt: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>{title}</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-                {/* Press */}
-                <Tooltip
-                  placement="top"
-                  arrow
-                  title={
-                    press.value
-                      ? (
-                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                          <Typography variant="caption">Click To Change</Typography>
-                          <Typography variant="caption">{press.value}</Typography>
-                        </Box>
-                      )
-                      : 'Select Audio File'
-                  }
-                >
-                  <Button
+                                 {/* Press */}
+                                   <Button
                     variant={press.value ? 'contained' : 'outlined'}
                     size="small"
-                    startIcon={press.value ? <CheckCircleIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} /> : <GraphicEqIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} />}
                     onClick={() => {
-                      execute('selectAudioFile').then((result) => {
-                        if (typeof result === 'string' && result.length > 0) {
-                          press.setter(result);
-                        }
-                      });
+                      if (press.value) {
+                        press.setter("");
+                      } else {
+                        execute('selectAudioFile').then((result) => {
+                          if (typeof result === 'string' && result.length > 0) {
+                            press.setter(result);
+                          }
+                        });
+                      }
                     }}
-                    sx={{ justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex' }}
+                    sx={{ 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      display: 'inline-flex',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
                   >
-                    Press *
-                  </Button>
-                </Tooltip>
-
-                {/* Release */}
-                <Tooltip
-                  placement="top"
-                  arrow
-                  title={
-                    release.value
-                      ? (
-                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                          <Typography variant="caption">Click To Change</Typography>
-                          <Typography variant="caption">{release.value}</Typography>
+                    <Tooltip
+                      placement="top"
+                      arrow
+                      title={
+                        press.value
+                          ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="caption">Click To Change</Typography>
+                              <Typography variant="caption">{press.value}</Typography>
+                            </Box>
+                          )
+                          : 'Select Audio File'
+                      }
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {press.value ? <CheckCircleIcon sx={{ fontSize: 18, mr: 1 }} /> : <GraphicEqIcon sx={{ fontSize: 18, mr: 1 }} />}
+                        <Typography variant="body2">Press</Typography>
+                      </Box>
+                    </Tooltip>
+                    {press.value && (
+                      <Tooltip title="Clear" placement="top" arrow>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '50%',
+                            width: 20,
+                            height: 20,
+                            transition: 'background-color 0.2s',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                          }}
+                        >
+                          <CloseIcon sx={{ fontSize: 14 }} />
                         </Box>
-                      )
-                      : 'Select Audio File'
-                  }
-                >
-                  <Button
+                      </Tooltip>
+                    )}
+                  </Button>
+
+                                 {/* Release */}
+                                   <Button
                     variant={release.value ? 'contained' : 'outlined'}
                     size="small"
-                    startIcon={release.value ? <CheckCircleIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} /> : <GraphicEqIcon sx={{ fontSize: 18, verticalAlign: 'middle' }} />}
                     onClick={() => {
-                      execute('selectAudioFile').then((result) => {
-                        if (typeof result === 'string' && result.length > 0) {
-                          release.setter(result);
-                        }
-                      });
+                      if (release.value) {
+                        release.setter("");
+                      } else {
+                        execute('selectAudioFile').then((result) => {
+                          if (typeof result === 'string' && result.length > 0) {
+                            release.setter(result);
+                          }
+                        });
+                      }
                     }}
-                    sx={{ justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex' }}
+                    sx={{ 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      display: 'inline-flex',
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
                   >
-                    Release
+                    <Tooltip
+                      placement="top"
+                      arrow
+                      title={
+                        release.value
+                          ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="caption">Click To Change</Typography>
+                              <Typography variant="caption">{release.value}</Typography>
+                            </Box>
+                          )
+                          : 'Select Audio File'
+                      }
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {release.value ? <CheckCircleIcon sx={{ fontSize: 18, mr: 1 }} /> : <GraphicEqIcon sx={{ fontSize: 18, mr: 1 }} />}
+                        <Typography variant="body2">Release</Typography>
+                      </Box>
+                    </Tooltip>
+                    {release.value && (
+                      <Tooltip title="Clear" placement="top" arrow>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '50%',
+                            width: 20,
+                            height: 20,
+                            transition: 'background-color 0.2s',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                          }}
+                        >
+                          <CloseIcon sx={{ fontSize: 14 }} />
+                        </Box>
+                      </Tooltip>
+                    )}
                   </Button>
-                </Tooltip>
               </Box>
             </Box>
           ))}
 
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="caption" color="GrayText">* = item is required</Typography>
-          </Box>
-
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', mt: 2 }}>
-            {(() => {
-              const canSave = mouseLeftPress !== '' && mouseRightPress !== '' && mouseMiddlePress !== '' && mouseProfileName !== '' && mouseProfileAuthor != '' && mouseProfileDescription !== '';
+                         {(() => {
+               // New validation logic: if default is provided, no other files required
+               // If no default, at least one press is required
+               const hasDefault = mouseDefaultPress !== '';
+               const hasAtLeastOnePress = mouseLeftPress !== '' || mouseRightPress !== '' || mouseMiddlePress !== '';
+               const canSave = 
+                 mouseProfileName !== '' && mouseProfileAuthor !== '' && mouseProfileDescription !== '' &&
+                 (hasDefault || hasAtLeastOnePress);
               return (
                 <Tooltip
-                  title={canSave ? 'Save Profile' : 'Select Required Files To Save'}
+                  title={canSave ? 'Save Profile' : 'Provide either a default audio file or at least one button press sound'}
                   placement="left"
                   arrow
                 >
@@ -753,17 +981,39 @@ const Profiles = ({statusLoaded, status, profilesLoaded, profiles}) => {
             const typeMatches = (device === 'keyboard' && filterKeyboard) || (device === 'mouse' && filterMouse);
             return nameMatches && typeMatches;
           })
-          .map((profile) => (
-          <ProfileListItem 
-            statusLoaded={statusLoaded}
-            status={status}
-            key={profile.name}
-            profile={profile}
-            onExport={() => {
-              setProfileToExport(profile.name);
-              setExportProfileDialogOpen(true);
-            }} />
-        ))}
+          .sort((a, b) => {
+            // Check if profiles are active (either running in backend or selected in status)
+            const aIsActive = (statusLoaded && status && (status.profile === a.name || status.mouse_profile === a.name)) ||
+                             (a.name === selectedKeyboardProfile || a.name === selectedMouseProfile);
+            const bIsActive = (statusLoaded && status && (status.profile === b.name || status.mouse_profile === b.name)) ||
+                             (b.name === selectedKeyboardProfile || b.name === selectedMouseProfile);
+            
+            // Active profiles come first
+            if (aIsActive && !bIsActive) return -1;
+            if (!aIsActive && bIsActive) return 1;
+            
+            // If both are active or both are inactive, sort alphabetically by name
+            return a.name.localeCompare(b.name);
+          })
+          .map((profile) => {
+            const isActive = (statusLoaded && status && (status.profile === profile.name || status.mouse_profile === profile.name)) ||
+                            (profile.name === selectedKeyboardProfile || profile.name === selectedMouseProfile);
+            return (
+              <ProfileListItem 
+                statusLoaded={statusLoaded}
+                status={status}
+                key={profile.name}
+                profile={profile}
+                onExport={() => {
+                  setProfileToExport(profile.name);
+                  setExportProfileDialogOpen(true);
+                }}
+                isActive={isActive}
+                selectedKeyboardProfile={selectedKeyboardProfile}
+                selectedMouseProfile={selectedMouseProfile}
+              />
+            );
+          })}
       </List>
     </Box>
   );

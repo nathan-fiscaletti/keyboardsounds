@@ -390,7 +390,7 @@ function App() {
 
   useEffect(() => {
     if (selectedTab === 0) {        // Audio
-      execute(`setHeight 546`);
+      execute(`setHeight 536`);
     } else if (selectedTab === 3) { // Settings
       execute(`setHeight 932`);
     } else if (selectedTab === 4) { // Community
@@ -521,7 +521,14 @@ function App() {
             )}
 
             {selectedTab === 1 && (
-              <Profiles statusLoaded={statusLoaded} status={status} profilesLoaded={profilesLoaded} profiles={profiles} />
+              <Profiles 
+                statusLoaded={statusLoaded} 
+                status={status} 
+                profilesLoaded={profilesLoaded} 
+                profiles={profiles}
+                selectedKeyboardProfile={selectedKeyboardProfile}
+                selectedMouseProfile={selectedMouseProfile}
+              />
             )}
 
             {selectedTab === 2 && (

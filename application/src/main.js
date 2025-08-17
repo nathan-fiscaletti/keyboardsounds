@@ -352,7 +352,7 @@ app.whenReady().then(async () => {
       label: 'Quit',
       type: 'normal',
       click: () => {
-        kbs.exec('stop').finally(() => {
+        kbs.kbsCli('stop').finally(() => {
           process.exit(0);
         });
       },

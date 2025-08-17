@@ -137,8 +137,108 @@ const AppRule = ({ rule }) => {
   );
 };
 
+const SelfAppRule = ({ mode, setting, onChange }) => {
+  return (
+    <ListItem
+      key={'self-rule'}
+      sx={{
+        borderRadius: 1,
+        mb: 1,
+        bgcolor: "background.default",
+        pl: 2,
+      }}
+      disableGutters
+      secondaryAction={
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <FormControl size="small" sx={{ width: 131, mr: 2 }}>
+            <Select
+              value={mode}
+              disabled={setting}
+              onChange={(e) => onChange(e.target.value)}
+              renderValue={(v) => (
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {setting && <CircularProgress size={16} sx={{ mr: 1 }} />}
+                  <Typography variant="button" sx={{ textTransform: 'capitalize' }}>
+                    {v}
+                  </Typography>
+                </Box>
+              )}
+            >
+              <MenuItem value="always">
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="button">Always</Typography>
+                  <Typography variant="caption" color="GrayText">
+                    Enables sounds when this application is focused.
+                  </Typography>
+                  <Typography variant="caption" color="GrayText">
+                    (Only works if there are no exclusive rules.)
+                  </Typography>
+                  <Typography variant="caption" color="GrayText">
+                    (Requires you to re-focus this application.)
+                  </Typography>
+                </Box>
+              </MenuItem>
+              <MenuItem value="never">
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="button">Never</Typography>
+                  <Typography variant="caption" color="GrayText">
+                    Disables sounds when this application is focused.
+                  </Typography>
+                  <Typography variant="caption" color="GrayText">
+                    (Requires you to re-focus this application.)
+                  </Typography>
+                </Box>
+              </MenuItem>
+              <MenuItem value="default">
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="button">Default</Typography>
+                  <Typography variant="caption" color="GrayText">
+                    No rule for this app; use global and other app rules.
+                  </Typography>
+                  <Typography variant="caption" color="GrayText">
+                    (Requires you to re-focus this application.)
+                  </Typography>
+                </Box>
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      }
+    >
+      <ListItemText
+        sx={{ cursor: 'default', maxWidth: 'calc(100% - 120px)' }}
+        primary={
+          <Typography variant="body2">This Application</Typography>
+        }
+        secondary={
+          <Typography variant="caption" color="GrayText">
+            How sounds behave in this application.
+          </Typography>
+        }
+        secondaryTypographyProps={{
+          sx: {
+            display: 'block',
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+          },
+        }}
+      />
+    </ListItem>
+  );
+};
+
 const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAction, onGlobalActionChanged }) => {
   const [searchValue, setSearchValue] = useState("");
+  const [selfAppPath, setSelfAppPath] = useState("");
+  const [selfRulePath, setSelfRulePath] = useState("");
+  const [selfRuleMode, setSelfRuleMode] = useState("default");
+  const [settingSelfRule, setSettingSelfRule] = useState(false);
 
   // Sort the app rules so that "exclusive" rules come first
   appRules.sort((a, b) => {
@@ -155,6 +255,32 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
   const [selectedRule, setSelectedRule] = useState("disable");
   const [selectedApplication, setSelectedApplication] = useState("");
   const [addingRule, setAddingRule] = useState(false);
+
+  useEffect(() => {
+    // Fetch both the executable path and any existing self-rule path
+    execute("getSelfAppPath").then((path) => {
+      if (path) setSelfAppPath(path);
+    });
+    execute("getSelfRulePath").then((path) => {
+      if (typeof path === 'string') setSelfRulePath(path);
+    });
+  }, []);
+
+  useEffect(() => {
+    const normalize = (p) => (p || "").toLowerCase();
+    const target = selfRulePath || selfAppPath;
+    if (!target) return;
+    const selfRule = appRules.find(r => normalize(r.app_path) === normalize(target));
+    if (!selfRule) {
+      setSelfRuleMode("default");
+    } else if (selfRule.action === "enable" || selfRule.action === "exclusive") {
+      setSelfRuleMode("always");
+    } else if (selfRule.action === "disable") {
+      setSelfRuleMode("never");
+    } else {
+      setSelfRuleMode("default");
+    }
+  }, [appRules, selfAppPath, selfRulePath]);
 
   useEffect(() => {
     if (!addAppRuleDialogOpen) {
@@ -189,6 +315,10 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
       sx={{
         ml: 2,
         mt: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
       }}
     >
       <Dialog open={addAppRuleDialogOpen} fullWidth>
@@ -371,7 +501,6 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
       <Box sx={{
         borderRadius: 1,
         mb: 1,
-        // bgcolor: "background.default",
         pt: 1,
       }}>
         <Box sx={{
@@ -401,12 +530,12 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
         </Box>
       </Box>
       </Box>
-      {appRulesLoaded && appRules.length > 0 && (
+      {appRulesLoaded && (
         <List
           sx={{
             overflow: "auto",
-            maxHeight: "calc(100vh - 410px)",
             pr: 2,
+            flex: 1,
             "&::-webkit-scrollbar": {
               width: "8px",
             },
@@ -418,7 +547,22 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
             },
           }}
         >
-          {appRules.map((rule) => {
+          <SelfAppRule
+            mode={selfRuleMode}
+            setting={settingSelfRule}
+            onChange={(mode) => {
+              setSelfRuleMode(mode);
+              setSettingSelfRule(true);
+              execute(`setSelfAppRule ${mode}`).then(() => {
+                setSettingSelfRule(false);
+                execute("getSelfRulePath").then((path) => {
+                  if (typeof path === 'string') setSelfRulePath(path);
+                });
+              }).catch(() => setSettingSelfRule(false));
+            }}
+          />
+
+          {appRules.filter(r => (r.app_path || '').toLowerCase() !== ((selfRulePath || selfAppPath) || '').toLowerCase()).map((rule) => {
             if (
               searchValue === "" ||
               rule.app_path
@@ -434,22 +578,6 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
             return null;
           })}
         </List>
-      )}
-      {(!appRulesLoaded || appRules.length < 1) && (
-        <Box sx={{ mt: 18, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}>
-            <Typography variant="button" color="GrayText">
-              No rules have been added yet.
-            </Typography>
-            <Typography variant="body2" color="GrayText" sx={{ mt: 1 }}>
-              Click the "Add Rule" button to get started.
-            </Typography>
-          </Box>
-        </Box>
       )}
     </Box>
   );

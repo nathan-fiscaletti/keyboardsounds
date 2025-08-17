@@ -1,6 +1,7 @@
 import argparse
 import os
 import json
+import sys
 
 from sys import platform
 
@@ -63,14 +64,14 @@ def main():
         (
             f"usage: %(prog)s <action> [params]{os.linesep *2}"
             f"  manage daemon:{os.linesep * 2}"
-            f"    %(prog)s start [-v <volume>] [-p <profile>] [-D] [-w]{os.linesep}"
+            f"    %(prog)s start [-v <volume>] [-p <profile>] [-m <mouse_profile>] [-D] [-w]{os.linesep}"
             f"    %(prog)s stop{os.linesep}"
             f"    %(prog)s status [-s]{os.linesep * 2}"
             f"  manage profiles:{os.linesep * 2}"
             f"    %(prog)s <new|create-profile> [-d <path>] -n <name>{os.linesep}"
             f"    %(prog)s <ap|add-profile> -z <zipfile>{os.linesep}"
             f"    %(prog)s <rp|remove-profile> -n <profile>{os.linesep}"
-            f"    %(prog)s <lp|list-profiles> [-s] [--remote]{os.linesep}"
+            f"    %(prog)s <lp|list-profiles> [-s] [--remote] [-t <device_type>]{os.linesep}"
             f"    %(prog)s <dp|download-profile> -n <profile>{os.linesep}"
             f"    %(prog)s <ex|export-profile> -n <profile> -o <zip_file>{os.linesep * 2}"
             f"    %(prog)s <bp|build-profile> -d <sound_dir> -o <zip_file>{os.linesep * 2}"
@@ -101,9 +102,17 @@ def main():
         "-p",
         "--profile",
         type=str,
-        default="ios",
+        default=None,
         metavar="profile",
-        help="sound profile to use, default 'ios'",
+        help="keyboard sound profile to use; if omitted, keyboard sounds are disabled",
+    )
+    parser.add_argument(
+        "-m",
+        "--mouse-profile",
+        type=str,
+        default=None,
+        metavar="mouse_profile",
+        help="mouse sound profile to use; if omitted, mouse clicks are disabled",
     )
     parser.add_argument(
         "-D",
@@ -115,7 +124,7 @@ def main():
         "-w",
         "--window",
         action="store_true",
-        help="used with kbs start to enable the daemon window"
+        help="used with kbs start to enable the daemon window",
     )
 
     # Status Action
@@ -147,6 +156,15 @@ def main():
         "--remote",
         action="store_true",
         help="used with the list-profiles action to list remote profiles",
+    )
+    parser.add_argument(
+        "-t",
+        "--device-type",
+        type=str,
+        choices=["keyboard", "mouse"],
+        default=None,
+        metavar="device_type",
+        help="used with the list-profiles action to filter by device type",
     )
     parser.add_argument("-V", "--version", action="version", version=version_number)
 
@@ -187,15 +205,40 @@ def main():
             help="rule to apply. must be one of 'enable', 'disable', or 'exclusive'",
         )
 
+    # If no arguments provided, show help instead of error
+    if len(sys.argv) == 1:
+        parser.print_help()
+        return
+
     args = parser.parse_args()
 
     if args.action == "start":
         status = dm.status()
         if status == "running":
             print("Re-configuring running instance of Keyboard Sounds daemon...")
+            print(f"Using Keyboard Profile: {args.profile if args.profile else 'None'}")
+            print(
+                f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
+            )
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
-        if not dm.try_start(volume=args.volume, profile=args.profile, debug=args.debug, window=args.window):
+            print(f"Using Keyboard Profile: {args.profile if args.profile else 'None'}")
+            print(
+                f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
+            )
+        # Require at least one profile
+        if args.profile is None and args.mouse_profile is None:
+            print(
+                "Error: You must provide at least one profile (-p for keyboard, -m for mouse)."
+            )
+            return
+        if not dm.try_start(
+            volume=args.volume,
+            profile=args.profile,
+            debug=args.debug,
+            window=args.window,
+            mouse_profile=args.mouse_profile,
+        ):
             print("Failed to start.")
             return
         print(f"Started Keyboard Sounds.")
@@ -244,6 +287,20 @@ def main():
     elif args.action == "list-profiles" or args.action == "lp":
         if args.remote:
             profiles = Profile.list_remote_profiles()
+            if args.device_type is not None:
+                profiles = [
+                    p
+                    for p in profiles
+                    if p.get("device", "keyboard") == args.device_type
+                ]
+            else:
+                profiles = sorted(
+                    profiles,
+                    key=lambda p: (
+                        (p.get("device", "keyboard") == "mouse"),
+                        p.get("name", "").lower(),
+                    ),
+                )
 
             if args.short:
                 print(json.dumps(profiles))
@@ -255,21 +312,40 @@ def main():
                 names.append("Name")
                 authors = [profile["author"] for profile in profiles]
                 authors.append("Author")
+                devices = [profile.get("device", "keyboard") for profile in profiles]
+                devices.append("Device")
                 name_len = len(max(names, key=len))
                 auth_len = len(max(authors, key=len))
+                dev_len = len(max(devices, key=len))
 
                 print(f" Downloadable profiles{os.linesep}")
                 print(
-                    f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | Description"
+                    f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | {'Device'.ljust(dev_len)} | Description"
                 )
-                print(f" {'-' * name_len} | {'-' * auth_len} | -----------")
+                print(
+                    f" {'-' * name_len} | {'-' * auth_len} | {'-' * dev_len} | -----------"
+                )
                 for profile in profiles:
                     print(
-                        f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}"
+                        f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile.get('device','keyboard').ljust(dev_len)} | {profile['description']}"
                     )
                 print(os.linesep)
         else:
             profiles = [profile.metadata() for profile in Profile.list()]
+            if args.device_type is not None:
+                profiles = [
+                    p
+                    for p in profiles
+                    if p.get("device", "keyboard") == args.device_type
+                ]
+            else:
+                profiles = sorted(
+                    profiles,
+                    key=lambda p: (
+                        (p.get("device", "keyboard") == "mouse"),
+                        p.get("name", "").lower(),
+                    ),
+                )
 
             if args.short:
                 print(
@@ -279,6 +355,7 @@ def main():
                                 "name": profile["name"],
                                 "author": profile["author"],
                                 "description": profile["description"],
+                                "device": profile.get("device", "keyboard"),
                             }
                             for profile in profiles
                         ]
@@ -290,17 +367,22 @@ def main():
             names.append("Name")
             authors = [profile["author"] for profile in profiles]
             authors.append("Author")
+            devices = [profile.get("device", "keyboard") for profile in profiles]
+            devices.append("Device")
             name_len = len(max(names, key=len))
             auth_len = len(max(authors, key=len))
+            dev_len = len(max(devices, key=len))
 
             print(f"{os.linesep} Available profiles{os.linesep}")
             print(
-                f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | Description"
+                f" {'Name'.ljust(name_len)} | {'Author'.ljust(auth_len)} | {'Device'.ljust(dev_len)} | Description"
             )
-            print(f" {'-' * name_len} | {'-' * auth_len} | -----------")
+            print(
+                f" {'-' * name_len} | {'-' * auth_len} | {'-' * dev_len} | -----------"
+            )
             for profile in profiles:
                 print(
-                    f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile['description']}"
+                    f" {profile['name'].ljust(name_len)} | {profile['author'].ljust(auth_len)} | {profile.get('device','keyboard').ljust(dev_len)} | {profile['description']}"
                 )
             print(os.linesep)
             return

@@ -6,6 +6,8 @@ profile:
   name: {{ name }}
   author: Your Name
   description: Describe your profile
+  # device can be 'keyboard' or 'mouse'. Defaults to 'keyboard' if omitted.
+  # device: keyboard
 
 # A list of all audio sources used by this profile each
 # containing an identifier and a source.
@@ -53,3 +55,11 @@ keys:
       # An array of keys that you can press that this
       # sound will be mapped to.
       keys: [ backspace, delete ]
+
+# If you want mouse clicks instead of keyboard keys, set profile.device to 'mouse'
+# and use the optional 'buttons' mappings below. Supported buttons: left, right, middle.
+# buttons:
+#   default: key1
+#   other:
+#     - sound: key2
+#       buttons: [ left ]

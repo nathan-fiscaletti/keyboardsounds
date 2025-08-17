@@ -1,0 +1,28 @@
+profile:
+  name: g502x-wireless
+  author: Keyboard Sounds
+  description: Mouse clicks from a Logitech G502 X Wireless Mouse
+  device: mouse
+
+sources:
+  - id: click_left
+    source:
+      press: ./primary_down.wav
+      release: ./primary_up.wav
+  - id: click_right
+    source:
+      press: ./secondary_down.wav
+      release: ./secondary_up.wav
+  - id: click_middle
+    source:
+      press: ./middle.wav
+
+buttons:
+  default: click_left
+  other:
+    - sound: click_left
+      buttons: [ left ]
+    - sound: click_right
+      buttons: [ right ]
+    - sound: click_middle
+      buttons: [ middle ] 

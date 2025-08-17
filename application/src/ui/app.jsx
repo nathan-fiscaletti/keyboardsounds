@@ -49,9 +49,7 @@ function ControlButton({
   statusLoaded,
   status,
   isLoading,
-  selectedProfile,
-  volume,
-  enableDaemonWindow,
+  startCmd,
   handleCommand,
 }) {
   return (
@@ -82,7 +80,7 @@ function ControlButton({
               )
             }
             onClick={
-              handleCommand(`start -p ${selectedProfile} -v ${volume} ${enableDaemonWindow ? '-w' : ''}`)
+              handleCommand(startCmd)
             }
           />
         </Tooltip>
@@ -124,7 +122,8 @@ function App() {
   const [volume, setVolume] = useState(0);
   const [displayVolume, setDisplayVolume] = useState(0);
 
-  const [selectedProfile, setSelectedProfile] = useState('');
+  const [selectedKeyboardProfile, setSelectedKeyboardProfile] = useState('');
+  const [selectedMouseProfile, setSelectedMouseProfile] = useState('');
 
   const [status, setStatus] = useState(null);
   const [statusLoaded, setStatusLoaded] = useState(false);
@@ -132,6 +131,8 @@ function App() {
   const [appRules, setAppRules] = useState([]);
   const [appRulesLoaded, setAppRulesLoaded] = useState(false);
 
+  const [profilesKeyboard, setProfilesKeyboard] = useState([]);
+  const [profilesMouse, setProfilesMouse] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const [profilesLoaded, setProfilesLoaded] = useState(false);
 
@@ -164,12 +165,12 @@ function App() {
     run();
   }, []);
 
-
   // Load the profile, volume and notification preferences from the backend
   useEffect(() => {
     const run = async () => {
       const volume = await execute("getVolume");
-      const profile = await execute("getProfile");
+      const kbProfile = await execute("getProfile");
+      const mouseProfile = await execute("getMouseProfile");
       const notifyOnLaunch = await execute("getNotifyOnLaunch");
       const notifyOnHide = await execute("getNotifyOnHide");
       const notifyOnUpdate = await execute("getNotifyOnUpdate");
@@ -179,7 +180,8 @@ function App() {
 
       setVolume(volume);
       setDisplayVolume(volume);
-      setSelectedProfile(profile);
+      setSelectedKeyboardProfile(kbProfile);
+      setSelectedMouseProfile(mouseProfile);
       setNotifyOnLaunch(notifyOnLaunch);
       setNotifyOnHide(notifyOnHide);
       setNotifyOnUpdate(notifyOnUpdate);
@@ -188,7 +190,11 @@ function App() {
       setRunSoundDaemonOnStartup(startSoundDaemonOnStartUp);
 
       if (startSoundDaemonOnStartUp) {
-        await execute(`start -p ${profile} -v ${volume} ${enableDaemonWindow ? '-w' : ''}`);
+        const cmdParts = ["start", `-v ${volume}`];
+        if (kbProfile !== '') cmdParts.push(`-p ${kbProfile}`);
+        if (mouseProfile !== '') cmdParts.push(`-m ${mouseProfile}`);
+        if (enableDaemonWindow) cmdParts.push('-w');
+        await execute(cmdParts.join(' '));
       }
     };
     run();
@@ -238,6 +244,20 @@ function App() {
     }
   }, [status]);
 
+  // Keep selected profiles in sync with the daemon's active profiles
+  useEffect(() => {
+    if (status && status.status === "running") {
+      const kb = status.profile || '';
+      const mouse = status.mouse_profile || '';
+      if (kb !== selectedKeyboardProfile) {
+        setSelectedKeyboardProfile(kb);
+      }
+      if (mouse !== selectedMouseProfile) {
+        setSelectedMouseProfile(mouse);
+      }
+    }
+  }, [status]);
+
   useEffect(() => {
     const removeAppRulesListener = window.kbs.receive(
       "kbs-app-rules",
@@ -258,26 +278,39 @@ function App() {
   }, [appRules]);
 
   useEffect(() => {
-    const removeProfilesListener = window.kbs.receive(
-      "kbs-profiles",
+    const removeKbListener = window.kbs.receive(
+      "kbs-profiles-keyboard",
       (newProfiles) => {
-        setProfiles(newProfiles);
+        setProfilesKeyboard(newProfiles);
+      }
+    );
+    const removeMouseListener = window.kbs.receive(
+      "kbs-profiles-mouse",
+      (newProfiles) => {
+        setProfilesMouse(newProfiles);
       }
     );
 
     return () => {
-      removeProfilesListener();
+      removeKbListener();
+      removeMouseListener();
     }
   }, []);
 
   useEffect(() => {
-    if (!profilesLoaded && profiles.length > 0) {
+    // Merge for Profiles page view
+    const merged = [...profilesKeyboard, ...profilesMouse];
+    setProfiles(merged);
+    if (!profilesLoaded && merged.length > 0) {
       setProfilesLoaded(true);
-      if (selectedProfile === '') {
-        setSelectedProfile(profiles[0].name);
+      if (selectedKeyboardProfile === '' && profilesKeyboard.length > 0) {
+        setSelectedKeyboardProfile(profilesKeyboard[0].name);
+      }
+      if (selectedMouseProfile === '' && profilesMouse.length > 0) {
+        setSelectedMouseProfile(profilesMouse[0].name);
       }
     }
-  }, [profiles]);
+  }, [profilesKeyboard, profilesMouse]);
 
   useEffect(() => {
     const run = async () => {
@@ -287,6 +320,14 @@ function App() {
     };
     run();
   }, [volume]);
+
+  const buildStartCmd = () => {
+    const parts = ["start", `-v ${volume}`];
+    if (selectedKeyboardProfile !== '') parts.push(`-p ${selectedKeyboardProfile}`);
+    if (selectedMouseProfile !== '') parts.push(`-m ${selectedMouseProfile}`);
+    if (enableDaemonWindow) parts.push('-w');
+    return parts.join(' ');
+  };
 
   const handleCommand = (cmd) => {
     return () => {
@@ -302,11 +343,19 @@ function App() {
     };
   };
 
-  const handleProfileChanged = (event) => {
+  const handleKeyboardProfileChanged = (event) => {
     execute(`storeProfile ${event.target.value}`);
-    setSelectedProfile(event.target.value);
+    setSelectedKeyboardProfile(event.target.value);
     if (statusLoaded && status.status === "running") {
       execute(`setProfile ${event.target.value}`).then((_) => {});
+    }
+  };
+
+  const handleMouseProfileChanged = (event) => {
+    execute(`storeMouseProfile ${event.target.value}`);
+    setSelectedMouseProfile(event.target.value);
+    if (statusLoaded && status.status === "running") {
+      execute(`setMouseProfile ${event.target.value}`).then((_) => {});
     }
   };
 
@@ -354,7 +403,7 @@ function App() {
 
   useEffect(() => {
     if (selectedTab === 0) {        // Audio
-      execute(`setHeight 414`);
+      execute(`setHeight 536`);
     } else if (selectedTab === 3) { // Settings
       execute(`setHeight 932`);
     } else if (selectedTab === 4) { // Community
@@ -413,9 +462,7 @@ function App() {
             statusLoaded={statusLoaded}
             status={status}
             isLoading={isLoading}
-            selectedProfile={selectedProfile}
-            volume={volume}
-            enableDaemonWindow={enableDaemonWindow}
+            startCmd={buildStartCmd()}
             handleCommand={handleCommand} />
         </Box>
       </Card>
@@ -453,7 +500,9 @@ function App() {
           mt: 1,
           height: "100%",
           minHeight: "calc(100vh - 124px)",
-          maxHeight: "calc(100vh - 124px)"
+          maxHeight: "calc(100vh - 124px)",
+          display: "flex",
+          flexDirection: "column"
         }}>
           <Tabs 
             value={selectedTab}
@@ -466,56 +515,69 @@ function App() {
             <Tooltip title="Settings" arrow><Tab icon={<SettingsIcon />} /></Tooltip>
             <Tooltip title="Community" arrow><Tab icon={<ForumIcon />} /></Tooltip>
           </Tabs>
-  
-          {selectedTab === 0 && (
-            <Status 
-              profilesLoaded={profilesLoaded}
-              profiles={profiles}
-              selectedProfile={selectedProfile} 
-              displayVolume={displayVolume}
-              onProfileChanged={handleProfileChanged}
-              onVolumeChanged={handleVolumeChanged}
-              onDisplayVolumeChanged={setDisplayVolume}
-            />
-          )}
-  
-          {selectedTab === 1 && (
-            <Profiles statusLoaded={statusLoaded} status={status} profilesLoaded={profilesLoaded} profiles={profiles} />
-          )}
-  
-          {selectedTab === 2 && (
-            <AppRules
-              appRules={appRules}
-              appRulesLoaded={appRulesLoaded}
-              enabledRulesAreExclusive={enabledRulesAreExclusive}
-              globalAction={globalAction}
-              onGlobalActionChanged={handleGlobalActionChanged}
-            />
-          )}
-  
-          {selectedTab === 3 && (
-            <Settings
-              appVersion={appVersion}
-              backEndVersion={backEndVersion}
-              runOnStartUp={runOnStartUp}
-              startSoundDaemonOnStartup={runSoundDaemonOnStartup}
-              onRunOnStartUpChanged={handleRunOnStartupChanged}
-              startDaemonWindow={enableDaemonWindow}
-              onStartDaemonWindowChanged={handleEnableDaemonWindowChanged}
-              notifyOnLaunch={notifyOnLaunch}
-              onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
-              notifyOnHide={notifyOnHide}
-              onNotifyOnHideChanged={handleNotifyOnHideChanged}
-              notifyOnUpdate={notifyOnUpdate}
-              onNotifyOnUpdateChanged={handleNotifyOnUpdateChanged}
-              onStartSoundDaemonOnStartupChanged={handleStartSoundDaemonOnStartupChanged}
-            />
-          )}
 
-          {selectedTab === 4 && (
-            <About />
-          )}
-  
+          <Box sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
+            {selectedTab === 0 && (
+              <Status 
+                profilesKeyboardLoaded={profilesKeyboard.length > 0}
+                profilesMouseLoaded={profilesMouse.length > 0}
+                keyboardProfiles={profilesKeyboard}
+                mouseProfiles={profilesMouse}
+                selectedKeyboardProfile={selectedKeyboardProfile}
+                selectedMouseProfile={selectedMouseProfile}
+                displayVolume={displayVolume}
+                onKeyboardProfileChanged={handleKeyboardProfileChanged}
+                onMouseProfileChanged={handleMouseProfileChanged}
+                onVolumeChanged={handleVolumeChanged}
+                onDisplayVolumeChanged={setDisplayVolume}
+              />
+            )}
+
+            {selectedTab === 1 && (
+              <Profiles 
+                statusLoaded={statusLoaded} 
+                status={status} 
+                profilesLoaded={profilesLoaded} 
+                profiles={profiles}
+                selectedKeyboardProfile={selectedKeyboardProfile}
+                selectedMouseProfile={selectedMouseProfile}
+              />
+            )}
+
+            {selectedTab === 2 && (
+              <AppRules
+                appRules={appRules}
+                appRulesLoaded={appRulesLoaded}
+                enabledRulesAreExclusive={enabledRulesAreExclusive}
+                globalAction={globalAction}
+                onGlobalActionChanged={handleGlobalActionChanged}
+              />
+            )}
+
+            {selectedTab === 3 && (
+              <Settings
+                appVersion={appVersion}
+                backEndVersion={backEndVersion}
+                runOnStartUp={runOnStartUp}
+                startSoundDaemonOnStartup={runSoundDaemonOnStartup}
+                onRunOnStartUpChanged={handleRunOnStartupChanged}
+                startDaemonWindow={enableDaemonWindow}
+                onStartDaemonWindowChanged={handleEnableDaemonWindowChanged}
+                notifyOnLaunch={notifyOnLaunch}
+                onNotifyOnLaunchChanged={handleNotifyOnLaunchChanged}
+                notifyOnHide={notifyOnHide}
+                onNotifyOnHideChanged={handleNotifyOnHideChanged}
+                notifyOnUpdate={notifyOnUpdate}
+                onNotifyOnUpdateChanged={handleNotifyOnUpdateChanged}
+                onStartSoundDaemonOnStartupChanged={handleStartSoundDaemonOnStartupChanged}
+              />
+            )}
+
+            {selectedTab === 4 && (
+              <About />
+            )}
+          </Box>
+
         </Card>
       )}
       

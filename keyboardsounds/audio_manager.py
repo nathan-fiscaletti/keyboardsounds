@@ -4,10 +4,11 @@ import os
 import io
 import random
 
-from typing import Optional
+from typing import Optional, Any, Dict, List, cast
 
 from imageio_ffmpeg import get_ffmpeg_exe
 from pynput.keyboard import Key, KeyCode
+from pynput.mouse import Button
 
 from keyboardsounds.profile import Profile
 
@@ -24,10 +25,10 @@ class AudioManager:
         The constructor initializes the internal state, loads the sound clips
         based on the provided profile, and sets up the audio manager.
         """
-        self.sounds = {}
+        self.sounds: Dict[str, Any] = {}
         self.profile = profile
-        self.__one_shot_press_sound = None
-        self.__one_shot_release_sound = None
+        self.__one_shot_press_sound: Optional[io.BytesIO] = None
+        self.__one_shot_release_sound: Optional[io.BytesIO] = None
         self.__prime_audio_clips()
         self.__enabled = True
 
@@ -61,60 +62,74 @@ class AudioManager:
         """
         if self.profile.value("profile.type") == "video-extract":
             ffmpeg_exe = get_ffmpeg_exe()
-            V_FILE = self.profile.get_child(self.profile.value("profile.video")).get_path()
+            video_path = cast(str, self.profile.value("profile.video"))
+            V_FILE = self.profile.get_child(video_path).get_path()
             A_FILE = f"{V_FILE}.wav"
             subprocess.run(
                 [ffmpeg_exe, "-y", "-i", V_FILE, "-f", "wav", "-vn", A_FILE],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-            for source in self.profile.value("sources"):
-                self.__extract(source["id"], A_FILE, source["start"], source["end"])
+            sources = cast(List[Dict[str, Any]], self.profile.value("sources") or [])
+            for source in sources:
+                sid = cast(str, source["id"])
+                start = cast(float, source["start"])
+                endv = cast(Optional[float], source["end"])  # type: ignore[assignment]
+                self.__extract(sid, A_FILE, start, cast(Optional[float], endv))
             os.unlink(A_FILE)
         elif self.profile.value("profile.type") == "one-shot":
-            press = self.profile.value('profile.press')
-            release = self.profile.value('profile.release')
+            press = self.profile.value("profile.press")
+            release = self.profile.value("profile.release")
             if press is not None:
-                self.__extract("one-shot-press", input=press)
+                self.__extract("one-shot-press", input=cast(str, press))
                 pressBytes = self.sounds["one-shot-press"].getbuffer().tobytes()
                 pressAudioData = io.BytesIO(pressBytes)
                 self.__one_shot_press_sound = pressAudioData
             if release is not None:
-                self.__extract("one-shot-release", input=release)
+                self.__extract("one-shot-release", input=cast(str, release))
                 releaseBytes = self.sounds["one-shot-release"].getbuffer().tobytes()
                 releaseAudioData = io.BytesIO(releaseBytes)
                 self.__one_shot_release_sound = releaseAudioData
 
-            
         elif self.profile.value("profile.type") == "files":
-            for source in self.profile.value("sources"):
-                if isinstance(source["source"], dict):
-                    source_id = source["id"]
-                    press_loc = source["source"]["press"]
+            sources = cast(List[Dict[str, Any]], self.profile.value("sources") or [])
+            for source in sources:
+                src = source["source"]
+                if isinstance(src, dict):
+                    source_id = cast(str, source["id"])
+                    press_loc = cast(str, src["press"])
                     press_path = self.profile.get_child(press_loc).get_path()
-                    release_loc = source["source"]["release"]
-                    release_path = self.profile.get_child(release_loc).get_path()
+                    release_loc = cast(Optional[str], src.get("release"))
                     press_id = f"{source_id}__press"
                     release_id = f"{source_id}__release"
 
                     self.__extract(press_id, press_path)
-                    self.__extract(release_id, release_path)
+                    if release_loc is not None:
+                        release_path = self.profile.get_child(release_loc).get_path()
+                        self.__extract(release_id, release_path)
 
                     press_snd = self.sounds[press_id].getbuffer().tobytes()
-                    release_snd = self.sounds[release_id].getbuffer().tobytes()
+                    release_snd = (
+                        self.sounds[release_id].getbuffer().tobytes()
+                        if release_id in self.sounds
+                        else None
+                    )
 
                     self.sounds[source_id] = {
                         "press": io.BytesIO(press_snd),
-                        "release": io.BytesIO(release_snd),
+                        "release": (
+                            io.BytesIO(release_snd) if release_snd is not None else None
+                        ),
                     }
                     del self.sounds[press_id]
-                    del self.sounds[release_id]
-                elif type(source["source"]) == str:
-                    source_id = source["id"]
-                    path = self.profile.get_child(source["source"]).get_path()
+                    if release_id in self.sounds:
+                        del self.sounds[release_id]
+                elif type(src) == str:
+                    source_id = cast(str, source["id"])
+                    path = self.profile.get_child(src).get_path()
                     self.__extract(source_id, path)
 
-    def __extract(self, id, input, start: float = 0.0, end: float = None):
+    def __extract(self, id, input, start: float = 0.0, end: Optional[float] = None):
         """
         Extracts and prepares an audio clip from the specified input source.
 
@@ -174,11 +189,26 @@ class AudioManager:
         if not self.__enabled:
             return None
 
+        # Device-aware mapping
+        device = cast(Optional[str], self.profile.value("profile.device")) or "keyboard"
+        if device == "mouse":
+            return self.__get_mouse_sound(key, action)
+
+        # Keyboard behavior (existing)
         if self.profile.value("keys") is not None:
             if self.profile.value("keys.other") is not None:
-                for mapping in self.profile.value("keys.other"):
-                    k_val = key.name if isinstance(key, Key) else key.char
-                    if k_val in mapping["keys"]:
+                for mapping in cast(
+                    List[Dict[str, Any]], self.profile.value("keys.other") or []
+                ):
+                    keys_list = cast(List[str], mapping.get("keys", []))
+                    k_val: Optional[str] = None
+                    if isinstance(key, Key):
+                        k_val = key.name
+                    elif isinstance(key, KeyCode):
+                        k_val = key.char
+                    elif isinstance(key, str):
+                        k_val = key
+                    if k_val is not None and k_val in keys_list:
                         return self.__get_sound(mapping["sound"], action)
             if self.profile.value("keys.default") is not None:
                 default_key = self.profile.value("keys.default")
@@ -223,7 +253,34 @@ class AudioManager:
             key = list(self.sounds.keys())
         if type(key) is list:
             return self.__parse_sound(self.sounds[random.choice(key)], action)
-        return self.__parse_sound(self.sounds[key], action)
+        key_str = cast(str, key)
+        return self.__parse_sound(self.sounds[key_str], action)
+
+    def __get_mouse_sound(self, btn, action: str = "press") -> Optional[io.BytesIO]:
+        # btn is expected to be pynput.mouse.Button
+        button_name = None
+        if isinstance(btn, Button):
+            if btn == Button.left:
+                button_name = "left"
+            elif btn == Button.right:
+                button_name = "right"
+            elif btn == Button.middle:
+                button_name = "middle"
+        # Fallback: if not a known Button, no sound
+        if button_name is None:
+            return None
+
+        if self.profile.value("buttons") is not None:
+            if self.profile.value("buttons.other") is not None:
+                for mapping in cast(
+                    List[Dict[str, Any]], self.profile.value("buttons.other") or []
+                ):
+                    if "buttons" in mapping and button_name in mapping["buttons"]:
+                        return self.__get_sound(mapping["sound"], action)
+            if self.profile.value("buttons.default") is not None:
+                default_btn = self.profile.value("buttons.default")
+                return self.__get_sound(default_btn, action)
+        return self.__get_sound(key=None, action=action)
 
     def __parse_sound(self, sound, action: str = "press") -> io.BytesIO:
         """
@@ -246,7 +303,10 @@ class AudioManager:
         selected based on the action.
         """
         if type(sound) is dict:
-            return io.BytesIO(sound[action].getbuffer().tobytes())
-        elif action == "press":
-            return io.BytesIO(sound.getbuffer().tobytes())
-        return None
+            selected = sound.get(action) or sound.get("press")
+            if selected is None:
+                # Should not happen if profiles are valid; return an empty buffer
+                return io.BytesIO()
+            return io.BytesIO(selected.getbuffer().tobytes())
+        # non-dict: treat as single press clip; if release requested, still play press
+        return io.BytesIO(sound.getbuffer().tobytes())

@@ -245,6 +245,20 @@ function App() {
     }
   }, [status]);
 
+  // Keep selected profiles in sync with the daemon's active profiles
+  useEffect(() => {
+    if (status && status.status === "running") {
+      const kb = status.profile || '';
+      const mouse = status.mouse_profile || '';
+      if (kb !== selectedKeyboardProfile) {
+        setSelectedKeyboardProfile(kb);
+      }
+      if (mouse !== selectedMouseProfile) {
+        setSelectedMouseProfile(mouse);
+      }
+    }
+  }, [status]);
+
   useEffect(() => {
     const removeAppRulesListener = window.kbs.receive(
       "kbs-app-rules",

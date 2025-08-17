@@ -29,7 +29,7 @@ const kbs = {
 	appVersion: null, // this is filed in in main.js from package.json
 	simulateProd: false,
 
-	exec: function (cmd, print=true) {
+	kbsCli: function (cmd, print=true) {
 		return new Promise((resolve, reject) => {
 			if (print) {
 				console.log(`executing: kbs ${cmd}`);
@@ -51,7 +51,7 @@ const kbs = {
 	},
 
 	getBackendVersion: function () {
-		return this.exec('--version');
+		return this.kbsCli('--version');
 	},
 
 	openInBrowser: function () {
@@ -62,7 +62,7 @@ const kbs = {
 
 	status: function () {
 		return new Promise((resolve, reject) => {
-			this.exec('status --short', false).then((stdout) => {
+			this.kbsCli('status --short', false).then((stdout) => {
 				try {
 					const status = JSON.parse(stdout);
 					resolve(status);
@@ -77,7 +77,7 @@ const kbs = {
 
 	profiles: function() {
 		return new Promise((resolve, reject) => {
-			this.exec('list-profiles --short', false).then((stdout) => {
+			this.kbsCli('list-profiles --short', false).then((stdout) => {
 				try {
 					const profiles = JSON.parse(stdout);
 					resolve(profiles);
@@ -92,7 +92,7 @@ const kbs = {
 
 	profileNames: function() {
 		return new Promise((resolve, reject) => {
-			this.exec('list-profiles --short', false).then((stdout) => {
+			this.kbsCli('list-profiles --short', false).then((stdout) => {
 				try {
 					const profiles = JSON.parse(stdout);
 					resolve(profiles.map(p => p.name));
@@ -107,7 +107,7 @@ const kbs = {
 
 	rules: function() {
 		return new Promise((resolve, reject) => {
-			this.exec('list-rules --short', false).then((stdout) => {
+			this.kbsCli('list-rules --short', false).then((stdout) => {
 				try {
 					const rules = JSON.parse(stdout);
 					resolve(rules);
@@ -126,7 +126,7 @@ const kbs = {
 
 	getGlobalAction: function() {
 		return new Promise((resolve, reject) => {
-			this.exec('get-global-rule --short', false).then((stdout) => {
+			this.kbsCli('get-global-rule --short', false).then((stdout) => {
 				try {
 					const ga = JSON.parse(stdout);
 					resolve(ga.global_action);
@@ -140,7 +140,7 @@ const kbs = {
 	},
 
 	setGlobalAction: function(action) {
-		return this.exec(`set-global-rule --rule ${action}`);
+		return this.kbsCli(`set-global-rule --rule ${action}`);
 	},
 
 		getSelfAppPath: function() {
@@ -180,13 +180,13 @@ const kbs = {
 				}
 
 				if (mode === 'default') {
-					try { await this.exec(`remove-rule --app "${targetPath}"`); } catch (_) {}
+					try { await this.kbsCli(`remove-rule --app "${targetPath}"`); } catch (_) {}
 					store.set('self_rule_path', targetPath);
 					return true;
 				}
 
 				const rule = mode === 'always' ? 'enable' : 'disable';
-				await this.exec(`add-rule --app "${targetPath}" --rule ${rule}`);
+				await this.kbsCli(`add-rule --app "${targetPath}" --rule ${rule}`);
 				store.set('self_rule_path', targetPath);
 				return true;
 			} catch (err) {
@@ -204,7 +204,7 @@ const kbs = {
 
 		try {
 			const exePath = app.getPath('exe');
-			await this.exec(`add-rule --app "${exePath}" --rule enable`);
+			await this.kbsCli(`add-rule --app "${exePath}" --rule enable`);
 			store.set('self_rule_added', true);
 			store.set('self_rule_path', exePath);
 			console.log('Added self application rule and persisted flag.');
@@ -248,7 +248,7 @@ const kbs = {
 			]
 		});
 		if (!res.canceled) {
-			await this.exec(`add-profile --zip "${res.filePaths[0]}"`);
+			await this.kbsCli(`add-profile --zip "${res.filePaths[0]}"`);
 		}
 		this.openFileDialogIsOpen = false;
 		this.mainWindow.show();
@@ -586,7 +586,7 @@ const kbs = {
 
 	getState: function() {
 		return new Promise((resolve, reject) => {
-			this.exec('state', false).then((stdout) => {
+			this.kbsCli('state', false).then((stdout) => {
 				try {
 					const state = JSON.parse(stdout);
 					resolve(state);
@@ -625,13 +625,11 @@ const kbs = {
 		// Listen for incoming IPC messages.
 		ipcMain.on('kbs', async (event, data) => {
 			const { command, channelId } = data;
-			console.log(`ipcMain.on kbs[${channelId}] ${command}`);
-
 			const [commandName, ...commandArgs] = command.split(' ');
 
 			// check if cmd is a member of this
 			if (typeof this[commandName] === 'function') {
-				console.log(`running as functional command`)
+				console.log(`ipcMain.on(kbs) kbs[channel:${channelId}] (container) ${command}`);
 				try {
 					const result = await this[commandName](...commandArgs);
 					event.reply(`kbs_execute_result_${channelId}`, result);
@@ -647,9 +645,8 @@ const kbs = {
 				lastKnownProfilesMouse = null;
 				lastKnownPerformNotify = null;
 			} else {
-				console.log(`running as direct command`);
-				// attempt to execute the command directly
-				this.exec(command).then((result) => {
+				console.log(`ipcMain.on kbs[${channelId}] ${command} (cli)`);
+				this.kbsCli(command).then((result) => {
 					event.reply(`kbs_execute_result_${channelId}`, result);
 				}).catch((err) => {
 					console.log(`error running command: ${err}`);
@@ -710,8 +707,8 @@ const kbs = {
 
 					// Fetch keyboard and mouse profiles separately
 					Promise.all([
-						this.exec('list-profiles -t keyboard --short', false),
-						this.exec('list-profiles -t mouse --short', false),
+						this.kbsCli('list-profiles -t keyboard --short', false),
+						this.kbsCli('list-profiles -t mouse --short', false),
 					]).then(([kbStdout, mouseStdout]) => {
 						let kbProfiles = [];
 						let mouseProfiles = [];
@@ -760,7 +757,7 @@ const kbs = {
 		console.log(`using output dir ${outputDir}`);
 		try {
 			console.log(`running bp -d "${tmpdir}" -o "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`);
-			await this.exec(`bp -d "${tmpdir}" -o "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`, true);
+			await this.kbsCli(`bp -d "${tmpdir}" -o "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`, true);
 		} catch (err) {
 			console.error('Failed to build profile:', err);
 			return;
@@ -768,7 +765,7 @@ const kbs = {
 		// import the profile into keyboard sounds
 		try {
 			console.log(`running ap -z "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`);
-			await this.exec(`ap -z "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`, true);
+			await this.kbsCli(`ap -z "${path.join(outputDir, `${buildData.profileYaml.profile.name}.zip`)}"`, true);
 		} catch (err) {
 			console.error('Failed to import profile:', err);
 			return;

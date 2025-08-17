@@ -7,6 +7,18 @@ import json
 import socket
 import threading
 import tkinter as tk
+import atexit
+from typing import Optional
+
+try:
+    import msvcrt  # type: ignore
+except Exception:
+    msvcrt = None  # type: ignore
+
+try:
+    import fcntl  # type: ignore
+except Exception:
+    fcntl = None  # type: ignore
 
 import keyboardsounds.daemon as daemon
 from keyboardsounds.profile import Profile
@@ -34,6 +46,11 @@ class DaemonManager:
         self.__one_shot = one_shot
         self.__thread = None
         self.__daemon_window_visible = False
+        # Separate OS-level process lock to prevent multiple daemons
+        self.__proc_lock_file: Optional[str] = (
+            f"{lock_file}.pid" if lock_file is not None else None
+        )
+        self.__proc_lock_handle = None
         if not self.__one_shot:
             self.__load_status()
 
@@ -73,15 +90,13 @@ class DaemonManager:
         else:
             self.__proc = None
 
-        if self.__proc:
-            try:
-                proc_name = self.__proc.name()
-                current_name = psutil.Process().name()
-                self.__is_daemon_process = proc_name == current_name
-            except:
-                self.__proc = None
-                pass
-        else:
+        # Current process is the daemon if our PID matches the lock file PID
+        try:
+            self.__is_daemon_process = (
+                self.__proc_info is not None
+                and self.__proc_info.get("pid") == os.getpid()
+            )
+        except Exception:
             self.__is_daemon_process = False
 
     def status(self, full=False, short=False) -> str:
@@ -167,12 +182,11 @@ class DaemonManager:
         else:
             self.__load_status()
             if self.__lock_exists:
-                if self.__is_daemon_process:
+                # If lock exists and process with PID is alive -> running; else stale
+                if self.__proc is not None and self.__proc.is_running():
                     return "running"
-                else:
-                    return "stale"
-            else:
-                return "free"
+                return "stale"
+            return "free"
 
     def get_volume(self) -> int | None:
         """
@@ -267,12 +281,55 @@ class DaemonManager:
         if status == "free":
             return False
 
+        # If we are the daemon process itself, perform graceful in-process shutdown
+        is_self = (
+            self.__proc_info is not None and self.__proc_info.get("pid") == os.getpid()
+        )
+        if status == "running" and is_self:
+            try:
+                # Stop API listener if any
+                if self.__api is not None:
+                    try:
+                        self.__api.stop()
+                    except Exception:
+                        pass
+                # Release process lock and remove pid file
+                try:
+                    self.__release_process_lock()
+                except Exception:
+                    pass
+                # Remove .lock state file
+                try:
+                    if self.__lock_file is not None and os.path.exists(
+                        self.__lock_file
+                    ):
+                        os.unlink(self.__lock_file)
+                except Exception:
+                    pass
+            finally:
+                # Exit the process; cleanup done above
+                os._exit(0)
+
         if status == "running" and self.__proc is not None:
-            self.__proc.kill()
+            try:
+                self.__proc.kill()
+            except Exception:
+                pass
+            # Give OS a moment to release any file locks
+            time.sleep(0.25)
             status = self.status()
 
         if status == "stale":
-            os.unlink(self.__lock_file)
+            try:
+                os.unlink(self.__lock_file)
+            except Exception:
+                pass
+        # Clean up pid lock file if present
+        if self.__proc_lock_file is not None and os.path.exists(self.__proc_lock_file):
+            try:
+                os.unlink(self.__proc_lock_file)
+            except Exception:
+                pass
 
         self.__proc_info = None
         self.__lock_exists = False
@@ -359,6 +416,87 @@ class DaemonManager:
             time.sleep(1.0)
         return True
 
+    def __acquire_process_lock(self) -> bool:
+        """
+        Acquire an OS-level exclusive lock to ensure only one daemon runs.
+        Returns True only in the daemon process that obtained the lock.
+        """
+        if self.__proc_lock_file is None:
+            return True
+        try:
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(self.__proc_lock_file), exist_ok=True)
+        except Exception:
+            pass
+        try:
+            # Open or create the lock file and hold the handle
+            self.__proc_lock_handle = open(self.__proc_lock_file, "a+b")
+            if msvcrt is not None and os.name == "nt":
+                try:
+                    # Ensure file has at least 1 byte to lock
+                    self.__proc_lock_handle.seek(0, os.SEEK_END)
+                    if self.__proc_lock_handle.tell() == 0:
+                        self.__proc_lock_handle.write(b"\0")
+                        self.__proc_lock_handle.flush()
+                    self.__proc_lock_handle.seek(0)
+                    msvcrt.locking(self.__proc_lock_handle.fileno(), msvcrt.LK_NBLCK, 1)
+                except OSError:
+                    # Already locked by another process
+                    self.__proc_lock_handle.close()
+                    self.__proc_lock_handle = None
+                    return False
+            elif fcntl is not None:
+                try:
+                    fcntl.flock(self.__proc_lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except OSError:
+                    self.__proc_lock_handle.close()
+                    self.__proc_lock_handle = None
+                    return False
+            else:
+                # Fallback: best-effort without OS lock (should not happen)
+                pass
+            # Register cleanup on exit for the daemon process
+            atexit.register(self.__release_process_lock)
+            return True
+        except Exception:
+            if self.__proc_lock_handle is not None:
+                try:
+                    self.__proc_lock_handle.close()
+                except Exception:
+                    pass
+                self.__proc_lock_handle = None
+            return False
+
+    def __release_process_lock(self) -> None:
+        try:
+            if self.__proc_lock_handle is not None:
+                if msvcrt is not None and os.name == "nt":
+                    try:
+                        msvcrt.locking(
+                            self.__proc_lock_handle.fileno(), msvcrt.LK_UNLCK, 1
+                        )
+                    except Exception:
+                        pass
+                elif fcntl is not None:
+                    try:
+                        fcntl.flock(self.__proc_lock_handle, fcntl.LOCK_UN)
+                    except Exception:
+                        pass
+                try:
+                    self.__proc_lock_handle.close()
+                except Exception:
+                    pass
+                self.__proc_lock_handle = None
+        finally:
+            # Remove the pid lock file
+            try:
+                if self.__proc_lock_file is not None and os.path.exists(
+                    self.__proc_lock_file
+                ):
+                    os.unlink(self.__proc_lock_file)
+            except Exception:
+                pass
+
     def update_lock_file(
         self, volume: int, profile: str | None, mouse_profile: str | None = None
     ):
@@ -370,8 +508,21 @@ class DaemonManager:
             "api_port": self.__api.port() if self.__api is not None else None,
         }
         print(f"updating lock-file with {lockData}")
-        with open(self.__lock_file, "w") as f:
+        # Write atomically to avoid partial reads
+        tmp_path = f"{self.__lock_file}.tmp"
+        with open(tmp_path, "w") as f:
             json.dump(lockData, f)
+            f.flush()
+            os.fsync(f.fileno())
+        try:
+            os.replace(tmp_path, self.__lock_file)
+        except Exception:
+            # Fallback if replace not available
+            try:
+                os.unlink(self.__lock_file)
+            except Exception:
+                pass
+            os.rename(tmp_path, self.__lock_file)
 
     def capture_daemon_initialization(self):
         """
@@ -387,8 +538,10 @@ class DaemonManager:
                 conditions for initialization were not met.
         """
         if (len(sys.argv) == 5 or len(sys.argv) == 6) and sys.argv[1] == "start-daemon":
-            if self.status() == "running":
-                return
+            # Ensure only one daemon proceeds by acquiring OS-level lock
+            if not self.__acquire_process_lock():
+                # Another daemon is already running
+                return True
 
             volume = 100
             try:
@@ -495,7 +648,7 @@ class DaemonManager:
         btn_stop = tk.Button(
             group_daemon,
             text="Stop Daemon & Close Window",
-            command=lambda: self.try_stop(),
+            command=lambda: self._stop_via_gui(root),
         )
         btn_stop.grid(row=1, column=1, sticky="e", pady=(5, 0))
 
@@ -547,6 +700,22 @@ class DaemonManager:
         root.update_idletasks()
         root.mainloop()
         self.__daemon_window_visible = False
+
+    def _stop_via_gui(self, root: tk.Tk) -> None:
+        try:
+            # Close the window promptly to avoid UI freeze
+            try:
+                root.destroy()
+            except Exception:
+                pass
+            # Stop the daemon in a background thread so UI event loop isn't blocked
+            threading.Thread(target=self.try_stop, daemon=True).start()
+        except Exception:
+            # Fallback if anything goes wrong
+            try:
+                threading.Thread(target=self.try_stop, daemon=True).start()
+            except Exception:
+                pass
 
     def capture_oneshot(self) -> bool:
         if (

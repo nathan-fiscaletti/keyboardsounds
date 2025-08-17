@@ -34,7 +34,16 @@ class ExternalAPI:
 
     def stop(self) -> None:
         if self.__thread is not None:
+            # Signal the listener loop to stop
             self.__continue = False
+            # Nudge the blocking accept() by connecting to the local port
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(0.2)
+                    s.connect(("localhost", self.__port))
+            except Exception:
+                pass
+            # Join the thread now that accept() should have returned
             self.__thread.join()
             self.__thread = None
 
@@ -48,7 +57,14 @@ class ExternalAPI:
         connection_handlers: list[tuple[_ConnectionHandler, Thread]] = []
 
         while self.__continue:
-            conn, _ = self.__socket.accept()
+            try:
+                conn, _ = self.__socket.accept()
+            except OSError:
+                # Socket likely closed during stop(); exit if we're stopping
+                if not self.__continue:
+                    break
+                else:
+                    continue
             connection = _ConnectionHandler(conn=conn, on_command=self.__on_command)
             thread = Thread(target=connection.handle_connection)
             thread.daemon = True

@@ -31,7 +31,7 @@ Keyboard Sounds can be installed as a desktop application or as a Python package
 
 [⬇️ Download](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-<img align="right" src="./application/main.png" width="250" />
+<img align="right" src="./images/status.png" width="250" />
 
 Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
@@ -53,11 +53,11 @@ Keyboard Sounds comes bundled with eleven built-in sound profiles and supports c
 
 Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
-![Custom Profiles](./application/editor-with-profiles.png)
+![Custom Profiles](./images/editor-all.png)
 
 ### Application Rules
 
-<img align="right" src="./docs/app-rules.png" height="350" />
+<img align="right" src="./images/app-rules.png" height="350" />
 
 - Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently focused application.
 

@@ -145,6 +145,27 @@ const toggleWindow = () => {
   }
 };
 
+// Ensure only a single instance of the app is running
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      if (!mainWindow.isVisible()) {
+        mainWindow.show();
+      }
+      mainWindow.focus();
+    } else {
+      toggleWindow();
+    }
+  });
+}
+
 const createEditorWindow = () => {
   // Create the browser window.
   const editorWindow = new BrowserWindow({

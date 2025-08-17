@@ -5,7 +5,7 @@ rules.push({
   use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
 });
 
-console.log(`process.env.NODE_ENV=${process.env.NODE_ENV}`);
+console.log(`(webpack) process.env.NODE_ENV=${process.env.NODE_ENV}`);
 
 module.exports = {
   cache: {

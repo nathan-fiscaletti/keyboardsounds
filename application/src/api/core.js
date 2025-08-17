@@ -9,6 +9,8 @@ import yaml from 'js-yaml';
 import { spawn } from 'child_process';
 import fetch from 'node-fetch';
 import Store from 'electron-store';
+import crypto from 'crypto';
+import Mixpanel from 'mixpanel';
 
 const store = new Store();
 
@@ -597,6 +599,38 @@ const kbs = {
 				reject(err);
 			});
 		});
+	},
+
+	getAnalyticsId: async function() {
+		let id = store.get('analytics_id', '');
+		if (!id) {
+			try {
+				id = crypto.randomUUID();
+			} catch (e) {
+				id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+			}
+			store.set('analytics_id', id);
+		}
+		return Promise.resolve(id);
+	},
+
+	startContainerAnalytics: async function() {
+		try {
+			const token = process.env.MIXPANEL_TOKEN;
+			console.log('analytics token', token);
+			if (!token) { return false; }
+			const mixpanel = Mixpanel.init(token, { debug: true, protocol: 'https', persistence: 'localStorage' });
+			const distinctId = await this.getAnalyticsId();
+			console.log('analytics distinctId', distinctId);
+			console.log('app version', this.appVersion);
+			const track = () => mixpanel.track('Application Ping', { distinct_id: distinctId, app_version: this.appVersion });
+			track();
+			setInterval(track, 24 * 60 * 60 * 1000);
+			return true;
+		} catch (e) {
+			console.log('startContainerAnalytics error', e);
+			return false;
+		}
 	},
 
 	setHeight: function(newHeight) {

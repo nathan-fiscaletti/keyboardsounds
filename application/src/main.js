@@ -57,7 +57,7 @@ const toggleWindow = () => {
   const y = height - appHeight - 10;
 
   var extraVars = {};
-  console.log(`process.env.NODE_ENV=${process.env.NODE_ENV}`);
+  console.log(`(container) process.env.NODE_ENV=${process.env.NODE_ENV}`);
   if (process.env.NODE_ENV === 'development' && !simulateProd) {
     extraVars = {
       frame: true,
@@ -122,8 +122,6 @@ const toggleWindow = () => {
     }
   });
 
-  kbs.appVersion = app.getVersion();
-
   kbs.setSimulateProd(simulateProd);
 
   // Set the main window for use with the IPC handlers
@@ -173,6 +171,9 @@ const createEditorWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  kbs.appVersion = app.getVersion();
+  // Start container-level analytics (no renderer network required)
+  try { await kbs.startContainerAnalytics(); } catch (_) {}
   // Ensure that both Python & the `keyboardsounds` Python Package are installed.
   kbs.checkPythonInstallation().then(() => {
     // Verify that Keyboard Sounds package is installed and functioning.

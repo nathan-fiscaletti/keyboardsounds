@@ -80,6 +80,7 @@
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.1",
     "react-simple-keyboard": "^3.8.22",
-    "semver": "^7.6.2"
+    "semver": "^7.6.2",
+    "mixpanel": "^0.18.0"
   }
 }

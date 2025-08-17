@@ -165,7 +165,6 @@ function App() {
     run();
   }, []);
 
-
   // Load the profile, volume and notification preferences from the backend
   useEffect(() => {
     const run = async () => {

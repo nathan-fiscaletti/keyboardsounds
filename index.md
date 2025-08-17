@@ -7,7 +7,7 @@ layout: default
 [![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
 [![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
 
-Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 15 built in profiles, a profile editor, and application rules.
+Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.
 
 ### Getting Started
 
@@ -30,7 +30,7 @@ Keyboard Sounds can be installed as a desktop application or as a Python package
 
 [⬇️ Download](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-<img align="right" src="./application/main.png" width="250" />
+<img align="right" src="./images/status.png" width="250" />
 
 Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 
@@ -47,15 +47,17 @@ You may need to restart the application after doing this for the changes to take
 
 ### Custom Profiles
 
-Keyboard Sounds comes bundled with eleven built-in sound profiles and supports custom profiles in which you can provide your own WAV or MP3 files to be used for the different keys pressed.
+- Support for both **Mouse** and **Keyboard** audio profiles
+- Comes bundled with sixteen built in profiles (15 keyboard, 1 mouse)
+- Supports Custom profiles through the editors (`.wav` and `.mp3` supported)
 
 Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
-![Custom Profiles](./application/editor-with-profiles.png)
+![Custom Profiles](./images/editor-with-profiles.png)
 
 ### Application Rules
 
-<img align="right" src="./docs/app-rules.png" height="350" style="margin-left: 10px;" />
+<img align="right" src="./images/app-rules.png" height="350" style="margin-left: 10px;" />
 
 - Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently focused application.
 

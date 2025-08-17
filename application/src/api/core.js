@@ -15,7 +15,7 @@ import Mixpanel from 'mixpanel';
 const store = new Store();
 
 const MinimumPythonVersion = '3.8.0';
-const MinimumPythonPackageVersion = '5.9.9';
+const MinimumPythonPackageVersion = '6.0.0';
 
 const ErrPythonVersionUnknown = 'Failed to parse python version';
 const ErrPythonMissing = 'Python is not installed';
@@ -615,10 +615,14 @@ const kbs = {
 	},
 
 	startContainerAnalytics: async function() {
+		if (process.env.NODE_ENV === 'development') {
+			console.log('disabling analytics (NODE_ENV = development)');
+			return true;
+		}
+
 		try {
-			const token = process.env.MIXPANEL_TOKEN;
+			const token = 'c725f7b4b7fc4d10c58bccf154e6fc31';
 			console.log('analytics token', token);
-			if (!token) { return false; }
 			const mixpanel = Mixpanel.init(token, { debug: true, protocol: 'https', persistence: 'localStorage' });
 			const distinctId = await this.getAnalyticsId();
 			console.log('analytics distinctId', distinctId);

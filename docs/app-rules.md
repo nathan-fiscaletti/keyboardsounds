@@ -1,6 +1,6 @@
 # Keyboard Sounds: Application Rules
 
-![Application Rules](./app-rules.png)
+![Application Rules](../images/app-rules.png)
 
 **⚠️ Application Rules are only available on Windows**
 

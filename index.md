@@ -69,7 +69,7 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 ### Using Keyboard Sounds with OBS
 
-![Daemon Window](./daemon-window.png)
+![Daemon Window](./images/daemon-window.png)
 
 In order to use Keyboard Sounds with OBS as an isolated audio source, OBS needs a window that it can attach to that's connected to the process running the Daemon. _This is not the same process as the desktop application._ To work with this, Keyboard Sounds provides a window that can be enabled for the audio daemon.
 

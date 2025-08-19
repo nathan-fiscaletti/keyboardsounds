@@ -232,7 +232,7 @@ class AudioManager:
         """
         self.__enabled = enabled
 
-    def __get_sound(self, key=None, action: str = "press") -> io.BytesIO:
+    def __get_sound(self, key=None, action: str = "press") -> Optional[io.BytesIO]:
         """
         A private method to retrieve a sound clip based on a key and action.
 
@@ -282,7 +282,7 @@ class AudioManager:
                 return self.__get_sound(default_btn, action)
         return self.__get_sound(key=None, action=action)
 
-    def __parse_sound(self, sound, action: str = "press") -> io.BytesIO:
+    def __parse_sound(self, sound, action: str = "press") -> Optional[io.BytesIO]:
         """
         Converts a sound clip into a BytesIO object suitable for playback.
 
@@ -303,10 +303,16 @@ class AudioManager:
         selected based on the action.
         """
         if type(sound) is dict:
-            selected = sound.get(action) or sound.get("press")
+            # Only play release if explicitly configured; otherwise, for press
+            # fall back to press clip if available
+            selected = sound.get(action)
             if selected is None:
-                # Should not happen if profiles are valid; return an empty buffer
-                return io.BytesIO()
+                if action == "press":
+                    selected = sound.get("press")
+                else:
+                    return None
             return io.BytesIO(selected.getbuffer().tobytes())
-        # non-dict: treat as single press clip; if release requested, still play press
+        # Single-clip source: treat as press-only. Do not play on release.
+        if action == "release":
+            return None
         return io.BytesIO(sound.getbuffer().tobytes())

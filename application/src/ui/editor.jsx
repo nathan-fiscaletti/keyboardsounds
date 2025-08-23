@@ -55,6 +55,8 @@ import { ManageSourcesDialog } from "./editor/dialogs/manage-sources-dialog.jsx"
 import { ProfileDetailsDialog } from "./editor/dialogs/profile-details-dialog.jsx";
 import { EditAssignedSourcesDialog } from "./editor/dialogs/edit-assigned-sources-dialog.jsx";
 import { ViewYamlDialog } from "./editor/dialogs/view-yaml-dialog.jsx";
+import { ConfirmRemoveSourceDialog } from "./editor/dialogs/confirm-remove-source-dialog.jsx";
+import { ConfirmOverwriteProfileDialog } from "./editor/dialogs/confirm-overwrite-profile-dialog.jsx";
 
 // Create the initial theme for the application.
 const theme = createTheme({
@@ -170,6 +172,7 @@ function Editor() {
   const [errorOpen, setErrorOpen] = useState(false);
   const [error, setError] = useState(null);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [editSourceIdx, setEditSourceIdx] = useState(null);
 
   const [keyboardOptionsFinal, setKeyboardOptionsFinal] =
     useState(keyboardOptions);
@@ -187,6 +190,42 @@ function Editor() {
   const [selectedKeys, setSelectedKeys] = useState([]);
 
   const [playingSource, setPlayingSource] = useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [pendingRemoveSourceIndex, setPendingRemoveSourceIndex] = useState(null);
+
+  const performRemoveSource = (sourceIdx) => {
+    // Remove key assignments for this source and reindex remaining assignments
+    const updatedKeyConfigs = keyConfigs
+      .filter((cfg) => cfg.source !== sourceIdx)
+      .map((cfg) => ({
+        key: cfg.key,
+        source: cfg.source > sourceIdx ? cfg.source - 1 : cfg.source,
+      }));
+    setKeyConfigs(updatedKeyConfigs);
+
+    // Remove the source from the list
+    const updatedSources = sources.filter((_, idx) => idx !== sourceIdx);
+    setSources(updatedSources);
+
+    // Adjust selectedSource to stay within bounds and consistent
+    if (updatedSources.length === 0) {
+      setSelectedSource(0);
+    } else if (selectedSource > sourceIdx) {
+      setSelectedSource(selectedSource - 1);
+    } else if (selectedSource >= updatedSources.length) {
+      setSelectedSource(updatedSources.length - 1);
+    }
+  };
+
+  const requestRemoveSource = (sourceIdx) => {
+    const isUsed = keyConfigs.some((cfg) => cfg.source === sourceIdx);
+    if (isUsed) {
+      setPendingRemoveSourceIndex(sourceIdx);
+      setConfirmRemoveOpen(true);
+    } else {
+      performRemoveSource(sourceIdx);
+    }
+  };
 
   useEffect(() => {
     setErrorOpen(error !== null);
@@ -309,6 +348,33 @@ function Editor() {
   }, [sources, keyConfigs, profileDetails]);
 
   const [saving, setSaving] = useState(false);
+  const [confirmOverwriteOpen, setConfirmOverwriteOpen] = useState(false);
+
+  const doFinalizeSave = async () => {
+    try {
+      await execute(
+        `finalizeProfileEdit ${Buffer.from(
+          JSON.stringify({
+            profileYaml: buildYamlObj(),
+            sources: [
+              ...new Set(
+                sources.flatMap((source) =>
+                  source.releaseSound
+                    ? [source.pressSound, source.releaseSound]
+                    : [source.pressSound]
+                )
+              ),
+            ],
+          })
+        ).toString("base64")}`
+      );
+      console.log("saved successfully");
+      setSavedOpen(true);
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+      setError(`Failed to save profile: ${err}`);
+    }
+  };
 
   const save = async () => {
     setSaving(true);
@@ -336,37 +402,12 @@ function Editor() {
 
     const profileNames = await execute("profileNames");
     if (profileNames.includes(profileDetails.name)) {
-      setError("Profile name already exists. Please choose a different name.");
+      setConfirmOverwriteOpen(true);
       setSaving(false);
       return;
     }
 
-    // buildData.profileYaml = the object representing the profile.yaml
-    // buildData.sources = array of source file paths
-    try {
-      await execute(
-        `finalizeProfileEdit ${Buffer.from(
-          JSON.stringify({
-            profileYaml: buildYamlObj(),
-            sources: [
-              ...new Set(
-                sources.flatMap((source) =>
-                  source.releaseSound
-                    ? [source.pressSound, source.releaseSound]
-                    : [source.pressSound]
-                )
-              ),
-            ],
-          })
-        ).toString("base64")}`
-      );
-      console.log("saved successfully");
-      setSavedOpen(true);
-    } catch (err) {
-      console.error("Failed to save profile:", err);
-      setError(`Failed to save profile: ${err}`);
-    }
-
+    await doFinalizeSave();
     setSaving(false);
   };
 
@@ -435,23 +476,68 @@ function Editor() {
         sources={sources}
       />
 
+      <ConfirmRemoveSourceDialog
+        open={confirmRemoveOpen}
+        onCancel={() => {
+          setConfirmRemoveOpen(false);
+          setPendingRemoveSourceIndex(null);
+        }}
+        onConfirm={() => {
+          if (pendingRemoveSourceIndex !== null) {
+            performRemoveSource(pendingRemoveSourceIndex);
+          }
+          setConfirmRemoveOpen(false);
+          setPendingRemoveSourceIndex(null);
+        }}
+      />
+
+      <ConfirmOverwriteProfileDialog
+        open={confirmOverwriteOpen}
+        profileName={profileDetails.name}
+        onCancel={() => setConfirmOverwriteOpen(false)}
+        onConfirm={async () => {
+          setConfirmOverwriteOpen(false);
+          setSaving(true);
+          await doFinalizeSave();
+          setSaving(false);
+        }}
+      />
+
       <ManageSourcesDialog
         open={manageSourcesOpen}
         onClose={() => setManageSourcesOpen(false)}
         onAddSource={() => setAddSourceOpen(true)}
         onListenRequested={(s) => playSource(s)}
+        onEditSource={(idx) => {
+          setEditSourceIdx(idx);
+          setAddSourceOpen(true);
+        }}
+        onRemoveSource={(idx) => requestRemoveSource(idx)}
         sources={sources}
         playingSource={playingSource}
       />
 
       <AddSourceDialog
         open={addSourceOpen}
-        onClose={() => setAddSourceOpen(false)}
+        onClose={() => {
+          setAddSourceOpen(false);
+          setEditSourceIdx(null);
+        }}
         onSourceAdded={(source) => {
           setSources([...sources, source]);
           setAddSourceOpen(false);
         }}
+        onSourceUpdated={(updated) => {
+          if (editSourceIdx !== null) {
+            const newSources = sources.map((s, i) => (i === editSourceIdx ? { ...updated } : s));
+            setSources(newSources);
+          }
+          setAddSourceOpen(false);
+          setEditSourceIdx(null);
+        }}
         onError={(err) => setError(err)}
+        mode={editSourceIdx !== null ? "edit" : "add"}
+        initialSource={editSourceIdx !== null ? sources[editSourceIdx] : null}
       />
 
       {/* Main Editor */}

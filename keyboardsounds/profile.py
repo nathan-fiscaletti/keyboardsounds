@@ -218,6 +218,10 @@ class Profile(PathResolver):
         print(f"Importing profile from '{input_path}'...")
         output_path = os.path.join(ROOT, "profiles", name)
 
+        # if the profile already exists, delete it
+        if os.path.isdir(output_path):
+            shutil.rmtree(output_path)
+
         shutil.move(tmpdir, output_path)
         try:
             Profile(name)

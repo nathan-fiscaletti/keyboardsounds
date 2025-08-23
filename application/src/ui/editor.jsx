@@ -56,6 +56,7 @@ import { ProfileDetailsDialog } from "./editor/dialogs/profile-details-dialog.js
 import { EditAssignedSourcesDialog } from "./editor/dialogs/edit-assigned-sources-dialog.jsx";
 import { ViewYamlDialog } from "./editor/dialogs/view-yaml-dialog.jsx";
 import { ConfirmRemoveSourceDialog } from "./editor/dialogs/confirm-remove-source-dialog.jsx";
+import { ConfirmOverwriteProfileDialog } from "./editor/dialogs/confirm-overwrite-profile-dialog.jsx";
 
 // Create the initial theme for the application.
 const theme = createTheme({
@@ -347,6 +348,33 @@ function Editor() {
   }, [sources, keyConfigs, profileDetails]);
 
   const [saving, setSaving] = useState(false);
+  const [confirmOverwriteOpen, setConfirmOverwriteOpen] = useState(false);
+
+  const doFinalizeSave = async () => {
+    try {
+      await execute(
+        `finalizeProfileEdit ${Buffer.from(
+          JSON.stringify({
+            profileYaml: buildYamlObj(),
+            sources: [
+              ...new Set(
+                sources.flatMap((source) =>
+                  source.releaseSound
+                    ? [source.pressSound, source.releaseSound]
+                    : [source.pressSound]
+                )
+              ),
+            ],
+          })
+        ).toString("base64")}`
+      );
+      console.log("saved successfully");
+      setSavedOpen(true);
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+      setError(`Failed to save profile: ${err}`);
+    }
+  };
 
   const save = async () => {
     setSaving(true);
@@ -374,37 +402,12 @@ function Editor() {
 
     const profileNames = await execute("profileNames");
     if (profileNames.includes(profileDetails.name)) {
-      setError("Profile name already exists. Please choose a different name.");
+      setConfirmOverwriteOpen(true);
       setSaving(false);
       return;
     }
 
-    // buildData.profileYaml = the object representing the profile.yaml
-    // buildData.sources = array of source file paths
-    try {
-      await execute(
-        `finalizeProfileEdit ${Buffer.from(
-          JSON.stringify({
-            profileYaml: buildYamlObj(),
-            sources: [
-              ...new Set(
-                sources.flatMap((source) =>
-                  source.releaseSound
-                    ? [source.pressSound, source.releaseSound]
-                    : [source.pressSound]
-                )
-              ),
-            ],
-          })
-        ).toString("base64")}`
-      );
-      console.log("saved successfully");
-      setSavedOpen(true);
-    } catch (err) {
-      console.error("Failed to save profile:", err);
-      setError(`Failed to save profile: ${err}`);
-    }
-
+    await doFinalizeSave();
     setSaving(false);
   };
 
@@ -485,6 +488,18 @@ function Editor() {
           }
           setConfirmRemoveOpen(false);
           setPendingRemoveSourceIndex(null);
+        }}
+      />
+
+      <ConfirmOverwriteProfileDialog
+        open={confirmOverwriteOpen}
+        profileName={profileDetails.name}
+        onCancel={() => setConfirmOverwriteOpen(false)}
+        onConfirm={async () => {
+          setConfirmOverwriteOpen(false);
+          setSaving(true);
+          await doFinalizeSave();
+          setSaving(false);
         }}
       />
 

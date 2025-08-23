@@ -204,10 +204,10 @@ class AudioManager:
                     k_val: Optional[str] = None
                     if isinstance(key, Key):
                         k_val = key.name
-                    elif isinstance(key, KeyCode):
+                    elif isinstance(key, KeyCode) and key.char is not None:
                         k_val = key.char
-                    elif isinstance(key, str):
-                        k_val = key
+                    else:
+                        k_val = f"{key}"
                     if k_val is not None and k_val in keys_list:
                         return self.__get_sound(mapping["sound"], action)
             if self.profile.value("keys.default") is not None:

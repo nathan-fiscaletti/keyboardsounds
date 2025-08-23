@@ -15,7 +15,7 @@ import Mixpanel from 'mixpanel';
 const store = new Store();
 
 const MinimumPythonVersion = '3.8.0';
-const MinimumPythonPackageVersion = '6.0.4';
+const MinimumPythonPackageVersion = '6.0.5';
 
 const ErrPythonVersionUnknown = 'Failed to parse python version';
 const ErrPythonMissing = 'Python is not installed';

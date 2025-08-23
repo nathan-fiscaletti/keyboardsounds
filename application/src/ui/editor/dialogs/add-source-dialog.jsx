@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
@@ -10,12 +10,28 @@ import { execute } from '../../execute';
 
 import { Typography, Box, Tooltip, IconButton, TextField, Button, Dialog, Checkbox } from "@mui/material";
 
-function AddSourceDialog({ open, onClose, onSourceAdded, onError }) {
+function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onError, mode = "add", initialSource = null }) {
   const [name, setName] = useState("");
   const [isDefault, setIsDefault] = useState(false);
 
   const [pressSound, setPressSound] = useState(null);
   const [releaseSound, setReleaseSound] = useState(null);
+
+  // Initialize or reset fields based on mode and provided initial source when dialog opens
+  useEffect(() => {
+    if (!open) return;
+    if (mode === "edit" && initialSource) {
+      setName(initialSource.name || "");
+      setIsDefault(!!initialSource.isDefault);
+      setPressSound(initialSource.pressSound || null);
+      setReleaseSound(initialSource.releaseSound || null);
+    } else if (mode === "add") {
+      setName("");
+      setIsDefault(false);
+      setPressSound(null);
+      setReleaseSound(null);
+    }
+  }, [open, mode, initialSource]);
 
   const selectPressSound = () => {
     execute("selectAudioFile").then((path) => {
@@ -44,11 +60,17 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onError }) {
       return;
     }
 
-    onSourceAdded({ name, isDefault, pressSound, releaseSound });
-    setName("");
-    setIsDefault(true);
-    setPressSound(null);
-    setReleaseSound(null);
+    const payload = { name, isDefault, pressSound, releaseSound };
+    if (mode === "edit" && onSourceUpdated) {
+      onSourceUpdated(payload);
+    } else if (onSourceAdded) {
+      onSourceAdded(payload);
+      // reset only in add mode after successful save
+      setName("");
+      setIsDefault(true);
+      setPressSound(null);
+      setReleaseSound(null);
+    }
   };
 
   return (
@@ -69,7 +91,7 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onError }) {
             mb: 2,
           }}
         >
-          <Typography variant="h6">Add Source</Typography>
+          <Typography variant="h6">{mode === "edit" ? "Edit Source" : "Add Source"}</Typography>
           <IconButton onClick={() => onClose()}>
             <CloseIcon />
           </IconButton>

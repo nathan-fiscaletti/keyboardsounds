@@ -171,6 +171,7 @@ function Editor() {
   const [errorOpen, setErrorOpen] = useState(false);
   const [error, setError] = useState(null);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [editSourceIdx, setEditSourceIdx] = useState(null);
 
   const [keyboardOptionsFinal, setKeyboardOptionsFinal] =
     useState(keyboardOptions);
@@ -492,6 +493,10 @@ function Editor() {
         onClose={() => setManageSourcesOpen(false)}
         onAddSource={() => setAddSourceOpen(true)}
         onListenRequested={(s) => playSource(s)}
+        onEditSource={(idx) => {
+          setEditSourceIdx(idx);
+          setAddSourceOpen(true);
+        }}
         onRemoveSource={(idx) => requestRemoveSource(idx)}
         sources={sources}
         playingSource={playingSource}
@@ -499,12 +504,25 @@ function Editor() {
 
       <AddSourceDialog
         open={addSourceOpen}
-        onClose={() => setAddSourceOpen(false)}
+        onClose={() => {
+          setAddSourceOpen(false);
+          setEditSourceIdx(null);
+        }}
         onSourceAdded={(source) => {
           setSources([...sources, source]);
           setAddSourceOpen(false);
         }}
+        onSourceUpdated={(updated) => {
+          if (editSourceIdx !== null) {
+            const newSources = sources.map((s, i) => (i === editSourceIdx ? { ...updated } : s));
+            setSources(newSources);
+          }
+          setAddSourceOpen(false);
+          setEditSourceIdx(null);
+        }}
         onError={(err) => setError(err)}
+        mode={editSourceIdx !== null ? "edit" : "add"}
+        initialSource={editSourceIdx !== null ? sources[editSourceIdx] : null}
       />
 
       {/* Main Editor */}

@@ -55,6 +55,7 @@ import { ManageSourcesDialog } from "./editor/dialogs/manage-sources-dialog.jsx"
 import { ProfileDetailsDialog } from "./editor/dialogs/profile-details-dialog.jsx";
 import { EditAssignedSourcesDialog } from "./editor/dialogs/edit-assigned-sources-dialog.jsx";
 import { ViewYamlDialog } from "./editor/dialogs/view-yaml-dialog.jsx";
+import { ConfirmRemoveSourceDialog } from "./editor/dialogs/confirm-remove-source-dialog.jsx";
 
 // Create the initial theme for the application.
 const theme = createTheme({
@@ -187,6 +188,42 @@ function Editor() {
   const [selectedKeys, setSelectedKeys] = useState([]);
 
   const [playingSource, setPlayingSource] = useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [pendingRemoveSourceIndex, setPendingRemoveSourceIndex] = useState(null);
+
+  const performRemoveSource = (sourceIdx) => {
+    // Remove key assignments for this source and reindex remaining assignments
+    const updatedKeyConfigs = keyConfigs
+      .filter((cfg) => cfg.source !== sourceIdx)
+      .map((cfg) => ({
+        key: cfg.key,
+        source: cfg.source > sourceIdx ? cfg.source - 1 : cfg.source,
+      }));
+    setKeyConfigs(updatedKeyConfigs);
+
+    // Remove the source from the list
+    const updatedSources = sources.filter((_, idx) => idx !== sourceIdx);
+    setSources(updatedSources);
+
+    // Adjust selectedSource to stay within bounds and consistent
+    if (updatedSources.length === 0) {
+      setSelectedSource(0);
+    } else if (selectedSource > sourceIdx) {
+      setSelectedSource(selectedSource - 1);
+    } else if (selectedSource >= updatedSources.length) {
+      setSelectedSource(updatedSources.length - 1);
+    }
+  };
+
+  const requestRemoveSource = (sourceIdx) => {
+    const isUsed = keyConfigs.some((cfg) => cfg.source === sourceIdx);
+    if (isUsed) {
+      setPendingRemoveSourceIndex(sourceIdx);
+      setConfirmRemoveOpen(true);
+    } else {
+      performRemoveSource(sourceIdx);
+    }
+  };
 
   useEffect(() => {
     setErrorOpen(error !== null);
@@ -435,11 +472,27 @@ function Editor() {
         sources={sources}
       />
 
+      <ConfirmRemoveSourceDialog
+        open={confirmRemoveOpen}
+        onCancel={() => {
+          setConfirmRemoveOpen(false);
+          setPendingRemoveSourceIndex(null);
+        }}
+        onConfirm={() => {
+          if (pendingRemoveSourceIndex !== null) {
+            performRemoveSource(pendingRemoveSourceIndex);
+          }
+          setConfirmRemoveOpen(false);
+          setPendingRemoveSourceIndex(null);
+        }}
+      />
+
       <ManageSourcesDialog
         open={manageSourcesOpen}
         onClose={() => setManageSourcesOpen(false)}
         onAddSource={() => setAddSourceOpen(true)}
         onListenRequested={(s) => playSource(s)}
+        onRemoveSource={(idx) => requestRemoveSource(idx)}
         sources={sources}
         playingSource={playingSource}
       />

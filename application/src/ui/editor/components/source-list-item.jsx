@@ -1,12 +1,13 @@
 import React from "react";
 
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 import { Typography, Box, Tooltip, IconButton, ListItem, ListItemText, Chip, CircularProgress } from "@mui/material";
 
-function SourceListItem({ name, press, release, isDefault, onListenRequested, playingSource }) {
+function SourceListItem({ name, press, release, isDefault, onListenRequested, onRemoveRequested, playingSource }) {
   const secondaryText =
     press && release ? `${press}, ${release}` : `${press}` || `${release}`;
 
@@ -39,13 +40,21 @@ function SourceListItem({ name, press, release, isDefault, onListenRequested, pl
 
           <Tooltip title="Listen" placement="top" arrow>
             {playingSource ? (
-              <CircularProgress size={18} sx={{ mr: 2, ml: 2 }} />
+              <CircularProgress size={18} sx={{ mr: 1, ml: 2 }} />
             ) : (
-              <IconButton color="primary" sx={{ mr: 1 }} onClick={onListenRequested}>
+              <IconButton color="primary" onClick={onListenRequested}>
                 <PlayArrowIcon />
               </IconButton>
             )}
           </Tooltip>
+
+          {onRemoveRequested && (
+            <Tooltip title="Remove" placement="top" arrow>
+              <IconButton color="primary" sx={{ mr: 1 }} onClick={onRemoveRequested}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       }
       sx={{

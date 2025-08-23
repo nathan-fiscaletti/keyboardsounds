@@ -44,7 +44,8 @@ class ProfileBuilder(PathResolver):
     def __load_profile_data(self):
         if self.exists():
             self.__data = yaml.load(
-                open(self.get_child("profile.yaml").get_path(), "r"), Loader=yaml.FullLoader
+                open(self.get_child("profile.yaml").get_path(), "r"),
+                Loader=yaml.FullLoader,
             )
 
     def __load_audio_files(self):
@@ -208,7 +209,11 @@ class KeyCollector:
         return unique
 
     def __on_press(self, key):
-        key_name = key.name if type(key) == Key else key.char
+        key_name = (
+            key.name
+            if type(key) == Key
+            else key.char if key.char is not None else f"{key}"
+        )
         if (
             "ctrl" in self.__pressed
             or "ctrl_l" in self.__pressed

@@ -13,7 +13,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import SaveIcon from "@mui/icons-material/Save";
 import SettingsIcon from "@mui/icons-material/Settings";
-import EditNoteIcon from "@mui/icons-material/EditNote";
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
+import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
+// Removed EditNoteIcon import; inline editing replaces the button
 
 import { Buffer } from "buffer";
 
@@ -30,6 +32,7 @@ import {
   Select,
   MenuItem,
   Divider,
+  InputBase,
 } from "@mui/material";
 
 import Keyboard from "react-simple-keyboard";
@@ -165,14 +168,41 @@ function Editor() {
     updateKeyboardConfigs();
   }, [keyConfigs]);
 
-  const [profileDetailsOpen, setProfileDetailsOpen] = useState(true);
+  const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState("");
+  const [nameError, setNameError] = useState(null);
   const [manageSourcesOpen, setManageSourcesOpen] = useState(false);
+  const [audioFilesOpen, setAudioFilesOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [error, setError] = useState(null);
   const [savedOpen, setSavedOpen] = useState(false);
   const [editSourceIdx, setEditSourceIdx] = useState(null);
+
+  const validateProfileName = (value) => {
+    const trimmed = (value || "").trim();
+    if (trimmed.length < 1) {
+      return "Name must be at least 1 character. Allowed: A-Z a-z 0-9 - _ . (no spaces)";
+    }
+    if (!/^[A-Za-z0-9-_.]+$/.test(trimmed)) {
+      return "Allowed characters: A-Z a-z 0-9 - _ . (no spaces)";
+    }
+    return null;
+  };
+
+  const applyNameEdit = () => {
+    const error = validateProfileName(tempName);
+    if (error) {
+      setNameError(error);
+      return;
+    }
+    const newName = (tempName || "").trim();
+    setProfileDetails({ ...profileDetails, name: newName });
+    setIsEditingName(false);
+    setNameError(null);
+  };
 
   const [keyboardOptionsFinal, setKeyboardOptionsFinal] =
     useState(keyboardOptions);
@@ -188,10 +218,31 @@ function Editor() {
     useState(keyboardNumPadEndOptions);
 
   const [selectedKeys, setSelectedKeys] = useState([]);
+  const [audioSearchPath, setAudioSearchPath] = useState("");
+  const [availableAudioFiles, setAvailableAudioFiles] = useState([]);
 
   const [playingSource, setPlayingSource] = useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [pendingRemoveSourceIndex, setPendingRemoveSourceIndex] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!audioSearchPath) { setAvailableAudioFiles([]); return; }
+      try {
+        const b64 = Buffer.from(audioSearchPath).toString("base64");
+        const files = await execute(`listAudioFilesInB64 ${b64}`);
+        setAvailableAudioFiles([{ dir: audioSearchPath, files: Array.isArray(files) ? files : [] }]);
+      } catch (e) {
+        console.log(e);
+        setAvailableAudioFiles([{ dir: audioSearchPath, files: [] }]);
+      }
+    };
+    load();
+  }, [audioSearchPath]);
+
+  useEffect(() => {
+    console.log("availableAudioFiles", availableAudioFiles);
+  }, [availableAudioFiles]);
 
   const performRemoveSource = (sourceIdx) => {
     // Remove key assignments for this source and reindex remaining assignments
@@ -386,7 +437,7 @@ function Editor() {
       profileDetails.description === ""
     ) {
       setError(
-        "Please fill out all fields in the Profile Details section before attempting to save the profile."
+        "Please fill out all fields in the Metadata section before attempting to save the profile."
       );
       setSaving(false);
       return;
@@ -503,6 +554,7 @@ function Editor() {
         }}
       />
 
+
       <ManageSourcesDialog
         open={manageSourcesOpen}
         onClose={() => setManageSourcesOpen(false)}
@@ -515,6 +567,25 @@ function Editor() {
         onRemoveSource={(idx) => requestRemoveSource(idx)}
         sources={sources}
         playingSource={playingSource}
+        searchPath={audioSearchPath}
+        onChangeSearchPath={async () => {
+          try {
+            const selected = await execute("selectDirectory");
+            if (selected) {
+              try {
+                const b64 = Buffer.from(selected).toString("base64");
+                const files = await execute(`listAudioFilesInB64 ${b64}`);
+                if (Array.isArray(files) && files.length > 0) {
+                  setAudioSearchPath(selected);
+                } else {
+                  setError("The selected directory does not contain any supported audio files (.wav, .mp3).");
+                }
+              } catch (e) {
+                setError("Failed to read the selected directory. Please try again.");
+              }
+            }
+          } catch (e) {}
+        }}
       />
 
       <AddSourceDialog
@@ -538,6 +609,9 @@ function Editor() {
         onError={(err) => setError(err)}
         mode={editSourceIdx !== null ? "edit" : "add"}
         initialSource={editSourceIdx !== null ? sources[editSourceIdx] : null}
+        audioSearchPath={audioSearchPath}
+        availableAudioFiles={availableAudioFiles}
+        existingNames={sources.map(s => s.name)}
       />
 
       {/* Main Editor */}
@@ -584,40 +658,94 @@ function Editor() {
               <Divider
                 orientation="vertical"
                 flexItem
-                sx={{ ml: 2, mr: 2 }}
+                sx={{ ml: 2, mr: 1 }}
                 variant="middle"
               />
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: "background.default",
-                  pl: 1.5,
-                  pr: 1,
-                  py: 0.5,
-                  borderRadius: 3,
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  sx={{ mr: 1, color: "#388e3c", fontWeight: "bold" }}
+              
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    cursor: "text",
+                    // backgroundColor: "background.default",
+                    px: isEditingName ? 0 : 1,
+                    py: isEditingName ? 0 : 0.5,
+                    borderRadius: 3,
+                    border: isEditingName ? 1 : 0,
+                    borderColor: nameError ? "error.main" : "transparent",
+                    transition: "background-color 120ms ease",
+                    "&:hover": {
+                      backgroundColor: isEditingName ? null : "action.hover",
+                    },
+                  }}
+                  onClick={() => {
+                    if (!isEditingName) {
+                      setTempName((profileDetails.name || "").slice(0, 22));
+                      setIsEditingName(true);
+                      setNameError(null);
+                    }
+                  }}
                 >
-                  {profileDetails.name}
-                </Typography>
-                <Tooltip
-                  placement="bottom-start"
-                  title="Edit profile name"
-                  arrow
-                >
-                  <IconButton
-                    size="small"
-                    onClick={() => setProfileDetailsOpen(true)}
-                  >
-                    <EditNoteIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+                  {isEditingName ? (
+                    
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                       
+                        <InputBase
+                          autoFocus
+                          value={tempName}
+                          onChange={(e) => {
+                            const v = e.target.value.slice(0, 22);
+                            setTempName(v);
+                            setNameError(validateProfileName(v));
+                          }}
+                          onBlur={() => {
+                            // Cancel edit without saving
+                            setIsEditingName(false);
+                            setTempName(profileDetails.name);
+                            setNameError(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              applyNameEdit();
+                            }
+                          }}
+                          inputProps={{
+                            "aria-label": "profile name",
+                            maxLength: 22,
+                          }}
+                          endAdornment={
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <Typography variant="caption" sx={{ mr: 1, opacity: 0.6 }}>
+                                {tempName.length}/22
+                              </Typography>
+                              <Tooltip placement="bottom-start" title="Press Enter to save" arrow>
+                                <KeyboardReturnIcon sx={{ opacity: 0.7, cursor: "default" }} />
+                              </Tooltip>
+                            </Box>
+                          }
+                          sx={{
+                            px: 1.5,
+                            borderRadius: 3,
+                            backgroundColor: "background.default",
+                            fontSize: (theme) => theme.typography.h6.fontSize,
+                            lineHeight: (theme) => theme.typography.h6.lineHeight,
+                            minWidth: "6ch",
+                          }}
+                        />
+                      </Box>
+                  ) : (
+                    <Tooltip placement="right-end" title="Edit Name" followCursor disableHoverListener={isEditingName}>
+                      <Typography
+                        variant="h6"
+                      >
+                        {profileDetails.name}
+                      </Typography>
+                    </Tooltip>
+                  )}
+                </Box>
+              
             </Box>
             <Box
               sx={{
@@ -737,7 +865,7 @@ function Editor() {
                   visibility: sources.length < 1 ? "visible" : "hidden",
                 }}>
                   <Typography variant="body2" color="GrayText">
-                    Add a source to get started.
+                    Open 'Sources' to add a source and begin building your profile.
                   </Typography>
                 </Box>
               )}
@@ -778,7 +906,7 @@ function Editor() {
                 color="info"
                 onClick={() => setManageSourcesOpen(true)}
               >
-                Manage Sources
+                Sources
               </Button>
               <Button
                 variant="outlined"
@@ -786,7 +914,7 @@ function Editor() {
                 color="info"
                 onClick={() => setProfileDetailsOpen(true)}
               >
-                Profile Details
+                Metadata
               </Button>
             </Box>
           </Box>

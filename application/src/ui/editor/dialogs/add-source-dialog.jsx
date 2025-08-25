@@ -4,63 +4,91 @@ import { useState, useEffect } from "react";
 
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
-import FileOpenIcon from '@mui/icons-material/FileOpen';
 
-import { execute } from '../../execute';
+import { Typography, Box, Tooltip, IconButton, TextField, Button, Dialog, Checkbox, Select, MenuItem } from "@mui/material";
 
-import { Typography, Box, Tooltip, IconButton, TextField, Button, Dialog, Checkbox } from "@mui/material";
-
-function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onError, mode = "add", initialSource = null }) {
+function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onError, mode = "add", initialSource = null, audioSearchPath = '', availableAudioFiles = [], existingNames = [] }) {
   const [name, setName] = useState("");
   const [isDefault, setIsDefault] = useState(false);
 
-  const [pressSound, setPressSound] = useState(null);
-  const [releaseSound, setReleaseSound] = useState(null);
+  useEffect(() => {
+    console.log("initialSource", initialSource);
+  }, [initialSource]);
 
-  // Initialize or reset fields based on mode and provided initial source when dialog opens
+  const [selectedPress, setSelectedPress] = useState("");
+  const [selectedRelease, setSelectedRelease] = useState("");
+
+  // Seed base fields when opening or switching mode/source
   useEffect(() => {
     if (!open) return;
     if (mode === "edit" && initialSource) {
       setName(initialSource.name || "");
       setIsDefault(!!initialSource.isDefault);
-      setPressSound(initialSource.pressSound || null);
-      setReleaseSound(initialSource.releaseSound || null);
+      setSelectedPress(initialSource ? initialSource.pressSound.replace(/^.*[\\/]/, '') : "");
+      setSelectedRelease(initialSource ? initialSource.releaseSound.replace(/^.*[\\/]/, '') : "");
     } else if (mode === "add") {
       setName("");
       setIsDefault(false);
-      setPressSound(null);
-      setReleaseSound(null);
+      setSelectedPress("");
+      setSelectedRelease("");
     }
   }, [open, mode, initialSource]);
 
-  const selectPressSound = () => {
-    execute("selectAudioFile").then((path) => {
-      if (path) {
-        setPressSound(path);
-      }
-    });
-  };
+  // Preselect dropdowns by basename once files are available (single search path)
+  useEffect(() => {
+    if (!open || mode !== "edit" || !initialSource) return;
+    const files = (availableAudioFiles && availableAudioFiles[0] && Array.isArray(availableAudioFiles[0].files)) ? availableAudioFiles[0].files : [];
+    if (files.length === 0) return;
 
-  const selectReleaseSound = () => {
-    execute("selectAudioFile").then((path) => {
-      if (path) {
-        setReleaseSound(path);
-      }
-    });
-  };
+    const basename = (p) => (p || '').replace(/\\\\/g, '/').split('/').pop();
+    if (!selectedPress && initialSource.pressSound) {
+      const base = (basename(initialSource.pressSound) || '').toLowerCase();
+      const found = files.find(f => (f || '').toLowerCase() === base);
+      if (found) setSelectedPress(found);
+    }
+    if (!selectedRelease && initialSource.releaseSound) {
+      const base = (basename(initialSource.releaseSound) || '').toLowerCase();
+      const found = files.find(f => (f || '').toLowerCase() === base);
+      if (found) setSelectedRelease(found);
+    }
+  }, [open, mode, initialSource, availableAudioFiles, selectedPress, selectedRelease]);
 
   const saveSource = () => {
-    if (name.length < 1) {
+    const trimmedName = (name || "").trim();
+    if (trimmedName.length < 1) {
       onError("Source name cannot be empty.");
       return;
     }
-
-    if (pressSound === null || pressSound.length < 1) {
+    // Enforce unique name (case-insensitive)
+    const lower = trimmedName.toLowerCase();
+    const initialLower = ((initialSource && initialSource.name) ? String(initialSource.name) : "").trim().toLowerCase();
+    if (mode === 'add') {
+      if (existingNames.some(n => String(n).toLowerCase() === lower)) {
+        onError("A source with that name already exists.");
+        return;
+      }
+    } else {
+      // edit mode: allow keeping the same name, block collisions with others
+      if (lower !== initialLower && existingNames.some(n => String(n).toLowerCase() === lower)) {
+        onError("A source with that name already exists.");
+        return;
+      }
+    }
+    const files = (availableAudioFiles && availableAudioFiles[0] && Array.isArray(availableAudioFiles[0].files)) ? availableAudioFiles[0].files : [];
+    if (!audioSearchPath || files.length === 0) {
+      onError("No audio files are available. Set an audio search path first.");
+      return;
+    }
+    if (!selectedPress) {
       onError("Press sound must be set.");
       return;
     }
 
-    const payload = { name, isDefault, pressSound, releaseSound };
+    const sep = audioSearchPath.endsWith('\\') || audioSearchPath.endsWith('/') ? '' : (audioSearchPath.includes('\\') ? '\\' : '/');
+    const pressAbs = `${audioSearchPath}${sep}${selectedPress}`;
+    const releaseAbs = selectedRelease ? `${audioSearchPath}${sep}${selectedRelease}` : null;
+
+    const payload = { name: trimmedName, isDefault, pressSound: pressAbs, releaseSound: releaseAbs };
     if (mode === "edit" && onSourceUpdated) {
       onSourceUpdated(payload);
     } else if (onSourceAdded) {
@@ -68,10 +96,13 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onErro
       // reset only in add mode after successful save
       setName("");
       setIsDefault(true);
-      setPressSound(null);
-      setReleaseSound(null);
+      setSelectedPress("");
+      setSelectedRelease("");
     }
   };
+
+  const files = (availableAudioFiles && availableAudioFiles[0] && Array.isArray(availableAudioFiles[0].files)) ? availableAudioFiles[0].files : [];
+  const selectsDisabled = files.length === 0;
 
   return (
     <Dialog open={open}>
@@ -102,98 +133,37 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onErro
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            width: "400px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: 1,
-            alignItems: "center",
-            mt: 1,
-            p: 1,
-          }}
-        >
-          <Typography
-            variant="body2"
-            color="GrayText"
-            noWrap
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              maxWidth: "calc(100vw - 250px)",
-            }}
+        <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
+          <Typography variant="caption" color="GrayText" sx={{ mb: 0.5 }}>Press sound</Typography>
+          <Select
+            value={selectedPress}
+            size="small"
+            onChange={(e) => setSelectedPress(e.target.value)}
+            displayEmpty
+            sx={{ width: "400px" }}
+            disabled={selectsDisabled}
           >
-            {pressSound || "Select a press sound..."}
-          </Typography>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <Button
-              startIcon={<FileOpenIcon />}
-              variant="outlined"
-              size="small"
-              sx={{ ml: 1 }}
-              onClick={() => selectPressSound()}
-            >
-              Select
-            </Button>
-          </Box>
+            <MenuItem value=""><em>{selectsDisabled ? 'No files available' : 'Select press sound…'}</em></MenuItem>
+            {files.map((fileName) => (
+              <MenuItem key={fileName} value={fileName}>{fileName}</MenuItem>
+            ))}
+          </Select>
         </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            width: "400px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: 1,
-            alignItems: "center",
-            mt: 1,
-            p: 1,
-          }}
-        >
-          <Typography
-            variant="body2"
-            color="GrayText"
-            noWrap
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              maxWidth: "calc(100vw - 250px)",
-            }}
+        <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
+          <Typography variant="caption" color="GrayText" sx={{ mb: 0.5 }}>Release sound (optional)</Typography>
+          <Select
+            value={selectedRelease}
+            size="small"
+            onChange={(e) => setSelectedRelease(e.target.value)}
+            displayEmpty
+            sx={{ width: "400px" }}
+            disabled={selectsDisabled}
           >
-            {releaseSound || "Select a release sound..."}
-          </Typography>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="body2" color="GrayText">
-              (optional)
-            </Typography>
-            <Button
-              startIcon={<FileOpenIcon />}
-              variant="outlined"
-              size="small"
-              sx={{ ml: 1 }}
-              onClick={() => selectReleaseSound()}
-            >
-              Select
-            </Button>
-          </Box>
+            <MenuItem value=""><em>{selectsDisabled ? 'No files available' : 'None'}</em></MenuItem>
+            {files.map((fileName) => (
+              <MenuItem key={fileName} value={fileName}>{fileName}</MenuItem>
+            ))}
+          </Select>
         </Box>
         <Box
           sx={{

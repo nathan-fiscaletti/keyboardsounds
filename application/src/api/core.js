@@ -286,6 +286,49 @@ const kbs = {
 		return "";
 	},
 
+	selectDirectory: async function() {
+		if (this.openFileDialogIsOpen) {
+			return "";
+		}
+
+		this.openFileDialogIsOpen = true;
+		const res = await dialog.showOpenDialog(this.mainWindow, {
+			properties: ['openDirectory']
+		});
+		this.openFileDialogIsOpen = false;
+
+		// Focus the appropriate window if available
+		try {
+			if (this.editorWindow) {
+				this.editorWindow.focus();
+			} else if (this.mainWindow) {
+				this.mainWindow.show();
+				this.mainWindow.focus();
+			}
+		} catch (e) {}
+
+		if (!res.canceled) {
+			return res.filePaths[0];
+		}
+		return "";
+	},
+
+	listAudioFilesInB64: async function(dirB64) {
+		try {
+			const dir = Buffer.from(dirB64, 'base64').toString();
+			const entries = fs.readdirSync(dir, { withFileTypes: true });
+			const allowed = new Set(['.wav', '.mp3']);
+			const files = entries
+				.filter(e => e.isFile())
+				.map(e => e.name)
+				.filter(name => allowed.has((path.extname(name) || '').toLowerCase()));
+			return files;
+		} catch (e) {
+			console.log('listAudioFilesInB64 error', e);
+			return [];
+		}
+	},
+
 	selectExecutableFile: async function() {
 		if (this.openFileDialogIsOpen) {
 			return;

@@ -56,13 +56,13 @@ function HelpDialog({ open, onClose }) {
             Manage Sources
           </Typography>
           <Typography variant="body1">
-            To get started, click the "Manage Sources" button in the top right
+            To get started, click the "Sources" button in the top right
             corner of the editor. This will open a dialog where you can add,
             edit, and manage audio sources.
           </Typography>
           <Typography variant="body1" sx={{ mt: 1 }}>
             Add the audio sources you intend to assign by clicking the "Add
-            Source" button and providing the audio files you want to use.
+            Source" button and selecting the audio files you want to use.
           </Typography>
         </Paper>
         <Paper sx={{ p: 2 }}>

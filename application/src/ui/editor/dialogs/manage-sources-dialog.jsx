@@ -2,16 +2,21 @@ import React from "react";
 
 import { useState } from "react";
 
+import Alert from '@mui/material/Alert';
+
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from '@mui/icons-material/Add';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import InfoIcon from '@mui/icons-material/InfoOutlined';
+import WarningIcon from '@mui/icons-material/Warning';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 import { Typography, Box, IconButton, TextField, List, Button, Dialog, InputAdornment, Tooltip } from "@mui/material";
 
 import { SourceListItem } from './../components/source-list-item.jsx';
 
-function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, onEditSource, onRemoveSource, playingSource, sources, searchPath, onChangeSearchPath }) {
+function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, onEditSource, onRemoveSource, playingSource, sources, availableAudioFiles, searchPath, onChangeSearchPath }) {
   const [search, setSearch] = useState("");
   const truncateMiddle = (val, maxLen) => {
     const s = String(val || "");
@@ -22,15 +27,16 @@ function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, on
     return s.slice(0, start) + "..." + s.slice(s.length - end);
   };
 
+  const files = (availableAudioFiles && availableAudioFiles[0] && Array.isArray(availableAudioFiles[0].files)) ? availableAudioFiles[0].files : [];
+  const numAudioFiles = files.length;
+
   return (
     <Dialog open={open} fullWidth>
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
-          px: 2,
-          pt: searchPath && (sources || []).length === 0 ? 3 : 2,
-          pb: searchPath && (sources || []).length === 0 ? 4 : 2,
+          p: 2,
         }}
       >
         <Box
@@ -39,10 +45,20 @@ function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, on
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            mb: searchPath && (sources || []).length === 0 ? 3 : 2,
+            mb: 2,
           }}
         >
-          <Typography variant="h6">Manage Sources</Typography>
+          {
+            searchPath ? (
+              sources.length > 0 ? (
+                <Typography variant="h6">Manage Sources</Typography>
+              ) : (
+                <Typography variant="h6">Source Configuration</Typography>
+              )
+            ) : (
+              <Typography variant="h6">Source Configuration</Typography>
+            )
+          }
           <Box
             sx={{
               display: "flex",
@@ -51,7 +67,20 @@ function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, on
             }}
           >
             {searchPath ? (
+              sources.length < 1 ? (
               <>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  sx={{ mr: 1 }}
+                  onClick={() => onAddSource && onAddSource()}
+                >
+                  Add your first source
+                </Button>
+              </>
+              ) : (
+                <>
                 <Button
                   variant="outlined"
                   size="small"
@@ -62,6 +91,7 @@ function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, on
                   Add Source
                 </Button>
               </>
+              )
             ) : null}
             <IconButton onClick={() => onClose()}>
               <CloseIcon />
@@ -143,50 +173,65 @@ function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, on
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                height: "240px",
               }}
             >
+              <Alert severity="warning" variant="outlined" sx={{ mb: 2 }}>
+                Warning. Once you begin adding sources, this Audio Search Path cannot be changed again until all sources are removed.
+              </Alert>
               <Box
                 sx={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "center",
                   justifyContent: "center",
                   p: 3,
+                  pt: 1.5,
                   border: "1px solid rgba(255,255,255,0.1)",
                   borderRadius: 1,
-                  width: 420,
-                  mb: 2,
+                  width: '100%',
                 }}
               >
-                <Typography variant="body1" sx={{ textAlign: 'center' }}>
-                  Add a source to start building your profile
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  p: 3,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 1,
-                  width: 420,
-                }}
-              >
-                <Typography variant="body1" sx={{ mb: 1.5, textAlign: 'center' }}>
-                  Change the directory containing your audio files
-                </Typography>
-                {searchPath ? (
-                  <Tooltip title={searchPath} placement="top" arrow>
-                    <Typography variant="body2" color="GrayText" sx={{ mb: 2, textAlign: 'center' }}>
-                      {truncateMiddle(searchPath, 50)}
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                }}>
+                  {/* Left aligned box with title and info icon. */}
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyItems: 'center',
+                  }}>
+                    <Typography variant="body1">
+                      Audio Search Path
                     </Typography>
+                    <Tooltip arrow placement="right" title="The directory in which audio files for this profile are stored. All files must be in the root of the directory. Supports: *.wav,*.mp3">
+                      <InfoIcon sx={{ ml: 1, mt: 0.25 }} fontSize="small" />
+                    </Tooltip>
+                  </Box>
+
+                  {/* Right Aligned Box with check icon and number 3 */}
+                  <Tooltip placement="left" arrow title={`${numAudioFiles} valid audio files found in search path`}>
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyItems: 'center',
+                      border: '1px solid rgba(76, 175, 80, 0.5)',
+                      borderRadius: 24,
+                      p: 1,
+                    }}>
+                      <CheckCircleIcon fontSize="medium" color="success" />
+                    </Box>
                   </Tooltip>
+                </Box>
+                {searchPath ? (
+                  <Typography variant="body2" color="GrayText" sx={{ mb: 2 }}>
+                    {truncateMiddle(searchPath, 100)}
+                  </Typography>
                 ) : null}
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   startIcon={<FolderOpenIcon />}
                   onClick={() => onChangeSearchPath && onChangeSearchPath()}
                 >
@@ -202,22 +247,34 @@ function ManageSourcesDialog({ open, onClose, onAddSource, onListenRequested, on
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              height: "240px",
+              // height: "240px",
             }}
           >
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
+                // alignItems: "center",
                 justifyContent: "center",
                 p: 3,
                 border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: 1,
-                minWidth: 360,
+                width: '100%',
               }}
             >
-              <Typography variant="body1" sx={{ mb: 2, textAlign: 'center' }}>
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyItems: 'center',
+              }}>
+                <Typography variant="body1">
+                  Audio Search Path
+                </Typography>
+                <Tooltip arrow placement="right" title="The directory in which audio files for this profile are stored. All files must be in the root of the directory. Supports: *.wav,*.mp3">
+                  <InfoIcon sx={{ ml: 1, mt: 0.25 }} fontSize="small" />
+                </Tooltip>
+              </Box>
+              <Typography variant="body2" color="GrayText" sx={{ mb: 2, mt: 1 }}>
                 Select the directory containing your audio files to begin
               </Typography>
               <Button variant="contained" startIcon={<FolderOpenIcon />} onClick={() => onChangeSearchPath && onChangeSearchPath()}>

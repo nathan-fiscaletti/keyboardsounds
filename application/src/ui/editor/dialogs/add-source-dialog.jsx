@@ -25,7 +25,7 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onErro
       setName(initialSource.name || "");
       setIsDefault(!!initialSource.isDefault);
       setSelectedPress(initialSource ? initialSource.pressSound.replace(/^.*[\\/]/, '') : "");
-      setSelectedRelease(initialSource ? initialSource.releaseSound.replace(/^.*[\\/]/, '') : "");
+      setSelectedRelease(initialSource ? initialSource.releaseSound ? initialSource.releaseSound.replace(/^.*[\\/]/, '') : "" : "");
     } else if (mode === "add") {
       setName("");
       setIsDefault(false);
@@ -174,15 +174,14 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onErro
             alignItems: "center",
           }}
         >
+          <Typography variant="body">Add to default sources</Typography>
           <Tooltip
             title="This source will be included in the default sources used for keys that do not have a specific source set."
-            placement="top"
+            placement="left"
             arrow
-            followCursor
           >
-            <Typography variant="body">Add to default sources</Typography>
+            <Checkbox checked={isDefault} onChange={(e, c) => setIsDefault(c)} />
           </Tooltip>
-          <Checkbox checked={isDefault} onChange={(e, c) => setIsDefault(c)} />
         </Box>
         <Button
           fullWidth

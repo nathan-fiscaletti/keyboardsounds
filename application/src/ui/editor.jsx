@@ -567,6 +567,7 @@ function Editor() {
         onRemoveSource={(idx) => requestRemoveSource(idx)}
         sources={sources}
         playingSource={playingSource}
+        availableAudioFiles={availableAudioFiles}
         searchPath={audioSearchPath}
         onChangeSearchPath={async () => {
           try {

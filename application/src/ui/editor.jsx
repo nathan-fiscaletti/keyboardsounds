@@ -278,6 +278,68 @@ function Editor() {
     }
   };
 
+  const refreshAudioFilesAndPrune = async () => {
+    if (!audioSearchPath) {
+      setAvailableAudioFiles([]);
+      return;
+    }
+    try {
+      const b64 = Buffer.from(audioSearchPath).toString("base64");
+      const files = await execute(`listAudioFilesInB64 ${b64}`);
+      const list = Array.isArray(files) ? files : [];
+      setAvailableAudioFiles([{ dir: audioSearchPath, files: list }]);
+
+      // Build a lowercase set of available basenames for quick membership checks
+      const fileSetLower = new Set(list.map((f) => String(f || "").toLowerCase()));
+      const basename = (p) => String(p || '').replace(/\\\\/g, '/').split('/').pop().toLowerCase();
+
+      // Determine which sources remain valid after refresh
+      const keepMask = sources.map((s) => {
+        const pressOk = !!s.pressSound && fileSetLower.has(basename(s.pressSound));
+        const releaseOk = !s.releaseSound || fileSetLower.has(basename(s.releaseSound));
+        return pressOk && releaseOk;
+      });
+
+      if (keepMask.every(Boolean)) {
+        return;
+      }
+
+      const newSources = sources.filter((_, i) => keepMask[i]);
+      const oldIndexToNew = new Map();
+      let nextIdx = 0;
+      for (let i = 0; i < sources.length; i++) {
+        if (keepMask[i]) {
+          oldIndexToNew.set(i, nextIdx++);
+        }
+      }
+
+      const newKeyConfigs = keyConfigs
+        .filter((cfg) => keepMask[cfg.source])
+        .map((cfg) => ({ key: cfg.key, source: oldIndexToNew.get(cfg.source) }));
+
+      setSources(newSources);
+      setKeyConfigs(newKeyConfigs);
+
+      if (newSources.length === 0) {
+        setSelectedSource(0);
+      } else {
+        if (!keepMask[selectedSource]) {
+          // If the selected source was removed, clamp to valid range
+          setSelectedSource(Math.min(selectedSource, newSources.length - 1));
+        } else {
+          // Map previous selected index to new index
+          let mapped = 0;
+          for (let i = 0; i < selectedSource; i++) {
+            if (keepMask[i]) mapped += 1;
+          }
+          setSelectedSource(mapped);
+        }
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   useEffect(() => {
     setErrorOpen(error !== null);
   }, [error]);
@@ -608,6 +670,9 @@ function Editor() {
           setEditSourceIdx(null);
         }}
         onError={(err) => setError(err)}
+        onRefreshAudioFiles={async () => {
+          await refreshAudioFilesAndPrune();
+        }}
         mode={editSourceIdx !== null ? "edit" : "add"}
         initialSource={editSourceIdx !== null ? sources[editSourceIdx] : null}
         audioSearchPath={audioSearchPath}

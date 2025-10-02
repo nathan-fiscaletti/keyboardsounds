@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { Typography, Box, Tooltip, IconButton, TextField, Button, Dialog, Checkbox, Select, MenuItem } from "@mui/material";
 
-function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onError, mode = "add", initialSource = null, audioSearchPath = '', availableAudioFiles = [], existingNames = [] }) {
+function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onError, onRefreshAudioFiles, mode = "add", initialSource = null, audioSearchPath = '', availableAudioFiles = [], existingNames = [] }) {
   const [name, setName] = useState("");
   const [isDefault, setIsDefault] = useState(false);
 
@@ -52,6 +53,17 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onErro
       if (found) setSelectedRelease(found);
     }
   }, [open, mode, initialSource, availableAudioFiles, selectedPress, selectedRelease]);
+
+  // Ensure selections remain valid if files list changes after refresh
+  useEffect(() => {
+    const files = (availableAudioFiles && availableAudioFiles[0] && Array.isArray(availableAudioFiles[0].files)) ? availableAudioFiles[0].files : [];
+    if (selectedPress && !files.includes(selectedPress)) {
+      setSelectedPress("");
+    }
+    if (selectedRelease && !files.includes(selectedRelease)) {
+      setSelectedRelease("");
+    }
+  }, [availableAudioFiles]);
 
   const saveSource = () => {
     const trimmedName = (name || "").trim();
@@ -135,35 +147,53 @@ function AddSourceDialog({ open, onClose, onSourceAdded, onSourceUpdated, onErro
         />
         <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
           <Typography variant="caption" color="GrayText" sx={{ mb: 0.5 }}>Press sound</Typography>
-          <Select
-            value={selectedPress}
-            size="small"
-            onChange={(e) => setSelectedPress(e.target.value)}
-            displayEmpty
-            sx={{ width: "400px" }}
-            disabled={selectsDisabled}
-          >
-            <MenuItem value=""><em>{selectsDisabled ? 'No files available' : 'Select press sound…'}</em></MenuItem>
-            {files.map((fileName) => (
-              <MenuItem key={fileName} value={fileName}>{fileName}</MenuItem>
-            ))}
-          </Select>
+          <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+            <Select
+              value={selectedPress}
+              size="small"
+              onChange={(e) => setSelectedPress(e.target.value)}
+              displayEmpty
+              sx={{ width: "400px" }}
+              disabled={selectsDisabled}
+            >
+              <MenuItem value=""><em>{selectsDisabled ? 'No files available' : 'Select press sound…'}</em></MenuItem>
+              {files.map((fileName) => (
+                <MenuItem key={fileName} value={fileName}>{fileName}</MenuItem>
+              ))}
+            </Select>
+            <Tooltip title="Refresh files" placement="right" arrow>
+              <span>
+                <IconButton size="small" sx={{ ml: 1 }} onClick={() => onRefreshAudioFiles && onRefreshAudioFiles()} disabled={!audioSearchPath}>
+                  <RefreshIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", mt: 1 }}>
           <Typography variant="caption" color="GrayText" sx={{ mb: 0.5 }}>Release sound (optional)</Typography>
-          <Select
-            value={selectedRelease}
-            size="small"
-            onChange={(e) => setSelectedRelease(e.target.value)}
-            displayEmpty
-            sx={{ width: "400px" }}
-            disabled={selectsDisabled}
-          >
-            <MenuItem value=""><em>{selectsDisabled ? 'No files available' : 'None'}</em></MenuItem>
-            {files.map((fileName) => (
-              <MenuItem key={fileName} value={fileName}>{fileName}</MenuItem>
-            ))}
-          </Select>
+          <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+            <Select
+              value={selectedRelease}
+              size="small"
+              onChange={(e) => setSelectedRelease(e.target.value)}
+              displayEmpty
+              sx={{ width: "400px" }}
+              disabled={selectsDisabled}
+            >
+              <MenuItem value=""><em>{selectsDisabled ? 'No files available' : 'None'}</em></MenuItem>
+              {files.map((fileName) => (
+                <MenuItem key={fileName} value={fileName}>{fileName}</MenuItem>
+              ))}
+            </Select>
+            <Tooltip title="Refresh files" placement="right" arrow>
+              <span>
+                <IconButton size="small" sx={{ ml: 1 }} onClick={() => onRefreshAudioFiles && onRefreshAudioFiles()} disabled={!audioSearchPath}>
+                  <RefreshIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
         </Box>
         <Box
           sx={{

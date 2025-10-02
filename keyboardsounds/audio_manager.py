@@ -197,6 +197,7 @@ class AudioManager:
         # Keyboard behavior (existing)
         if self.profile.value("keys") is not None:
             if self.profile.value("keys.other") is not None:
+                sounds = []
                 for mapping in cast(
                     List[Dict[str, Any]], self.profile.value("keys.other") or []
                 ):
@@ -209,7 +210,9 @@ class AudioManager:
                     else:
                         k_val = f"{key}"
                     if k_val is not None and k_val in keys_list:
-                        return self.__get_sound(mapping["sound"], action)
+                        sounds.append(mapping["sound"])
+                if len(sounds) > 0:
+                    return self.__get_sound(sounds, action)
             if self.profile.value("keys.default") is not None:
                 default_key = self.profile.value("keys.default")
                 return self.__get_sound(default_key, action)

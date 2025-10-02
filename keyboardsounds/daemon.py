@@ -1,9 +1,27 @@
 import os
+import io
+import subprocess
 from sys import platform
 
 import json
 import base64
 import time
+import random
+import warnings
+from imageio_ffmpeg import get_ffmpeg_exe
+
+# Configure pydub's ffmpeg/ffprobe discovery and silence its import-time warnings BEFORE importing pydub
+try:
+    _ffmpeg_bin = get_ffmpeg_exe()
+    if _ffmpeg_bin:
+        os.environ.setdefault("FFMPEG_BINARY", _ffmpeg_bin)
+        os.environ.setdefault("FFPROBE_BINARY", _ffmpeg_bin)
+    # Silence pydub utils RuntimeWarnings about missing ffmpeg/ffprobe
+    warnings.filterwarnings("ignore", category=RuntimeWarning, module="pydub.utils")
+except Exception:
+    pass
+
+from pydub import AudioSegment
 
 from pygame import mixer
 
@@ -25,12 +43,55 @@ __am: Optional[AudioManager] = None  # keyboard audio manager
 __mam: Optional[AudioManager] = None  # mouse audio manager
 __dm: Optional[Any] = None
 __volume = 100
+__pitch_shift = False
+__pitch_shift_lower = -2
+__pitch_shift_upper = 2
 __down = []
 __debug = False
 
 # Keep references to listeners so they can be started/stopped dynamically
 __kb_listener: Optional[Listener] = None
 __mouse_listener: Optional[MouseListener] = None
+try:
+    # Ensure pydub knows where ffmpeg is, even if not on PATH
+    AudioSegment.converter = get_ffmpeg_exe()
+    # Some pydub versions also look at these attributes
+    AudioSegment.ffmpeg = AudioSegment.converter  # type: ignore[attr-defined]
+    AudioSegment.ffprobe = AudioSegment.converter  # type: ignore[attr-defined]
+except Exception:
+    # If this fails, pydub will fall back to PATH lookup
+    pass
+
+
+def _to_wav_bytes(input_bytes: bytes) -> bytes:
+    """
+    Decode arbitrary audio bytes to WAV using ffmpeg (in-memory, no temp files).
+    """
+    ffmpeg_path = get_ffmpeg_exe()
+    cmd = [
+        ffmpeg_path,
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-y",
+        "-i",
+        "pipe:0",
+        "-f",
+        "wav",
+        "-ar",
+        "44100",
+        "-ac",
+        "2",
+        "pipe:1",
+    ]
+    proc = subprocess.run(
+        cmd, input=input_bytes, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    if proc.returncode != 0 or len(proc.stdout) == 0:
+        raise RuntimeError(
+            f"ffmpeg decode failed: {proc.stderr.decode('utf-8', errors='ignore')}"
+        )
+    return proc.stdout
 
 
 def on_command(command: dict) -> None:
@@ -138,6 +199,62 @@ def on_command(command: dict) -> None:
                 print(f"Error: {e}")
 
 
+def pitch_shift_from_bytes(buffer, semitones: float) -> mixer.Sound:
+    # Ensure buffer is at start
+    try:
+        buffer.seek(0)
+    except Exception:
+        pass
+
+    # Detect WAV header (RIFF .... WAVE)
+    header = buffer.read(12)
+    is_wav = len(header) >= 12 and header[0:4] == b"RIFF" and header[8:12] == b"WAVE"
+    try:
+        buffer.seek(0)
+    except Exception:
+        pass
+
+    if not is_wav:
+        # Convert to WAV via ffmpeg to avoid reliance on ffprobe and ensure pygame compatibility
+        try:
+            try:
+                buffer.seek(0)
+            except Exception:
+                pass
+            decoded_wav = _to_wav_bytes(buffer.read())
+            buffer = io.BytesIO(decoded_wav)
+            try:
+                buffer.seek(0)
+            except Exception:
+                pass
+        except Exception:
+            # If conversion fails, raise to surface the error instead of feeding unsupported bytes to pygame
+            raise
+
+    # Load WAV from byte buffer without external tools
+    try:
+        audio = AudioSegment.from_wav(buffer)
+    finally:
+        try:
+            buffer.seek(0)
+        except Exception:
+            pass
+
+    # Shift pitch by adjusting frame rate
+    new_sample_rate = int(audio.frame_rate * (2.0 ** (semitones / 12.0)))
+    pitched = audio._spawn(audio.raw_data, overrides={"frame_rate": new_sample_rate})
+
+    # Resample back to standard playback rate
+    pitched = pitched.set_frame_rate(44100)
+
+    # Export into BytesIO for pygame
+    buf = io.BytesIO()
+    pitched.export(buf, format="wav")
+    buf.seek(0)
+
+    return mixer.Sound(file=buf)
+
+
 def __on_press(key):
     """
     Callback function for key press events.
@@ -156,13 +273,8 @@ def __on_press(key):
     if key in __down:
         return
 
-    if __am is None:
-        return
     sound = __am.get_sound(key, action="press")
-    if sound is not None:
-        clip = mixer.Sound(sound)
-        clip.set_volume(float(__volume) / float(100))
-        clip.play()
+    __play_sound(sound)
 
     # Play the sound
     __down.append(key)
@@ -181,15 +293,21 @@ def __on_release(key):
     global __down
     global __am
 
-    if __am is None:
-        return
     sound = __am.get_sound(key, action="release")
-    if sound is not None:
-        clip = mixer.Sound(sound)
-        clip.set_volume(float(__volume) / float(100))
-        clip.play()
+    __play_sound(sound)
 
     __down = [k for k in __down if k != key]
+
+
+def __play_sound(sound):
+    if sound is not None:
+        if __pitch_shift:
+            semitones = random.randint(__pitch_shift_lower, __pitch_shift_upper)
+            clip = pitch_shift_from_bytes(sound, semitones)
+        else:
+            clip = mixer.Sound(sound)
+        clip.set_volume(float(__volume) / float(100))
+        clip.play()
 
 
 def __on_mouse_click(x, y, button: Button, pressed: bool):

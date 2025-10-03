@@ -35,6 +35,7 @@ setup(
             "profiles/opera-gx/*",
             "profiles/telios-v2/*",
             "profiles/typewriter/*",
+            "profiles/logitech-g915-tkl-brown/*",
             "profiles/profile.template.yaml",
             "external_api/*",
         ],

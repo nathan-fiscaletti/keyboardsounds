@@ -223,7 +223,7 @@ const Status = ({
           >
             Pitch Shift
           </Typography>
-          <Tooltip title="When enabled, the pitch of the audio played for each keypress will be shifted by a random semitone value between your configured upper and lower values." placement="left" arrow>
+          <Tooltip title="When enabled, the pitch of the audio played for each keypress or mouse click will be shifted by a random semitone value between your configured upper and lower values." placement="left" arrow>
             <InfoIcon sx={{ ml: 1, mt: -0.25 }} fontSize="small" />
           </Tooltip>
         </Box>

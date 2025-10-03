@@ -1,0 +1,88 @@
+keys:
+  default:
+  - Key 1
+  - Key 2
+  - Key 3
+  - Key 4
+  - Key 5
+  other:
+  - keys:
+    - space
+    sound: Space 1
+  - keys:
+    - space
+    sound: Space 2
+  - keys:
+    - space
+    sound: Space 3
+  - keys:
+    - enter
+    - backspace
+    - ctrl_l
+    - ctrl_r
+    - alt_l
+    - alt_gr
+    - shift_l
+    - shift_r
+    - caps_lock
+    - cmd
+    - menu
+    sound: Enter 1
+  - keys:
+    - enter
+    - backspace
+    - ctrl_l
+    - ctrl_r
+    - alt_l
+    - alt_gr
+    - shift_l
+    - shift_r
+    - caps_lock
+    - cmd
+    - menu
+    sound: Enter 2
+profile:
+  author: Keyboard Sounds
+  description: Logitech G915 TKL Keyboard with Brown Switches
+  name: logitech-g915-tkl-brown
+sources:
+- id: Key 1
+  source:
+    press: key-press-1.wav
+    release: key-release-1.wav
+- id: Key 2
+  source:
+    press: key-press-2.wav
+    release: key-release-2.wav
+- id: Key 3
+  source:
+    press: key-press-3.wav
+    release: key-release-3.wav
+- id: Key 4
+  source:
+    press: key-press-4.wav
+    release: key-release-4.wav
+- id: Key 5
+  source:
+    press: key-press-5.wav
+    release: key-release-5.wav
+- id: Enter 1
+  source:
+    press: enter-press-1.wav
+    release: enter-release-1.wav
+- id: Enter 2
+  source:
+    press: enter-press-2.wav
+    release: enter-release-2.wav
+- id: Space 1
+  source:
+    press: space-press-1.wav
+    release: space-release-1.wav
+- id: Space 2
+  source:
+    press: space-press-2.wav
+    release: space-release-2.wav
+- id: Space 3
+  source:
+    press: space-press-3.wav
+    release: space-release-3.wav

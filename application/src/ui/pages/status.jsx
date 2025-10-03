@@ -2,13 +2,14 @@ import React from "react";
 
 import green from "@mui/material/colors/green";
 
-import { Box, Typography, FormControl, Select, Slider, MenuItem, Tooltip, IconButton, Divider } from "@mui/material";
+import { Box, Typography, FormControl, Select, Slider, MenuItem, Tooltip, IconButton, Divider, Switch, TextField, ToggleButtonGroup, ToggleButton } from "@mui/material";
 
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import MouseIcon from '@mui/icons-material/Mouse';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import InfoIcon from '@mui/icons-material/Info';
 
 const Status = ({
     profilesKeyboardLoaded,
@@ -22,6 +23,14 @@ const Status = ({
     onMouseProfileChanged,
     onVolumeChanged,
     onDisplayVolumeChanged,
+    // Pitch shift props
+    pitchEnabled,
+    pitchRange,
+    onPitchEnabledChanged,
+    onPitchRangeChanged,
+    onPitchRangeCommit,
+    pitchProfile,
+    onPitchProfileChanged,
 }) => {
   const tips = React.useMemo(() => [
     'Use Application Rules to enable or disable sounds based on the focused app.',
@@ -132,11 +141,12 @@ const Status = ({
           </Select>
         </Box>
       </FormControl>
+
       <Typography
         variant="body1"
         sx={{
-            mt: 3,
             fontWeight: "bold",
+            mt: 2.5,
         }}
       >
         Volume
@@ -180,7 +190,100 @@ const Status = ({
           </IconButton>
         </Tooltip>
       </Box>
+      </Box>
+      <Box
+        sx={{
+          borderRadius: 1,
+          pt: 1.5,
+          pb: 2.5,
+          pr: 3,
+          pl: 3,
+          mt: 2,
+          bgcolor: "#292929",
+        }}
+      >
+      <Box sx={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
+      }}>
+        <Box sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          <Typography
+            variant="body1"
+            sx={{
+                fontWeight: "bold",
+            }}
+          >
+            Pitch Shift
+          </Typography>
+          <Tooltip title="When enabled, the pitch of the audio played for each keypress or mouse click will be shifted by a random semitone value between your configured upper and lower values." placement="left" arrow>
+            <InfoIcon sx={{ ml: 1, mt: -0.25 }} fontSize="small" />
+          </Tooltip>
+        </Box>
+        <Switch sx={{ mr: -1.5 }} checked={!!pitchEnabled} onChange={(e) => onPitchEnabledChanged(e.target.checked)} />
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          mt: 4,
+        }}
+      >
+        <Slider
+          disableSwap
+          value={pitchRange}
+          min={-12}
+          max={12}
+          size="small"
+          step={1}
+          valueLabelDisplay="on"
+          valueLabelFormat={(value) => value > -1 ? `+${value}st` : `${value}st`}
+          marks={[{ value: -10, label: '-10st' }, { value: -6, label: '-6st' }, { value: -2, label: '-2st' }, { value: 0, label: '-' }, { value: 2, label: '+2st' }, { value: 6, label: '+6st' }, { value: 10, label: '+10st' }]}
+          onChange={(_, val) => onPitchRangeChanged(val)}
+          onChangeCommitted={(_, val) => onPitchRangeCommit(val)}
+          disabled={!pitchEnabled}
+        />
+        <ToggleButtonGroup size="small" fullWidth sx={{ mt: 2 }} exclusive value={pitchProfile} onChange={(_, v) => v && onPitchProfileChanged(v)}>
+          <Tooltip title="Keyboard Only" placement="top" arrow>
+            <ToggleButton value="keyboard">
+                <KeyboardIcon />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title="Mouse Only" placement="top" arrow>
+            <ToggleButton value="mouse">
+                <MouseIcon />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title="Keyboard & Mouse" placement="top" arrow>
+            <ToggleButton value="both">
+                <KeyboardIcon sx={{ mr: 0.5 }} />
+                <Typography>&</Typography>
+                <MouseIcon sx={{ ml: 0.5 }} />
+            </ToggleButton>
+          </Tooltip>
+        </ToggleButtonGroup>
+      </Box>
+      </Box>
       <Divider sx={{ mt: 2, mb: 1.5 }} />
+      <Box
+        sx={{
+          borderRadius: 1,
+          pt: 2.5,
+          pb: 2.5,
+          pr: 3,
+          pl: 3,
+          mt: 2,
+          bgcolor: "#292929",
+        }}
+      >
       <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
         <TipsAndUpdatesIcon sx={{ color: green[400], mr: 1 }} fontSize="small" />
         <Typography variant="body2" color="text.secondary" sx={{ cursor: 'default' }}>

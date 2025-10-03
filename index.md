@@ -30,7 +30,7 @@ Keyboard Sounds can be installed as a desktop application or as a Python package
 
 [⬇️ Download](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-<img align="right" src="./images/status.png" width="250" />
+<img align="right" src="./images/status-new.png" width="250" />
 
 Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
 

@@ -23,6 +23,9 @@ from keyboardsounds.profile_builder import CliProfileBuilder
 from keyboardsounds.app_rules import Action, GlobalAction
 from keyboardsounds.app_rules import get_rules
 
+if WIN32:
+    import winreg
+
 
 def main():
     if LINUX:
@@ -64,7 +67,7 @@ def main():
         (
             f"usage: %(prog)s <action> [params]{os.linesep *2}"
             f"  manage daemon:{os.linesep * 2}"
-            f"    %(prog)s start [-v <volume>] [-p <profile>] [-m <mouse_profile>] [-D] [-w]{os.linesep}"
+            f"    %(prog)s start [-v <volume>] [-p <profile>] [-m <mouse_profile>] [-c '<lower_semitone>,<upper_semitone>'] [-k <keyboard|mouse|both>] [-D] [-w]{os.linesep}"
             f"    %(prog)s stop{os.linesep}"
             f"    %(prog)s status [-s]{os.linesep * 2}"
             f"  manage profiles:{os.linesep * 2}"
@@ -81,7 +84,7 @@ def main():
     )
 
     parser = argparse.ArgumentParser(
-        prog=f"<keyboardsounds|kbs>",
+        prog=f"kbs",
         usage=argparse.SUPPRESS,
         description=f"Keyboard Sounds v{version_number}{os.linesep * 2}{usage}{os.linesep}",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -125,6 +128,22 @@ def main():
         "--window",
         action="store_true",
         help="used with kbs start to enable the daemon window",
+    )
+    parser.add_argument(
+        "-c",
+        "--semitones",
+        type=str,
+        default=None,
+        metavar="semitones",
+        help="semitones to use for random pitch shift, in the format of '<lower_semitone>,<upper_semitone>'. eg. -c='-2,2'",
+    )
+    parser.add_argument(
+        "-k",
+        "--pitch-shift-profile",
+        type=str,
+        default="both",
+        metavar="pitch_shift_profile",
+        help="pitch shift profile to use for random pitch shift, in the format of 'both', 'keyboard', or 'mouse'.",
     )
 
     # Status Action
@@ -212,6 +231,16 @@ def main():
 
     args = parser.parse_args()
 
+    if (
+        args.pitch_shift_profile != "both"
+        and args.pitch_shift_profile != "keyboard"
+        and args.pitch_shift_profile != "mouse"
+    ):
+        print(
+            "Invalid pitch shift profile. Must be one of 'both', 'keyboard', or 'mouse'."
+        )
+        return
+
     if args.action == "start":
         status = dm.status()
         if status == "running":
@@ -220,11 +249,21 @@ def main():
             print(
                 f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
             )
+            print(
+                f"Semitone range: {args.semitones} ({args.pitch_shift_profile})"
+                if args.semitones
+                else "Off"
+            )
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
             print(f"Using Keyboard Profile: {args.profile if args.profile else 'None'}")
             print(
                 f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
+            )
+            print(
+                f"Semitone range: {args.semitones} ({args.pitch_shift_profile})"
+                if args.semitones
+                else "Off"
             )
         # Require at least one profile
         if args.profile is None and args.mouse_profile is None:
@@ -237,6 +276,8 @@ def main():
             profile=args.profile,
             debug=args.debug,
             window=args.window,
+            semitones=args.semitones,
+            pitch_shift_profile=args.pitch_shift_profile,
             mouse_profile=args.mouse_profile,
         ):
             print("Failed to start.")
@@ -532,9 +573,101 @@ def main():
             print(json.dumps({"global_action": rules.global_action.value}))
             return
         print(f"Global rule is set to '{rules.global_action.value.upper()}'.")
-
+    elif WIN32 and (args.action == "list-apps" or args.action == "la"):
+        apps = list_apps()
+        print(json.dumps(apps))
+        return
     else:
         parser.print_usage()
+
+
+def list_apps():
+    apps = []
+    reg_paths = [
+        (
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+        ),
+        (
+            winreg.HKEY_CURRENT_USER,
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+        ),
+        (
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        ),
+    ]
+
+    for reg_root, reg_path in reg_paths:
+        try:
+            key = winreg.OpenKey(reg_root, reg_path)
+        except FileNotFoundError:
+            continue
+
+        for i in range(0, winreg.QueryInfoKey(key)[0]):
+            try:
+                subkey_name = winreg.EnumKey(key, i)
+                subkey = winreg.OpenKey(key, subkey_name)
+
+                app_name, _ = winreg.QueryValueEx(subkey, "DisplayName")
+
+                exe_path = None
+                icon_path = None
+                install_dir = None
+                # Try to find possible executable-related values
+                for value_name in ["DisplayIcon", "InstallLocation"]:
+                    try:
+                        value, _ = winreg.QueryValueEx(subkey, value_name)
+                        if value and ".exe" in value.lower():
+                            exe_path = value.strip('"')
+                            break
+                        elif value_name == "InstallLocation" and os.path.isdir(value):
+                            install_dir = value
+                            # Guess main exe from install folder (rough)
+                            for f in os.listdir(value):
+                                if f.lower().endswith(".exe"):
+                                    exe_path = os.path.join(value, f)
+                                    break
+                    except FileNotFoundError:
+                        continue
+                # Try to read DisplayIcon for a more accurate icon path
+                try:
+                    icon_value, _ = winreg.QueryValueEx(subkey, "DisplayIcon")
+                    if icon_value:
+                        icon_value = os.path.expandvars(icon_value.strip('"'))
+                        # Often in the form "C:\\Path\\app.exe,0" → take path before comma
+                        if "," in icon_value:
+                            icon_value = icon_value.split(",", 1)[0]
+                        icon_path = icon_value
+                except FileNotFoundError:
+                    pass
+
+                # Fallbacks for icon path
+                if icon_path is None and exe_path:
+                    icon_path = exe_path
+                if icon_path is None and install_dir and os.path.isdir(install_dir):
+                    try:
+                        for f in os.listdir(install_dir):
+                            if f.lower().endswith(".ico"):
+                                icon_path = os.path.join(install_dir, f)
+                                break
+                    except OSError:
+                        pass
+                if exe_path is not None:
+                    if exe_path.lower().endswith(",0"):
+                        exe_path = exe_path.split(",", 1)[0]
+                    apps.append({"name": app_name, "path": exe_path, "icon": icon_path})
+
+            except FileNotFoundError:
+                continue
+            except OSError:
+                continue
+            except Exception:
+                continue
+
+    # Remove duplicates by app name
+    unique_apps = {a["path"]: a for a in apps if a["path"]}.values()
+    return sorted(unique_apps, key=lambda x: x["name"].lower())
 
 
 if __name__ == "__main__":

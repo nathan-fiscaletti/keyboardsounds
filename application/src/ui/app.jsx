@@ -125,6 +125,10 @@ function App() {
   const [selectedKeyboardProfile, setSelectedKeyboardProfile] = useState('');
   const [selectedMouseProfile, setSelectedMouseProfile] = useState('');
 
+  const [pitchShiftEnabled, setPitchShiftEnabled] = useState(false);
+  const [pitchShiftRange, setPitchShiftRange] = useState([-2, 2]);
+  const [pitchShiftProfile, setPitchShiftProfile] = useState('both');
+
   const [status, setStatus] = useState(null);
   const [statusLoaded, setStatusLoaded] = useState(false);
 
@@ -165,12 +169,16 @@ function App() {
     run();
   }, []);
 
-  // Load the profile, volume and notification preferences from the backend
+  // Load the profile, volume, pitch shift and notification preferences from the backend
   useEffect(() => {
     const run = async () => {
       const volume = await execute("getVolume");
       const kbProfile = await execute("getProfile");
       const mouseProfile = await execute("getMouseProfile");
+      const psEnabled = await execute("getPitchShiftEnabled");
+      const psLower = await execute("getPitchShiftLower");
+      const psUpper = await execute("getPitchShiftUpper");
+      const psProfile = await execute("getPitchShiftProfile");
       const notifyOnLaunch = await execute("getNotifyOnLaunch");
       const notifyOnHide = await execute("getNotifyOnHide");
       const notifyOnUpdate = await execute("getNotifyOnUpdate");
@@ -182,6 +190,9 @@ function App() {
       setDisplayVolume(volume);
       setSelectedKeyboardProfile(kbProfile);
       setSelectedMouseProfile(mouseProfile);
+      setPitchShiftEnabled(!!psEnabled);
+      setPitchShiftRange([Number(psLower ?? -2), Number(psUpper ?? 2)]);
+      setPitchShiftProfile(psProfile || 'both');
       setNotifyOnLaunch(notifyOnLaunch);
       setNotifyOnHide(notifyOnHide);
       setNotifyOnUpdate(notifyOnUpdate);
@@ -193,6 +204,10 @@ function App() {
         const cmdParts = ["start", `-v ${volume}`];
         if (kbProfile !== '') cmdParts.push(`-p ${kbProfile}`);
         if (mouseProfile !== '') cmdParts.push(`-m ${mouseProfile}`);
+        if (psEnabled) {
+          cmdParts.push(`-c="${Number(psLower ?? -2)},${Number(psUpper ?? 2)}"`);
+          if (psProfile) cmdParts.push(`-k ${psProfile}`);
+        }
         if (enableDaemonWindow) cmdParts.push('-w');
         await execute(cmdParts.join(' '));
       }
@@ -241,6 +256,41 @@ function App() {
         setDisplayVolume(status.volume);
         setVolume(status.volume);
       }
+      // Initialize pitch shift UI from daemon if available (only when running)
+      if (status.status === "running") {
+        const st = status.semitones;
+        if (st) {
+          const parts = String(st).split(",");
+          if (parts.length === 2) {
+            const lower = Number(parts[0]);
+            const upper = Number(parts[1]);
+            if (!Number.isNaN(lower) && !Number.isNaN(upper)) {
+              setPitchShiftEnabled(true);
+              setPitchShiftRange([lower, upper]);
+            }
+          }
+        }
+      }
+    }
+  }, [status]);
+
+  // Keep pitch shift in sync with external daemon changes (CLI/other UI)
+  useEffect(() => {
+    if (!status) return;
+    if (status.status !== "running") return; // keep local state when not running
+    const st = status.semitones;
+    if (!st) {
+      if (pitchShiftEnabled) setPitchShiftEnabled(false);
+      return;
+    }
+    const parts = String(st).split(",");
+    if (parts.length !== 2) return;
+    const lower = Number(parts[0]);
+    const upper = Number(parts[1]);
+    if (Number.isNaN(lower) || Number.isNaN(upper)) return;
+    if (!pitchShiftEnabled) setPitchShiftEnabled(true);
+    if (pitchShiftRange[0] !== lower || pitchShiftRange[1] !== upper) {
+      setPitchShiftRange([lower, upper]);
     }
   }, [status]);
 
@@ -249,11 +299,15 @@ function App() {
     if (status && status.status === "running") {
       const kb = status.profile || '';
       const mouse = status.mouse_profile || '';
+      const psp = status.pitch_shift_profile || '';
       if (kb !== selectedKeyboardProfile) {
         setSelectedKeyboardProfile(kb);
       }
       if (mouse !== selectedMouseProfile) {
         setSelectedMouseProfile(mouse);
+      }
+      if (psp && psp !== pitchShiftProfile) {
+        setPitchShiftProfile(psp);
       }
     }
   }, [status]);
@@ -325,6 +379,10 @@ function App() {
     const parts = ["start", `-v ${volume}`];
     if (selectedKeyboardProfile !== '') parts.push(`-p ${selectedKeyboardProfile}`);
     if (selectedMouseProfile !== '') parts.push(`-m ${selectedMouseProfile}`);
+    if (pitchShiftEnabled) {
+      parts.push(`-c="${Number(pitchShiftRange[0])},${Number(pitchShiftRange[1])}"`);
+      if (pitchShiftProfile) parts.push(`-k ${pitchShiftProfile}`);
+    }
     if (enableDaemonWindow) parts.push('-w');
     return parts.join(' ');
   };
@@ -362,6 +420,41 @@ function App() {
   const handleVolumeChanged = (volume) => {
     execute(`storeVolume ${volume}`);
     setVolume(volume);
+  };
+
+  const handlePitchShiftEnabledChanged = (isEnabled) => {
+    setPitchShiftEnabled(isEnabled);
+    execute(`storePitchShiftEnabled ${isEnabled}`);
+    if (statusLoaded && status.status === "running") {
+      if (isEnabled) {
+        const [l, u] = pitchShiftRange;
+        execute(`setPitchShiftRange ${Number(l)} ${Number(u)} ${pitchShiftProfile}`);
+      } else {
+        execute(`disablePitchShift`);
+      }
+    }
+  };
+
+  const handlePitchShiftRangePreview = (range) => {
+    setPitchShiftRange([Number(range[0]), Number(range[1])]);
+  };
+
+  const handlePitchShiftRangeCommit = (range) => {
+    const lower = Number(range[0]);
+    const upper = Number(range[1]);
+    setPitchShiftRange([lower, upper]);
+    execute(`storePitchShiftRange ${lower} ${upper}`);
+    if (statusLoaded && status.status === "running" && pitchShiftEnabled) {
+      execute(`setPitchShiftRange ${lower} ${upper} ${pitchShiftProfile}`);
+    }
+  };
+
+  const handlePitchShiftProfileChanged = (profile) => {
+    setPitchShiftProfile(profile);
+    execute(`storePitchShiftProfile ${profile}`);
+    if (statusLoaded && status.status === "running" && pitchShiftEnabled) {
+      execute(`setPitchShiftProfile ${profile}`);
+    }
   };
 
   const handleGlobalActionChanged = (isEnabled) => {
@@ -403,7 +496,7 @@ function App() {
 
   useEffect(() => {
     if (selectedTab === 0) {        // Audio
-      execute(`setHeight 536`);
+      execute(`setHeight 790`);
     } else if (selectedTab === 3) { // Settings
       execute(`setHeight 932`);
     } else if (selectedTab === 4) { // Community
@@ -530,6 +623,13 @@ function App() {
                 onMouseProfileChanged={handleMouseProfileChanged}
                 onVolumeChanged={handleVolumeChanged}
                 onDisplayVolumeChanged={setDisplayVolume}
+                pitchEnabled={pitchShiftEnabled}
+                pitchRange={pitchShiftRange}
+                onPitchEnabledChanged={handlePitchShiftEnabledChanged}
+                onPitchRangeChanged={handlePitchShiftRangePreview}
+                onPitchRangeCommit={handlePitchShiftRangeCommit}
+                pitchProfile={pitchShiftProfile}
+                onPitchProfileChanged={handlePitchShiftProfileChanged}
               />
             )}
 

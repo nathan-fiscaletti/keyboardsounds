@@ -107,6 +107,11 @@ def on_command(command: dict) -> None:
                 if __dm is not None:
                     __dm.update_lock_file(
                         __volume,
+                        (
+                            f"{__pitch_shift_lower}:{__pitch_shift_upper}"
+                            if __pitch_shift
+                            else None
+                        ),
                         __am.profile.name if __am is not None else None,
                         __mam.profile.name if __mam is not None else None,
                     )
@@ -127,6 +132,11 @@ def on_command(command: dict) -> None:
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
+                                (
+                                    f"{__pitch_shift_lower}:{__pitch_shift_upper}"
+                                    if __pitch_shift
+                                    else None
+                                ),
                                 None,
                                 __mam.profile.name if __mam is not None else None,
                             )
@@ -145,6 +155,11 @@ def on_command(command: dict) -> None:
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
+                                (
+                                    f"{__pitch_shift_lower}:{__pitch_shift_upper}"
+                                    if __pitch_shift
+                                    else None
+                                ),
                                 profile,
                                 __mam.profile.name if __mam is not None else None,
                             )
@@ -167,6 +182,11 @@ def on_command(command: dict) -> None:
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
+                                (
+                                    f"{__pitch_shift_lower}:{__pitch_shift_upper}"
+                                    if __pitch_shift
+                                    else None
+                                ),
                                 __am.profile.name if __am is not None else None,
                                 None,
                             )
@@ -185,6 +205,11 @@ def on_command(command: dict) -> None:
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
+                                (
+                                    f"{__pitch_shift_lower}:{__pitch_shift_upper}"
+                                    if __pitch_shift
+                                    else None
+                                ),
                                 __am.profile.name if __am is not None else None,
                                 profile,
                             )
@@ -197,6 +222,26 @@ def on_command(command: dict) -> None:
                     __dm.show_daemon_window()
             except Exception as e:
                 print(f"Error: {e}")
+        elif action == "set_pitch_shift":
+            if "semitones" in command:
+                semitones = command["semitones"]
+                __pitch_shift = True
+                __pitch_shift_lower, __pitch_shift_upper = map(
+                    int, semitones.split(":")
+                )
+
+                if __dm is not None:
+                    __dm.update_lock_file(
+                        __volume,
+                        semitones,
+                        __am.profile.name if __am is not None else None,
+                        __mam.profile.name if __mam is not None else None,
+                    )
+                print(f"Pitch shift set to {semitones}")
+            else:
+                __pitch_shift = False
+                __pitch_shift_lower = -2
+                __pitch_shift_upper = 2
 
 
 def pitch_shift_from_bytes(buffer, semitones: float) -> mixer.Sound:
@@ -384,6 +429,7 @@ def run(
     dm,
     volume: int,
     profile: Optional[str],
+    semitones: Optional[str],
     debug: bool,
     mouse_profile: Optional[str] = None,
 ):
@@ -403,6 +449,7 @@ def run(
     global __dm
     global __debug
     global __kb_listener, __mouse_listener
+    global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper
 
     __debug = debug
 
@@ -413,6 +460,14 @@ def run(
     else:
         __mam = None
     __dm = dm
+
+    if semitones is not None:
+        __pitch_shift = True
+        __pitch_shift_lower, __pitch_shift_upper = map(int, semitones.split(","))
+    else:
+        __pitch_shift = False
+        __pitch_shift_lower = -2
+        __pitch_shift_upper = 2
 
     if WIN32:
         app_detector.start_listening(__on_focused_application_changed)

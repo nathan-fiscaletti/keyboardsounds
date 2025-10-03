@@ -64,7 +64,7 @@ def main():
         (
             f"usage: %(prog)s <action> [params]{os.linesep *2}"
             f"  manage daemon:{os.linesep * 2}"
-            f"    %(prog)s start [-v <volume>] [-p <profile>] [-m <mouse_profile>] [-D] [-w]{os.linesep}"
+            f"    %(prog)s start [-v <volume>] [-p <profile>] [-m <mouse_profile>] [-c '<lower_semitone>,<upper_semitone>'] [-D] [-w]{os.linesep}"
             f"    %(prog)s stop{os.linesep}"
             f"    %(prog)s status [-s]{os.linesep * 2}"
             f"  manage profiles:{os.linesep * 2}"
@@ -81,7 +81,7 @@ def main():
     )
 
     parser = argparse.ArgumentParser(
-        prog=f"<keyboardsounds|kbs>",
+        prog=f"kbs",
         usage=argparse.SUPPRESS,
         description=f"Keyboard Sounds v{version_number}{os.linesep * 2}{usage}{os.linesep}",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -186,6 +186,15 @@ def main():
         help="path to the zip file to create",
     )
 
+    parser.add_argument(
+        "-c",
+        "--semitones",
+        type=str,
+        default=None,
+        metavar="semitones",
+        help="semitones to use for random pitch shift, in the format of '<lower_semitone>,<upper_semitone>'. eg. -c='-2,2'",
+    )
+
     # Rules
     if WIN32:
         parser.add_argument(
@@ -220,12 +229,14 @@ def main():
             print(
                 f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
             )
+            print(f"Semitone range: {args.semitones if args.semitones else 'Off'}")
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
             print(f"Using Keyboard Profile: {args.profile if args.profile else 'None'}")
             print(
                 f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
             )
+            print(f"Semitone range: {args.semitones if args.semitones else 'Off'}")
         # Require at least one profile
         if args.profile is None and args.mouse_profile is None:
             print(
@@ -237,6 +248,7 @@ def main():
             profile=args.profile,
             debug=args.debug,
             window=args.window,
+            semitones=args.semitones,
             mouse_profile=args.mouse_profile,
         ):
             print("Failed to start.")

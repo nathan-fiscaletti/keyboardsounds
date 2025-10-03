@@ -117,12 +117,20 @@ class DaemonManager:
         """
         if full:
             volume = self.get_volume()
+            semitones = self.get_semitones()
             volume_status = f", Volume: {volume}%" if volume is not None else ""
             pid = self.get_pid()
             pid_status = f", PID: {pid}" if pid is not None else ""
             daemon_status = self.status()
             kb_status = ""
             mouse_status = ""
+
+            semitones_status = (
+                f", Semitones: {semitones}"
+                if semitones is not None
+                else ", Semitones: Off" if daemon_status == "running" else ""
+            )
+
             if daemon_status == "running":
                 prof_kb = self.get_profile()
                 prof_mouse = self.get_mouse_profile()
@@ -134,12 +142,11 @@ class DaemonManager:
             status_text = {"running": "Running", "stale": "Stale"}.get(
                 daemon_status, "Not running"
             )
-            status = (
-                f"{status_text}{volume_status}{pid_status}{kb_status}{mouse_status}"
-            )
+            status = f"{status_text}{volume_status}{semitones_status}{pid_status}{kb_status}{mouse_status}"
             return f"Status: {status}"
         elif short:
             volume = self.get_volume()
+            semitones = self.get_semitones()
             pid = self.get_pid()
             prof_kb = self.get_profile()
             prof_mouse = self.get_mouse_profile()
@@ -156,6 +163,7 @@ class DaemonManager:
                 "status": daemon_status,
                 "user_status": user_status,
                 "volume": volume,
+                "semitones": semitones,
                 "pid": pid,
                 "api_port": api_port,
                 "lock": {
@@ -203,6 +211,16 @@ class DaemonManager:
         status = self.status()
         if status == "running" and self.__proc_info is not None:
             return self.__proc_info.get("volume")
+        return None
+
+    def get_semitones(self) -> str | None:
+        """
+        Retrieves the current semitone shift of the daemon if it is running.
+        """
+        self.__load_status()
+        status = self.status()
+        if status == "running" and self.__proc_info is not None:
+            return self.__proc_info.get("semitones")
         return None
 
     def get_pid(self) -> int | None:
@@ -344,6 +362,7 @@ class DaemonManager:
         profile: str | None,
         debug: bool,
         window: bool,
+        semitones: str | None,
         mouse_profile: str | None = None,
     ) -> bool:
         """
@@ -396,18 +415,23 @@ class DaemonManager:
 
         if debug:
             self.run_daemon(
-                volume, profile, debug=True, window=window, mouse_profile=mouse_profile
+                volume,
+                profile,
+                debug=True,
+                window=window,
+                semitones=semitones,
+                mouse_profile=mouse_profile,
             )
         else:
             args = [
                 sys.argv[0],
                 "start-daemon",
                 str(volume),
-                profile if profile is not None else "",
+                profile if profile is not None else "off",
                 str(window),
+                semitones if semitones is not None else "off",
+                mouse_profile if mouse_profile is not None else "off",
             ]
-            if mouse_profile is not None:
-                args.append(mouse_profile)
             subprocess.Popen(
                 args,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
@@ -498,11 +522,16 @@ class DaemonManager:
                 pass
 
     def update_lock_file(
-        self, volume: int, profile: str | None, mouse_profile: str | None = None
+        self,
+        volume: int,
+        semitones: str | None,
+        profile: str | None,
+        mouse_profile: str | None = None,
     ):
         lockData = {
             "pid": os.getpid(),
             "volume": volume,
+            "semitones": semitones,
             "profile": profile,
             "mouse_profile": mouse_profile,
             "api_port": self.__api.port() if self.__api is not None else None,
@@ -537,7 +566,7 @@ class DaemonManager:
         - bool: True if the daemon was initialized successfully, False if the
                 conditions for initialization were not met.
         """
-        if (len(sys.argv) == 5 or len(sys.argv) == 6) and sys.argv[1] == "start-daemon":
+        if len(sys.argv) == 7 and sys.argv[1] == "start-daemon":
             # Ensure only one daemon proceeds by acquiring OS-level lock
             if not self.__acquire_process_lock():
                 # Another daemon is already running
@@ -552,7 +581,9 @@ class DaemonManager:
             profile = None
             try:
                 profile_arg = sys.argv[3]
-                profile = profile_arg if profile_arg != "" else None
+                profile = (
+                    profile_arg if profile_arg != "off" and profile_arg != "" else None
+                )
             except:
                 pass
 
@@ -562,14 +593,32 @@ class DaemonManager:
             except:
                 pass
 
+            semitones = None
+            try:
+                semitones = (
+                    sys.argv[5] if sys.argv[5] != "off" and sys.argv[5] != "" else None
+                )
+            except:
+                pass
+
             mouse_profile = None
             try:
-                mouse_profile = sys.argv[5]
+                mouse_profile_arg = sys.argv[6]
+                mouse_profile = (
+                    mouse_profile_arg
+                    if mouse_profile_arg != "off" and profile_arg != ""
+                    else None
+                )
             except:
                 pass
 
             self.run_daemon(
-                volume, profile, debug=False, window=window, mouse_profile=mouse_profile
+                volume,
+                profile,
+                debug=True,
+                window=window,
+                semitones=semitones,
+                mouse_profile=mouse_profile,
             )
             return True
         return False
@@ -580,6 +629,7 @@ class DaemonManager:
         profile: str | None,
         debug: bool,
         window: bool,
+        semitones: str | None,
         mouse_profile: str | None = None,
     ):
         api_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -587,7 +637,7 @@ class DaemonManager:
         self.__api = ExternalAPI(api_socket, daemon.on_command)
         self.__api.listen()
 
-        self.update_lock_file(volume, profile, mouse_profile)
+        self.update_lock_file(volume, semitones, profile, mouse_profile)
 
         if not debug:
             LINE_BUFFERED = 1
@@ -598,7 +648,9 @@ class DaemonManager:
         if window:
             self.show_daemon_window()
 
-        daemon.run(self, volume, profile, debug=debug, mouse_profile=mouse_profile)
+        daemon.run(
+            self, volume, profile, semitones, debug=debug, mouse_profile=mouse_profile
+        )
 
     def show_daemon_window(self):
         if not self.__daemon_window_visible:

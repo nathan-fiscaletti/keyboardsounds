@@ -21,6 +21,7 @@ import {
   FormControl,
   Switch,
   Divider,
+  ListSubheader,
 } from "@mui/material";
 
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -255,6 +256,8 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
   const [selectedRule, setSelectedRule] = useState("disable");
   const [selectedApplication, setSelectedApplication] = useState("");
   const [addingRule, setAddingRule] = useState(false);
+  const [installedApplications, setInstalledApplications] = useState([]);
+  const [applicationSearch, setApplicationSearch] = useState("");
 
   useEffect(() => {
     // Fetch both the executable path and any existing self-rule path
@@ -263,6 +266,9 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
     });
     execute("getSelfRulePath").then((path) => {
       if (typeof path === 'string') setSelfRulePath(path);
+    });
+    execute("getInstalledApplications").then((apps) => {
+      if (apps) setInstalledApplications(apps);
     });
   }, []);
 
@@ -286,6 +292,7 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
     if (!addAppRuleDialogOpen) {
       setSelectedRule("disable");
       setSelectedApplication("");
+      setApplicationSearch("");
     }
   }, [addAppRuleDialogOpen]);
 
@@ -341,6 +348,103 @@ const AppRules = ({ appRules, appRulesLoaded, enabledRulesAreExclusive, globalAc
           <Typography variant="body" sx={{ mt: 2 }}>
             Application
           </Typography>
+          <Select
+            sx={{ mt: 1 }}
+            fullWidth
+            size="small"
+            value={selectedApplication}
+            onChange={(e) => setSelectedApplication(e.target.value)}
+            displayEmpty
+            renderValue={(v) => (
+              v ? (
+                <Typography variant="body2">
+                  {installedApplications.find((a) => a.path === v)?.name || v}
+                </Typography>
+              ) : (
+                <Typography variant="body2" color="GrayText">
+                  Select an application...
+                </Typography>
+              )
+            )}
+            MenuProps={{
+              autoFocus: false,
+              MenuListProps: {
+                dense: true,
+                onKeyDown: (e) => {
+                  if (e.key !== 'Escape') {
+                    e.stopPropagation();
+                  }
+                },
+              },
+            }}
+            onOpen={() => setApplicationSearch("")}
+          >
+
+            <ListSubheader sx={{ bgcolor: '#2f2f2f', pt: 1 }}>
+              <TextField
+                fullWidth
+                size="small"
+                autoFocus
+                placeholder="Search applications"
+                value={applicationSearch}
+                onChange={(e) => setApplicationSearch(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Escape') {
+                    e.stopPropagation();
+                  }
+                }}
+              />
+            </ListSubheader>
+            <MenuItem value="" disabled>
+              <Typography variant="body2" color="GrayText">
+                Select an application...
+              </Typography>
+            </MenuItem>
+            {installedApplications
+              .filter((application) => {
+                const q = applicationSearch.toLowerCase();
+                return (
+                  q === "" ||
+                  application.name?.toLowerCase().includes(q)
+                );
+              })
+              .map((application) => (
+                <MenuItem key={application.path} value={application.path}>
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}>
+                    <ListItemText
+                      sx={{
+                        cursor: "default",
+                      }}
+                      primary={application.name}
+                      primaryTypographyProps={{
+                        variant: "body2",
+                      }}
+                      secondary={application.path}
+                      secondaryTypographyProps={{
+                        noWrap: true,
+                        variant: "caption",
+                        style: {
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "calc(100vw - 232px)",
+                        },
+                      }}
+                    />
+                  </Box>
+                </MenuItem>
+              ))}
+          </Select>
           <Box sx={{
             display: 'flex',
             flexDirection: 'row',

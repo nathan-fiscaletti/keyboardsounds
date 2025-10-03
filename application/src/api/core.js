@@ -720,6 +720,11 @@ const kbs = {
 		});
 	},
 
+	getInstalledApplications: async function() {
+		const apps = await this.kbsCli('list-apps', false)
+		return JSON.parse(apps);
+	},
+
 	getAnalyticsId: async function() {
 		let id = store.get('analytics_id', '');
 		if (!id) {

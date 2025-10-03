@@ -15,6 +15,7 @@ setup(
         "pyyaml==6.0.2",
         "setuptools==75.3.0",
         "requests==2.32.3",
+        "pydub==0.25.1",
     ],
     package_data={
         "keyboardsounds": [

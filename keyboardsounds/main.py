@@ -247,7 +247,9 @@ def main():
                 f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
             )
             print(
-                f"Semitone range: {f"{args.semitones} ({args.pitch_shift_profile})" if args.semitones else 'Off'}"
+                f"Semitone range: {args.semitones} ({args.pitch_shift_profile})"
+                if args.semitones
+                else "Off"
             )
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
@@ -256,7 +258,9 @@ def main():
                 f"Using Mouse Profile: {args.mouse_profile if args.mouse_profile else 'None'}"
             )
             print(
-                f"Semitone range: {f"{args.semitones} ({args.pitch_shift_profile})" if args.semitones else 'Off'}"
+                f"Semitone range: {args.semitones} ({args.pitch_shift_profile})"
+                if args.semitones
+                else "Off"
             )
         # Require at least one profile
         if args.profile is None and args.mouse_profile is None:

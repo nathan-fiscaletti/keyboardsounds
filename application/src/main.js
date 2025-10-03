@@ -27,7 +27,7 @@ let mainWindow = null;
 
 // When enabled, even if NODE_ENV=development, the application will still
 // act as if it is running in a production state.
-const simulateProd = true;
+const simulateProd = false;
 
 const toggleWindow = () => {
   // Check if the window exists and isn't destroyed; if so,

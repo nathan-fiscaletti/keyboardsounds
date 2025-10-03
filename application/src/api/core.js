@@ -451,10 +451,86 @@ const kbs = {
 		return Promise.resolve(store.get('start_sound_daemon_on_start_up', false));
 	},
 
+	// Pitch Shift persistence
+	getPitchShiftEnabled: async function() {
+		return Promise.resolve(store.get('pitch_shift_enabled', false));
+	},
+
+	getPitchShiftLower: async function() {
+		return Promise.resolve(store.get('pitch_shift_lower', -2));
+	},
+
+	getPitchShiftUpper: async function() {
+		return Promise.resolve(store.get('pitch_shift_upper', 2));
+	},
+
+	getPitchShiftProfile: async function() {
+		return Promise.resolve(store.get('pitch_shift_profile', 'both'));
+	},
+
+	storePitchShiftEnabled: async function(value) {
+		store.set('pitch_shift_enabled', value === 'true');
+	},
+
+	storePitchShiftRange: async function(lower, upper) {
+		try {
+			store.set('pitch_shift_lower', Number(lower));
+			store.set('pitch_shift_upper', Number(upper));
+		} catch (e) {}
+	},
+
+	storePitchShiftProfile: async function(profile) {
+		const allowed = new Set(['keyboard', 'mouse', 'both']);
+		if (!allowed.has(String(profile))) return;
+		store.set('pitch_shift_profile', String(profile));
+	},
+
 	setVolume: async function(volume) {
 		return this.executeDaemonCommand({
 			action: 'set_volume',
 			volume: Number(volume)
+		});
+	},
+
+	// Pitch Shift live control (ExternalAPI)
+	setPitchShiftRange: async function(lower, upper, profile) {
+		const cmd = {
+			action: 'set_pitch_shift',
+			semitones: `${Number(lower)},${Number(upper)}`,
+		};
+		if (profile) {
+			cmd.profile = String(profile);
+		}
+		return this.executeDaemonCommand(cmd);
+	},
+
+	setPitchShiftProfile: async function(profile) {
+		// When changing profile live, include the current semitone range
+		const status = await this.status();
+		if (status.status !== 'running') {
+			return Promise.reject('Keyboard Sounds is not running.');
+		}
+		const st = status.semitones;
+		if (!st) {
+			return Promise.reject('Pitch shift is not enabled.');
+		}
+		let lower = null, upper = null;
+		try {
+			const parts = String(st).includes(':') ? String(st).split(':') : String(st).split(',');
+			if (parts.length === 2) {
+				lower = Number(parts[0]);
+				upper = Number(parts[1]);
+			}
+		} catch (e) {}
+		if (lower === null || upper === null || Number.isNaN(lower) || Number.isNaN(upper)) {
+			return Promise.reject('Invalid semitone range.');
+		}
+		return this.setPitchShiftRange(lower, upper, profile);
+	},
+
+	disablePitchShift: async function() {
+		return this.executeDaemonCommand({
+			action: 'set_pitch_shift'
 		});
 	},
 

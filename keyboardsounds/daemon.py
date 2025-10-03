@@ -46,6 +46,7 @@ __volume = 100
 __pitch_shift = False
 __pitch_shift_lower = -2
 __pitch_shift_upper = 2
+__pitch_shift_profile = "both"
 __down = []
 __debug = False
 
@@ -98,6 +99,7 @@ def on_command(command: dict) -> None:
     global __volume
     global __am, __mam
     global __kb_listener, __mouse_listener
+    global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
 
     if "action" in command:
         action = command["action"]
@@ -112,6 +114,7 @@ def on_command(command: dict) -> None:
                             if __pitch_shift
                             else None
                         ),
+                        __pitch_shift_profile,
                         __am.profile.name if __am is not None else None,
                         __mam.profile.name if __mam is not None else None,
                     )
@@ -137,6 +140,7 @@ def on_command(command: dict) -> None:
                                     if __pitch_shift
                                     else None
                                 ),
+                                __pitch_shift_profile,
                                 None,
                                 __mam.profile.name if __mam is not None else None,
                             )
@@ -160,6 +164,7 @@ def on_command(command: dict) -> None:
                                     if __pitch_shift
                                     else None
                                 ),
+                                __pitch_shift_profile,
                                 profile,
                                 __mam.profile.name if __mam is not None else None,
                             )
@@ -187,6 +192,7 @@ def on_command(command: dict) -> None:
                                     if __pitch_shift
                                     else None
                                 ),
+                                __pitch_shift_profile,
                                 __am.profile.name if __am is not None else None,
                                 None,
                             )
@@ -210,6 +216,7 @@ def on_command(command: dict) -> None:
                                     if __pitch_shift
                                     else None
                                 ),
+                                __pitch_shift_profile,
                                 __am.profile.name if __am is not None else None,
                                 profile,
                             )
@@ -225,23 +232,41 @@ def on_command(command: dict) -> None:
         elif action == "set_pitch_shift":
             if "semitones" in command:
                 semitones = command["semitones"]
+
+            if semitones is not None and semitones != "":
                 __pitch_shift = True
                 __pitch_shift_lower, __pitch_shift_upper = map(
-                    int, semitones.split(":")
+                    int, semitones.split(",")
                 )
-
-                if __dm is not None:
-                    __dm.update_lock_file(
-                        __volume,
-                        semitones,
-                        __am.profile.name if __am is not None else None,
-                        __mam.profile.name if __mam is not None else None,
-                    )
-                print(f"Pitch shift set to {semitones}")
+                if "profile" in command:
+                    if (
+                        command["profile"] != "both"
+                        and command["profile"] != "keyboard"
+                        and command["profile"] != "mouse"
+                    ):
+                        __pitch_shift_profile = "both"
+                    else:
+                        __pitch_shift_profile = command["profile"]
+                else:
+                    __pitch_shift_profile = "both"
+                print(
+                    f"Pitch shift set to {__pitch_shift_lower},{__pitch_shift_upper} for {__pitch_shift_profile}"
+                )
             else:
                 __pitch_shift = False
                 __pitch_shift_lower = -2
                 __pitch_shift_upper = 2
+                __pitch_shift_profile = "both"
+                print(f"Pitch shift set to off")
+            if __dm is not None:
+                __dm.update_lock_file(
+                    __volume,
+                    semitones,
+                    __pitch_shift_profile,
+                    __am.profile.name if __am is not None else None,
+                    __mam.profile.name if __mam is not None else None,
+                )
+            print(f"Pitch shift set to {semitones}")
 
 
 def pitch_shift_from_bytes(buffer, semitones: float) -> mixer.Sound:
@@ -319,7 +344,7 @@ def __on_press(key):
         return
 
     sound = __am.get_sound(key, action="press")
-    __play_sound(sound)
+    __play_sound(sound, "keyboard")
 
     # Play the sound
     __down.append(key)
@@ -339,14 +364,18 @@ def __on_release(key):
     global __am
 
     sound = __am.get_sound(key, action="release")
-    __play_sound(sound)
+    __play_sound(sound, "keyboard")
 
     __down = [k for k in __down if k != key]
 
 
-def __play_sound(sound):
+def __play_sound(sound, profile_type: str):
+    global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
+
     if sound is not None:
-        if __pitch_shift:
+        if __pitch_shift and (
+            __pitch_shift_profile == "both" or profile_type == __pitch_shift_profile
+        ):
             semitones = random.randint(__pitch_shift_lower, __pitch_shift_upper)
             clip = pitch_shift_from_bytes(sound, semitones)
         else:
@@ -366,15 +395,8 @@ def __on_mouse_click(x, y, button: Button, pressed: bool):
     if __mam is None:
         return
     sound = __mam.get_sound(button, action=action)
-    if sound is not None and pressed:
-        # Only play on press by default; release will play if configured
-        clip = mixer.Sound(sound)
-        clip.set_volume(float(__volume) / float(100))
-        clip.play()
-    elif sound is not None and not pressed:
-        clip = mixer.Sound(sound)
-        clip.set_volume(float(__volume) / float(100))
-        clip.play()
+    if sound is not None:
+        __play_sound(sound, "mouse")
 
 
 if WIN32:
@@ -430,6 +452,7 @@ def run(
     volume: int,
     profile: Optional[str],
     semitones: Optional[str],
+    pitch_shift_profile: Optional[str],
     debug: bool,
     mouse_profile: Optional[str] = None,
 ):
@@ -449,7 +472,7 @@ def run(
     global __dm
     global __debug
     global __kb_listener, __mouse_listener
-    global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper
+    global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
 
     __debug = debug
 
@@ -464,10 +487,15 @@ def run(
     if semitones is not None:
         __pitch_shift = True
         __pitch_shift_lower, __pitch_shift_upper = map(int, semitones.split(","))
+        if pitch_shift_profile is not None:
+            __pitch_shift_profile = pitch_shift_profile
+        else:
+            __pitch_shift_profile = "both"
     else:
         __pitch_shift = False
         __pitch_shift_lower = -2
         __pitch_shift_upper = 2
+        __pitch_shift_profile = "both"
 
     if WIN32:
         app_detector.start_listening(__on_focused_application_changed)

@@ -118,6 +118,7 @@ class DaemonManager:
         if full:
             volume = self.get_volume()
             semitones = self.get_semitones()
+            pitch_shift_profile = self.get_pitch_shift_profile()
             volume_status = f", Volume: {volume}%" if volume is not None else ""
             pid = self.get_pid()
             pid_status = f", PID: {pid}" if pid is not None else ""
@@ -126,7 +127,7 @@ class DaemonManager:
             mouse_status = ""
 
             semitones_status = (
-                f", Semitones: {semitones}"
+                f", Semitones: {semitones} ({pitch_shift_profile})"
                 if semitones is not None
                 else ", Semitones: Off" if daemon_status == "running" else ""
             )
@@ -147,6 +148,7 @@ class DaemonManager:
         elif short:
             volume = self.get_volume()
             semitones = self.get_semitones()
+            pitch_shift_profile = self.get_pitch_shift_profile()
             pid = self.get_pid()
             prof_kb = self.get_profile()
             prof_mouse = self.get_mouse_profile()
@@ -164,6 +166,7 @@ class DaemonManager:
                 "user_status": user_status,
                 "volume": volume,
                 "semitones": semitones,
+                "pitch_shift_profile": pitch_shift_profile,
                 "pid": pid,
                 "api_port": api_port,
                 "lock": {
@@ -221,6 +224,16 @@ class DaemonManager:
         status = self.status()
         if status == "running" and self.__proc_info is not None:
             return self.__proc_info.get("semitones")
+        return None
+
+    def get_pitch_shift_profile(self) -> str | None:
+        """
+        Retrieves the current pitch shift profile of the daemon if it is running.
+        """
+        self.__load_status()
+        status = self.status()
+        if status == "running" and self.__proc_info is not None:
+            return self.__proc_info.get("pitch_shift_profile")
         return None
 
     def get_pid(self) -> int | None:
@@ -363,6 +376,7 @@ class DaemonManager:
         debug: bool,
         window: bool,
         semitones: str | None,
+        pitch_shift_profile: str | None,
         mouse_profile: str | None = None,
     ) -> bool:
         """
@@ -420,6 +434,7 @@ class DaemonManager:
                 debug=True,
                 window=window,
                 semitones=semitones,
+                pitch_shift_profile=pitch_shift_profile,
                 mouse_profile=mouse_profile,
             )
         else:
@@ -430,6 +445,7 @@ class DaemonManager:
                 profile if profile is not None else "off",
                 str(window),
                 semitones if semitones is not None else "off",
+                pitch_shift_profile if pitch_shift_profile is not None else "both",
                 mouse_profile if mouse_profile is not None else "off",
             ]
             subprocess.Popen(
@@ -525,6 +541,7 @@ class DaemonManager:
         self,
         volume: int,
         semitones: str | None,
+        pitch_shift_profile: str | None,
         profile: str | None,
         mouse_profile: str | None = None,
     ):
@@ -532,6 +549,7 @@ class DaemonManager:
             "pid": os.getpid(),
             "volume": volume,
             "semitones": semitones,
+            "pitch_shift_profile": pitch_shift_profile,
             "profile": profile,
             "mouse_profile": mouse_profile,
             "api_port": self.__api.port() if self.__api is not None else None,
@@ -566,7 +584,7 @@ class DaemonManager:
         - bool: True if the daemon was initialized successfully, False if the
                 conditions for initialization were not met.
         """
-        if len(sys.argv) == 7 and sys.argv[1] == "start-daemon":
+        if len(sys.argv) == 8 and sys.argv[1] == "start-daemon":
             # Ensure only one daemon proceeds by acquiring OS-level lock
             if not self.__acquire_process_lock():
                 # Another daemon is already running
@@ -601,9 +619,21 @@ class DaemonManager:
             except:
                 pass
 
+            pitch_shift_profile = "both"
+            try:
+                pitch_shift_profile = sys.argv[6]
+                if (
+                    pitch_shift_profile != "both"
+                    and pitch_shift_profile != "keyboard"
+                    and pitch_shift_profile != "mouse"
+                ):
+                    pitch_shift_profile = "both"
+            except:
+                pass
+
             mouse_profile = None
             try:
-                mouse_profile_arg = sys.argv[6]
+                mouse_profile_arg = sys.argv[7]
                 mouse_profile = (
                     mouse_profile_arg
                     if mouse_profile_arg != "off" and profile_arg != ""
@@ -618,6 +648,7 @@ class DaemonManager:
                 debug=True,
                 window=window,
                 semitones=semitones,
+                pitch_shift_profile=pitch_shift_profile,
                 mouse_profile=mouse_profile,
             )
             return True
@@ -630,6 +661,7 @@ class DaemonManager:
         debug: bool,
         window: bool,
         semitones: str | None,
+        pitch_shift_profile: str | None,
         mouse_profile: str | None = None,
     ):
         api_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -637,7 +669,9 @@ class DaemonManager:
         self.__api = ExternalAPI(api_socket, daemon.on_command)
         self.__api.listen()
 
-        self.update_lock_file(volume, semitones, profile, mouse_profile)
+        self.update_lock_file(
+            volume, semitones, pitch_shift_profile, profile, mouse_profile
+        )
 
         if not debug:
             LINE_BUFFERED = 1
@@ -649,7 +683,13 @@ class DaemonManager:
             self.show_daemon_window()
 
         daemon.run(
-            self, volume, profile, semitones, debug=debug, mouse_profile=mouse_profile
+            self,
+            volume,
+            profile,
+            semitones,
+            pitch_shift_profile,
+            debug=debug,
+            mouse_profile=mouse_profile,
         )
 
     def show_daemon_window(self):

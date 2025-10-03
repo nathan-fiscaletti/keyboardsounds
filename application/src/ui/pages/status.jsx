@@ -2,7 +2,7 @@ import React from "react";
 
 import green from "@mui/material/colors/green";
 
-import { Box, Typography, FormControl, Select, Slider, MenuItem, Tooltip, IconButton, Divider, Switch, TextField } from "@mui/material";
+import { Box, Typography, FormControl, Select, Slider, MenuItem, Tooltip, IconButton, Divider, Switch, TextField, ToggleButtonGroup, ToggleButton } from "@mui/material";
 
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -23,6 +23,14 @@ const Status = ({
     onMouseProfileChanged,
     onVolumeChanged,
     onDisplayVolumeChanged,
+    // Pitch shift props
+    pitchEnabled,
+    pitchRange,
+    onPitchEnabledChanged,
+    onPitchRangeChanged,
+    onPitchRangeCommit,
+    pitchProfile,
+    onPitchProfileChanged,
 }) => {
   const tips = React.useMemo(() => [
     'Use Application Rules to enable or disable sounds based on the focused app.',
@@ -219,30 +227,49 @@ const Status = ({
             <InfoIcon sx={{ ml: 1, mt: -0.25 }} fontSize="small" />
           </Tooltip>
         </Box>
-        <Switch sx={{ mr: -1.5 }} />
+        <Switch sx={{ mr: -1.5 }} checked={!!pitchEnabled} onChange={(e) => onPitchEnabledChanged(e.target.checked)} />
       </Box>
       <Box
         sx={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: "column",
           alignItems: "center",
           mt: 4,
         }}
       >
-        {/* <TextField size="small" type="number" label="Lower ST" />
-        <Divider orientation="vertical" variant="middle" flexItem sx={{ ml: 1, mr: 1 }} />
-        <TextField size="small" type="number" label="Upper ST" /> */}
         <Slider
           disableSwap
-          defaultValue={[-2, 2]}
+          value={pitchRange}
           min={-12}
           max={12}
           size="small"
-          steps={24}
+          step={1}
           valueLabelDisplay="on"
           valueLabelFormat={(value) => value > -1 ? `+${value}st` : `${value}st`}
           marks={[{ value: -10, label: '-10st' }, { value: -6, label: '-6st' }, { value: -2, label: '-2st' }, { value: 0, label: '-' }, { value: 2, label: '+2st' }, { value: 6, label: '+6st' }, { value: 10, label: '+10st' }]}
+          onChange={(_, val) => onPitchRangeChanged(val)}
+          onChangeCommitted={(_, val) => onPitchRangeCommit(val)}
+          disabled={!pitchEnabled}
         />
+        <ToggleButtonGroup size="small" fullWidth sx={{ mt: 2 }} exclusive value={pitchProfile} onChange={(_, v) => v && onPitchProfileChanged(v)}>
+          <Tooltip title="Keyboard Only" placement="top" arrow>
+            <ToggleButton value="keyboard">
+                <KeyboardIcon />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title="Mouse Only" placement="top" arrow>
+            <ToggleButton value="mouse">
+                <MouseIcon />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title="Keyboard & Mouse" placement="top" arrow>
+            <ToggleButton value="both">
+                <KeyboardIcon sx={{ mr: 0.5 }} />
+                <Typography>&</Typography>
+                <MouseIcon sx={{ ml: 0.5 }} />
+            </ToggleButton>
+          </Tooltip>
+        </ToggleButtonGroup>
       </Box>
       </Box>
       <Divider sx={{ mt: 2, mb: 1.5 }} />

@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import yaml from 'js-yaml';
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import fetch from 'node-fetch';
 import Store from 'electron-store';
 import crypto from 'crypto';
@@ -19,32 +19,144 @@ const MinimumPythonPackageVersion = '6.1.0';
 
 const ErrPythonVersionUnknown = 'Failed to parse python version';
 const ErrPythonMissing = 'Python is not installed';
-const ErrPythonVersionMismatch = 'Python Version 3.8 or higher is required';
+const ErrPythonVersionMismatch = `Python Version ${MinimumPythonVersion} or higher is required`;
 const ErrPythonPackageMissing = 'KeyboardSounds package is not installed';
 const ErrPythonPackageVersionMismatch = `KeyboardSounds python package version ${MinimumPythonPackageVersion} or higher is required.`;
+
+// Cache for resolved absolute path to the kbs executable
+let cachedKbsPath = null;
+let cachedPythonExecutable = null;
+
+function getSystemEnvironment() {
+	const psScript = `
+		$sys = Get-ItemProperty "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"
+		$usr = Get-ItemProperty "HKCU:\\Environment"
+		$merged = @{}
+		$sys.PSObject.Properties | ForEach-Object { $merged[$_.Name] = $_.Value }
+		$usr.PSObject.Properties | ForEach-Object { $merged[$_.Name] = $_.Value }
+		$merged.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }
+	`;
+
+	const { stdout } = spawnSync("powershell", ["-NoProfile", "-Command", psScript], {
+		encoding: "utf8",
+	});
+
+	const env = {};
+	for (const line of stdout.split(/\r?\n/)) {
+		if (!line.includes("=")) continue;
+		const [key, ...rest] = line.split("=");
+		env[key] = rest.join("=");
+	}
+
+	// Mimic what Windows normally prepends (like PATH expansion)
+	env["COMSPEC"] ??= process.env.COMSPEC;
+	env["SystemRoot"] ??= process.env.SystemRoot;
+
+	return env;
+}
+
+function findPythonExecutable() {
+	return new Promise((resolve, reject) => {
+		if (cachedPythonExecutable) {
+			resolve(cachedPythonExecutable);
+			return;
+		}
+
+		exec('python -c "import sys; print(sys.executable)"', { env: getSystemEnvironment() }, (err, stdout, stderr) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			cachedPythonExecutable = stdout.trim();
+			resolve(cachedPythonExecutable);
+		});
+	});
+}
+
+function clearPythonExecutable() {
+	cachedPythonExecutable = null;
+}
+
+async function callPython(cmd) {
+	const pythonExecutable = await findPythonExecutable();
+
+	return new Promise((resolve, reject) => {
+		exec(`${pythonExecutable} ${cmd}`, (err, stdout, stderr) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve({ stdout: stdout.trim(), stderr: stderr.trim() });
+		});
+	});
+}
 
 const kbs = {
 	mainWindow: null,
 	editorWindowCreateHandler: null,
 	editorWindow: null,
+	wizardWindow: null,
+	initializeSystemTrayHandler: null,
 	openFileDialogIsOpen: false,
 	appVersion: null, // this is filed in in main.js from package.json
 	simulateProd: false,
 
-	kbsCli: function (cmd, print=true) {
+	clearPythonExecutable: function() {
+		clearPythonExecutable();
+	},
+
+	// Resolves and caches the absolute path to the kbs executable using Python's scripts directory
+	resolveKbsPath: function() {
 		return new Promise((resolve, reject) => {
-			if (print) {
-				console.log(`executing: kbs ${cmd}`);
+			if (cachedKbsPath && fs.existsSync(cachedKbsPath)) {
+				return resolve(cachedKbsPath);
 			}
 
-			exec(`kbs ${cmd}`, (err, stdout, stderr) => {
-				if (err) {
-					reject(err);
-					return;
-				}
+			// Determine Python scripts directory
+			callPython('-c "import sysconfig; print(sysconfig.get_path(\'scripts\'))"')
+				.catch(err => reject(new Error('Failed to locate Python scripts directory')))
+				.then(({stdout}) => {
+					const scriptsDir = String(stdout || '').trim();
+					if (!scriptsDir) {
+						return reject(new Error('Python scripts directory not found'));
+					}
 
-				resolve(stdout);
-			});
+					const candidates = [
+						path.join(scriptsDir, 'kbs.exe'), // Windows typical
+						path.join(scriptsDir, 'kbs.cmd'), // Windows cmd shim
+						path.join(scriptsDir, 'kbs') // Unix-like
+					];
+					const found = candidates.find(p => {
+						try { return fs.existsSync(p); } catch (_) { return false; }
+					});
+					if (!found) {
+						return reject(new Error(`Keyboard Sounds CLI not found`));
+					}
+					cachedKbsPath = found;
+					return resolve(cachedKbsPath);
+				});
+		});
+	},
+
+	getCachedKbsPath: function() {
+		return Promise.resolve(cachedKbsPath);
+	},
+
+	kbsCli: function (cmd, print=true) {
+		return new Promise((resolve, reject) => {
+			this.resolveKbsPath().then(kbsPath => {
+				if (print) {
+					console.log(`executing: "${kbsPath}" ${cmd}`);
+				}
+				exec(`"${kbsPath}" ${cmd}`, (err, stdout, stderr) => {
+					if (err) {
+						reject(err);
+						return;
+					}
+					resolve((stdout || '').toString());
+				});
+			}).catch(reject);
 		});
 	},
 
@@ -53,7 +165,24 @@ const kbs = {
 	},
 
 	getBackendVersion: function () {
-		return this.kbsCli('--version');
+		return new Promise((resolve, reject) => {
+			this.resolveKbsPath().then(kbsPath => {
+				exec(`"${kbsPath}" --version`, (err, stdout, stderr) => {
+					if (err) {
+						return reject(err);
+					}
+					resolve(String(stdout || '').trim());
+				});
+			}).catch(reject);
+		});
+	},
+
+	getMinimumBackendVersion: function() {
+		return Promise.resolve(MinimumPythonPackageVersion);
+	},
+
+	getMinimumPythonVersion: function() {
+		return Promise.resolve(MinimumPythonVersion);
 	},
 
 	openInBrowser: function () {
@@ -573,44 +702,76 @@ const kbs = {
 
 	checkPythonInstallation: function () {
 		return new Promise((resolve, reject) => {
-			exec('python --version', (err, stdout, stderr) => {
-				if (err) {
-					console.log(ErrPythonMissing, err);
+			callPython('--version')
+				.then(({stdout, stderr}) => {
+					const versionOutput = stderr || stdout;
+					if (!versionOutput.startsWith('Python')) {
+						reject(ErrPythonVersionUnknown);
+						return;
+					}
+
+					const versionMatch = versionOutput.match(/Python (.*)/);
+					if (!versionMatch) {
+						reject(ErrPythonVersionUnknown);
+						return;
+					}
+
+					const version = versionMatch[1];
+					if (!semver.satisfies(version, '>=' + MinimumPythonVersion)) {
+						reject(ErrPythonVersionMismatch);
+						return;
+					}
+
+					callPython('-m pip show keyboardsounds')
+						.then(({stdout, stderr}) => {
+							const version = stdout.match(/Version: (.*)/)[1];
+							if (!semver.satisfies(version, '<=' + MinimumPythonPackageVersion)) {
+								reject(ErrPythonPackageVersionMismatch);
+								return;
+							}
+
+							resolve();
+						})
+						.catch(err => reject(ErrPythonPackageMissing));
+				})
+				.catch(err => reject(ErrPythonMissing));
+		});
+	},
+
+	getPythonDetails: function () {
+		return new Promise((resolve, reject) => {
+			console.log('getPythonDetails: Starting Python check');
+			
+			// Get Python version
+			callPython('--version')
+				.then(({stdout, stderr}) => {
+					const versionOutput = stderr || stdout;
+					if (!versionOutput.startsWith('Python')) {
+						reject(ErrPythonVersionUnknown);
+						return;
+					}
+
+					const versionMatch = versionOutput.match(/Python (.*)/);
+					if (!versionMatch) {
+						reject(ErrPythonVersionUnknown);
+						return;
+					}
+
+					const version = versionMatch[1];
+
+					const isVersionOk = semver.satisfies(version, '>=' + MinimumPythonVersion);
+
+					const result = {
+						version: version,
+						path: cachedPythonExecutable,
+						isVersionOk: isVersionOk
+					};
+					resolve(result);
+				})
+				.catch(err => {
+					console.log('getPythonDetails: Python check failed', err);
 					reject(ErrPythonMissing);
-					return;
-				}
-
-				const output = stderr || stdout;
-
-				if (!output.startsWith('Python')) {
-					console.log(ErrPythonVersionUnknown, output);
-					reject(ErrPythonVersionUnknown);
-					return;
-				}
-
-				if (!semver.satisfies(MinimumPythonVersion, '<=' + output.match(/Python (.*)/)[1])) {
-					console.log(ErrPythonVersionMismatch, output);
-					reject(ErrPythonVersionMismatch);
-					return;
-				}
-
-				// Check for keyboardsounds package
-				exec('pip show keyboardsounds', (err, stdout, stderr) => {
-					if (err) {
-						console.log(ErrPythonPackageMissing, err);
-						reject(ErrPythonPackageMissing);
-						return;
-					}
-
-					if (!semver.satisfies(MinimumPythonPackageVersion, '<=' + stdout.match(/Version: (.*)/)[1])) {
-						console.log(ErrPythonPackageVersionMismatch, stdout);
-						reject(ErrPythonPackageVersionMismatch);
-						return;
-					}
-
-					resolve();
 				});
-			});
 		});
 	},
 
@@ -658,23 +819,84 @@ const kbs = {
 
 	installPythonPackage: function () {
 		return new Promise((resolve, reject) => {
-			exec('pip install --upgrade keyboardsounds', (err, stdout, stderr) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-
-				resolve();
-			});
+			callPython('-m pip install --upgrade keyboardsounds')
+				.catch(err => reject(err))
+				.then(() => resolve());
 		});
 	},
 
 	checkInstallation: function () {
 		return new Promise((resolve, reject) => {
-			this.getBackendVersion().then(_ => {
-				resolve();
-			}).catch((err) => {
+			this.resolveKbsPath().then(kbsPath => {
+				exec(`"${kbsPath}" --version`, (err, stdout, stderr) => {
+					if (err) {
+						return reject(new Error('Backend not installed correctly'));
+					}
+					const out = String(stdout || '').trim();
+					const match = out.match(/\d+\.\d+\.\d+/);
+					if (!match) {
+						return reject(new Error('Backend not installed correctly: invalid version output'));
+					}
+					const version = match[0];
+					if (!semver.gte(version, MinimumPythonPackageVersion)) {
+						return reject(new Error(ErrPythonPackageVersionMismatch));
+					}
+					return resolve();
+				});
+			}).catch(err => {
+				// Either Python scripts dir not found or kbs not in that location
 				reject(err);
+			});
+		});
+	},
+
+	getBackendDetails: function() {
+		return new Promise((resolve) => {
+			this.resolveKbsPath().then(kbsPath => {
+				exec(`"${kbsPath}" --version`, (err, stdout, stderr) => {
+					if (err) {
+						return resolve({
+							checking: false,
+							installed: false,
+							version: null,
+							isVersionOk: false,
+							error: 'Backend not installed correctly',
+							location: kbsPath,
+						});
+					}
+					const out = String(stdout || '').trim();
+					const match = out.match(/\d+\.\d+\.\d+/);
+					if (!match) {
+						return resolve({
+							checking: false,
+							installed: false,
+							version: null,
+							isVersionOk: false,
+							error: 'Backend not installed correctly: invalid version output',
+							location: kbsPath,
+						});
+					}
+					const version = match[0];
+					const ok = semver.gte(version, MinimumPythonPackageVersion);
+					return resolve({
+						checking: false,
+						installed: true,
+						version: version,
+						isVersionOk: ok,
+						error: ok ? null : ErrPythonPackageVersionMismatch,
+						location: kbsPath,
+					});
+				});
+			}).catch(err => {
+				// KBS not found in scripts dir
+				return resolve({
+					checking: false,
+					installed: false,
+					version: null,
+					isVersionOk: false,
+					error: err && err.message ? err.message : 'Keyboard Sounds CLI not found',
+					location: null,
+				});
 			});
 		});
 	},
@@ -683,8 +905,16 @@ const kbs = {
 		this.mainWindow = mainWindow;
 	},
 
+	setWizardWindow: function (wizardWindow) {
+		this.wizardWindow = wizardWindow;
+	},
+
 	setEditorWindowCreateHandler: function (handler) {
 		this.editorWindowCreateHandler = handler;
+	},
+
+	setInitializeSystemTrayHandler: function (handler) {
+		this.initializeSystemTrayHandler = handler;
 	},
 
 	showEditorWindow: function() {
@@ -703,6 +933,32 @@ const kbs = {
 		}
 		this.editorWindow.show();
 		this.editorWindow.focus();
+	},
+
+	launchMainApplication: async function() {
+		try {
+			// Initialize system tray if handler is available
+			if (this.initializeSystemTrayHandler) {
+				await this.initializeSystemTrayHandler();
+			}
+
+			// Remove all close event listeners from wizard window before closing it
+			// This prevents the process.exit(0) handler from firing during normal launch
+			if (this.wizardWindow && !this.wizardWindow.isDestroyed()) {
+				this.wizardWindow.removeAllListeners('closed');
+				this.wizardWindow.close();
+			}
+			
+			// Show the main window
+			if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+				this.mainWindow.show();
+				this.mainWindow.focus();
+			} else {
+				throw new Error('Main window not available');
+			}
+		} catch (error) {
+			throw error;
+		}
 	},
 
 	getState: function() {
@@ -940,7 +1196,7 @@ const kbs = {
 
 		// notify the editor window that the profile has been imported
 		return true;
-	},
+	}
 }
 
 /**

@@ -49,6 +49,7 @@ __pitch_shift_upper = 2
 __pitch_shift_profile = "both"
 __down = []
 __debug = False
+__sound_cache: dict[int, mixer.Sound] = {}  # Cache mixer.Sound objects by bytes id
 
 # Keep references to listeners so they can be started/stopped dynamically
 __kb_listener: Optional[Listener] = None
@@ -100,6 +101,7 @@ def on_command(command: dict) -> None:
     global __am, __mam
     global __kb_listener, __mouse_listener
     global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
+    global __sound_cache
 
     if "action" in command:
         action = command["action"]
@@ -132,6 +134,8 @@ def on_command(command: dict) -> None:
                             except Exception:
                                 pass
                             __kb_listener = None
+                        # Clear sound cache when profile changes
+                        __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -156,6 +160,8 @@ def on_command(command: dict) -> None:
                                     on_press=__on_press, on_release=__on_release
                                 )
                                 __kb_listener.start()
+                        # Clear sound cache when profile changes
+                        __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -184,6 +190,8 @@ def on_command(command: dict) -> None:
                             except Exception:
                                 pass
                             __mouse_listener = None
+                        # Clear sound cache when profile changes
+                        __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -208,6 +216,8 @@ def on_command(command: dict) -> None:
                                     on_click=__on_mouse_click
                                 )
                                 __mouse_listener.start()
+                        # Clear sound cache when profile changes
+                        __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -371,6 +381,7 @@ def __on_release(key):
 
 def __play_sound(sound, profile_type: str):
     global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
+    global __sound_cache
 
     if sound is not None:
         if __pitch_shift and (
@@ -379,7 +390,18 @@ def __play_sound(sound, profile_type: str):
             semitones = random.randint(__pitch_shift_lower, __pitch_shift_upper)
             clip = pitch_shift_from_bytes(sound, semitones)
         else:
-            clip = mixer.Sound(sound)
+            # Cache mixer.Sound objects to avoid recreating them on every keypress
+            sound.seek(0)
+            sound_bytes = sound.read()
+            sound.seek(0)
+            cache_key = id(sound_bytes)
+
+            if cache_key in __sound_cache:
+                clip = __sound_cache[cache_key]
+            else:
+                clip = mixer.Sound(sound)
+                __sound_cache[cache_key] = clip
+
         clip.set_volume(float(__volume) / float(100))
         clip.play()
 
@@ -501,6 +523,7 @@ def run(
         app_detector.start_listening(__on_focused_application_changed)
 
     mixer.init()
+    mixer.set_num_channels(32)
     __kb_listener = (
         Listener(on_press=__on_press, on_release=__on_release)
         if __am is not None

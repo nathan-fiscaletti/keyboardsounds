@@ -82,12 +82,12 @@ class AudioManager:
             release = self.profile.value("profile.release")
             if press is not None:
                 self.__extract("one-shot-press", input=cast(str, press))
-                pressBytes = self.sounds["one-shot-press"].getbuffer().tobytes()
+                pressBytes = self.sounds["one-shot-press"]
                 pressAudioData = io.BytesIO(pressBytes)
                 self.__one_shot_press_sound = pressAudioData
             if release is not None:
                 self.__extract("one-shot-release", input=cast(str, release))
-                releaseBytes = self.sounds["one-shot-release"].getbuffer().tobytes()
+                releaseBytes = self.sounds["one-shot-release"]
                 releaseAudioData = io.BytesIO(releaseBytes)
                 self.__one_shot_release_sound = releaseAudioData
 
@@ -108,18 +108,14 @@ class AudioManager:
                         release_path = self.profile.get_child(release_loc).get_path()
                         self.__extract(release_id, release_path)
 
-                    press_snd = self.sounds[press_id].getbuffer().tobytes()
+                    press_snd = self.sounds[press_id]
                     release_snd = (
-                        self.sounds[release_id].getbuffer().tobytes()
-                        if release_id in self.sounds
-                        else None
+                        self.sounds[release_id] if release_id in self.sounds else None
                     )
 
                     self.sounds[source_id] = {
-                        "press": io.BytesIO(press_snd),
-                        "release": (
-                            io.BytesIO(release_snd) if release_snd is not None else None
-                        ),
+                        "press": press_snd,
+                        "release": (release_snd if release_snd is not None else None),
                     }
                     del self.sounds[press_id]
                     if release_id in self.sounds:
@@ -151,18 +147,19 @@ class AudioManager:
             source = open(input, "rb")
             data = source.read()
             source.close()
-            self.sounds[id] = io.BytesIO(data)
+            self.sounds[id] = data
         else:
             source = wave.open(input, "rb")
             source.setpos(int(start * source.getframerate()))
             end = end or source.getnframes() / source.getframerate()
             frames = int((end - start) * source.getframerate())
-            self.sounds[id] = io.BytesIO()
-            dest = wave.open(self.sounds[id], "wb")
+            buffer = io.BytesIO()
+            dest = wave.open(buffer, "wb")
             dest.setparams(source.getparams())
             dest.writeframes(source.readframes(frames))
             source.close()
-            self.sounds[id].seek(0)
+            buffer.seek(0)
+            self.sounds[id] = buffer.getvalue()
 
     def get_sound(self, key, action: str = "press") -> Optional[io.BytesIO]:
         """
@@ -314,8 +311,8 @@ class AudioManager:
                     selected = sound.get("press")
                 else:
                     return None
-            return io.BytesIO(selected.getbuffer().tobytes())
+            return io.BytesIO(selected)
         # Single-clip source: treat as press-only. Do not play on release.
         if action == "release":
             return None
-        return io.BytesIO(sound.getbuffer().tobytes())
+        return io.BytesIO(sound)

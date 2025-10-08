@@ -11,15 +11,17 @@ def get_root():
             root = os.path.join(os.path.expanduser("~"), ".keyboardsounds")
 
         profiles_dir = os.path.join(root, "profiles")
-        if not os.path.exists(profiles_dir):
-            # Create the profiles directory
-            os.makedirs(profiles_dir, exist_ok=True)
-
-            # Copy existing profiles from application directory
-            application_dir = os.path.dirname(sys.executable)
-            application_profiles_dir = os.path.join(application_dir, "profiles")
-            if os.path.exists(application_profiles_dir):
-                shutil.copytree(application_profiles_dir, profiles_dir)
+        application_dir = os.path.dirname(sys.executable)
+        application_profiles_dir = os.path.join(application_dir, "profiles")
+        if os.path.exists(application_profiles_dir):
+            # Loop through each directory in application_profiles_dir
+            for pdir in os.listdir(application_profiles_dir):
+                if not os.path.exists(os.path.join(profiles_dir, pdir)):
+                    if os.path.isdir(os.path.join(application_profiles_dir, pdir)):
+                        shutil.copytree(
+                            os.path.join(application_profiles_dir, pdir),
+                            os.path.join(profiles_dir, pdir),
+                        )
 
         return root
     else:

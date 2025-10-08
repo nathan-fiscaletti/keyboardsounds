@@ -438,8 +438,15 @@ class DaemonManager:
                 mouse_profile=mouse_profile,
             )
         else:
+            # Use sys.executable instead of sys.argv[0] for PyInstaller compatibility
+            # When bundled with --onefile, sys.executable points to the actual .exe,
+            # preventing multiple temp directory extractions and cleanup warnings
+            executable = (
+                sys.executable if getattr(sys, "frozen", False) else sys.argv[0]
+            )
+            print(f"using executable: {executable}")
             args = [
-                sys.argv[0],
+                executable,
                 "start-daemon",
                 str(volume),
                 profile if profile is not None else "off",
@@ -450,6 +457,10 @@ class DaemonManager:
             ]
             subprocess.Popen(
                 args,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                close_fds=True,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
                 start_new_session=True,
             )

@@ -32,6 +32,22 @@ jobs:
     needs: build-and-deploy-python-package
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+    - name: Build portable distribution
+      run: pyinstaller --distpath ./kbs-dist kbs.spec
+    - name: Copy runtime to application
+      run: |
+        New-Item -ItemType Directory -Force -Path ./application/.runtime
+        Copy-Item -Path ./kbs-dist/kbs/* -Destination ./application/.runtime -Recurse -Force
+      shell: pwsh
     - name: Install Node.js
       uses: actions/setup-node@v1
       with:

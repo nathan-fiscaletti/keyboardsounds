@@ -3,17 +3,41 @@ import os
 import json
 import sys
 
+# import warnings
+
 from sys import platform
 
 LINUX = platform.lower().startswith("linux")
 WIN32 = platform.lower().startswith("win")
+
+# # Suppress PyInstaller temp directory cleanup warnings (cosmetic only, doesn't affect functionality)
+# if getattr(sys, "frozen", False):
+#     warnings.filterwarnings("ignore")
+#     # Redirect stderr to suppress PyInstaller cleanup warnings
+#     import io
+
+#     class SuppressPyInstallerWarnings:
+#         def __init__(self, stream):
+#             self.stream = stream
+
+#         def write(self, data):
+#             # Suppress specific PyInstaller temp directory warnings
+#             if "Failed to remove temporary directory" not in data and "[PYI-" in data:
+#                 self.stream.write(data)
+#             elif "[PYI-" not in data:
+#                 self.stream.write(data)
+
+#         def flush(self):
+#             self.stream.flush()
+
+#     sys.stderr = SuppressPyInstallerWarnings(sys.stderr)
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 
 from importlib.metadata import version
 
-from keyboardsounds.root import ROOT
+from keyboardsounds.root import get_root
 
 from keyboardsounds.daemon_manager import DaemonManager
 
@@ -35,7 +59,7 @@ def main():
                 + "as root on Linux systems."
             )
 
-    LOCK_FILE = f"{ROOT}/.lock"
+    LOCK_FILE = f"{get_root()}/.lock"
 
     # Work around to get pygame to load mp3 files on windows
     # see https://github.com/pygame/pygame/issues/2647

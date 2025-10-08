@@ -5,9 +5,12 @@ from enum import Enum
 
 from typing import List, Optional
 
-from keyboardsounds.root import ROOT
+from keyboardsounds.root import get_root
+import os
 
-RULES_PATH = f"{ROOT}/rules.json"
+
+def get_rules_path():
+    return os.path.join(get_root(), "rules.json")
 
 
 class Action(Enum):
@@ -143,7 +146,7 @@ class Rules:
         - PermissionError: If there are insufficient permissions.
         - FileNotFoundError: If the rules file does not exist.
         """
-        with open(RULES_PATH, "w") as f:
+        with open(get_rules_path(), "w") as f:
             json.dump(
                 {
                     "global_action": self.global_action.value,
@@ -171,7 +174,7 @@ def get_rules() -> Rules:
     """
     __safe_create_rules()
 
-    with open(RULES_PATH, "r") as f:
+    with open(get_rules_path(), "r") as f:
         data = json.load(f)
         return Rules(
             global_action=GlobalAction(data["global_action"]),
@@ -185,8 +188,8 @@ def __safe_create_rules() -> None:
 
     Used internally to avoid errors when file is absent.
     """
-    if not os.path.exists(RULES_PATH):
-        with open(RULES_PATH, "w") as f:
+    if not os.path.exists(get_rules_path()):
+        with open(get_rules_path(), "w") as f:
             json.dump(
                 {
                     "global_action": GlobalAction.ENABLE.value,

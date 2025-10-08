@@ -6,14 +6,7 @@ const a = require('electron-squirrel-startup');
 if (a) process.exit(0);
 
 import { 
-  kbs,
-  ErrPythonVersionUnknown,
-  ErrPythonMissing,
-  ErrPythonVersionMismatch,
-  ErrPythonPackageMissing,
-  ErrPythonPackageVersionMismatch,
-  MinimumPythonVersion,
-  MinimumPythonPackageVersion
+  kbs
 } from './api/core';
 
 import APP_ICO from './app_icon.png';
@@ -24,7 +17,6 @@ const AppIcon = path.join(__dirname, APP_ICO);
 // Initialize variables to hold the tray and window objects.
 let tray = null;
 let mainWindow = null;
-let wizardWindow = null;
 let justShownWindow = false;
 
 // When enabled, even if NODE_ENV=development, the application will still
@@ -204,34 +196,6 @@ const createEditorWindow = () => {
   return editorWindow;
 };
 
-const createWizardWindow = () => {
-  // Create the browser window.
-  const wizardWindow = new BrowserWindow({
-    width: 700,
-    height: 800,
-    title: "Keyboard Sounds - Setup Wizard",
-    backgroundColor: '#121212',
-    icon: path.join(__dirname, 'app_icon.png'),
-    frame: true,
-    resizable: true,
-    minimizable: false,
-    maximizable: false,
-    movable: true,
-    closable: true,
-    webPreferences: {
-      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-    },
-  });
-
-  if (process.env.NODE_ENV !== 'development' || simulateProd) {
-    wizardWindow.setMenuBarVisibility(false);
-  }
-
-  wizardWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY + "?wizard=true");
-
-  return wizardWindow;
-};
-
 // Initialize the system tray and launch the main application
 const initializeSystemTrayAndApp = async () => {
   // Create a system tray icon and context menu for the application.
@@ -279,24 +243,6 @@ const initializeSystemTrayAndApp = async () => {
   }
 };
 
-// Perform Python and backend checks
-const performBackendChecks = async () => {
-  try {
-    // Check Python installation
-    const pythonDetails = await kbs.getPythonDetails();
-    if (!pythonDetails.isVersionOk) {
-      return false;
-    }
-
-    // Check backend installation
-    await kbs.checkInstallation();
-    return true;
-  } catch (error) {
-    console.log('Backend checks failed:', error);
-    return false;
-  }
-};
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -317,48 +263,29 @@ app.whenReady().then(async () => {
       toggleWindow();
     }
   });
-
-  // Perform backend checks FIRST before creating any windows
-  const checksPass = await performBackendChecks();
-
-  if (checksPass) {
-    // Checks passed - create main window, set it up, and launch main application
-    console.log('Backend checks passed - launching main application');
     
-    // Create the main window but don't show it yet
-    toggleWindow();
-    
-    // Wait for the main window to be ready before proceeding
-    await new Promise((resolve) => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.webContents.isLoading()) {
-          mainWindow.webContents.once('did-finish-load', () => {
-            mainWindow.hide();
-            resolve();
-          });
-        } else {
+  // Create the main window but don't show it yet
+  toggleWindow();
+  
+  // Wait for the main window to be ready before proceeding
+  await new Promise((resolve) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.webContents.isLoading()) {
+        mainWindow.webContents.once('did-finish-load', () => {
           mainWindow.hide();
           resolve();
-        }
+        });
       } else {
+        mainWindow.hide();
         resolve();
       }
-    });
-    
-    // Initialize system tray
-    await initializeSystemTrayAndApp();
-  } else {
-    // Checks failed - show wizard window ONLY (don't create main window)
-    console.log('Backend checks failed - showing wizard');
-    wizardWindow = createWizardWindow();
-    kbs.setWizardWindow(wizardWindow);
-    
-    // If wizard is closed without completing setup, exit the application
-    wizardWindow.on('closed', () => {
-      console.log('Wizard window closed - exiting application');
-      process.exit(0);
-    });
-  }
+    } else {
+      resolve();
+    }
+  });
+  
+  // Initialize system tray
+  await initializeSystemTrayAndApp();
 
   // Set up a handler that can be called when wizard completes
   kbs.setInitializeSystemTrayHandler(async () => {

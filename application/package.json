@@ -15,6 +15,12 @@
       ".webpack/**/**/*",
       "node_modules/**/**/*"
     ],
+    "extraResources": [
+      {
+        "from": ".runtime",
+        "to": ".runtime"
+      }
+    ],
     "directories": {
       "buildResources": "src/ui"
     },

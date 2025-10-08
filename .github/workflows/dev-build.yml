@@ -70,7 +70,7 @@ jobs:
         "
       shell: pwsh
     - name: Build portable distribution
-      run: pyinstaller --distpath ./kbs-dist --version-file app-version.txt kbs.spec
+      run: pyinstaller --distpath ./kbs-dist kbs.spec
     - name: Copy runtime to application
       run: |
         New-Item -ItemType Directory -Force -Path ./application/.runtime

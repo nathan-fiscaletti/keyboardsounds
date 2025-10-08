@@ -76,6 +76,10 @@ jobs:
         New-Item -ItemType Directory -Force -Path ./application/.runtime
         Copy-Item -Path ./kbs-dist/kbs/* -Destination ./application/.runtime -Recurse -Force
       shell: pwsh
+    - name: Copy profiles to application
+      run: |
+        Copy-Item -Path ./keyboardsounds/profiles -Destination ./application/.runtime/profiles -Recurse
+      shell: pwsh
     - name: Install Node.js
       uses: actions/setup-node@v1
       with:

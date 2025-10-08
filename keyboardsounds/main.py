@@ -10,32 +10,11 @@ from sys import platform
 LINUX = platform.lower().startswith("linux")
 WIN32 = platform.lower().startswith("win")
 
-# # Suppress PyInstaller temp directory cleanup warnings (cosmetic only, doesn't affect functionality)
-# if getattr(sys, "frozen", False):
-#     warnings.filterwarnings("ignore")
-#     # Redirect stderr to suppress PyInstaller cleanup warnings
-#     import io
-
-#     class SuppressPyInstallerWarnings:
-#         def __init__(self, stream):
-#             self.stream = stream
-
-#         def write(self, data):
-#             # Suppress specific PyInstaller temp directory warnings
-#             if "Failed to remove temporary directory" not in data and "[PYI-" in data:
-#                 self.stream.write(data)
-#             elif "[PYI-" not in data:
-#                 self.stream.write(data)
-
-#         def flush(self):
-#             self.stream.flush()
-
-#     sys.stderr = SuppressPyInstallerWarnings(sys.stderr)
-
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 
-from importlib.metadata import version
+if not getattr(sys, "frozen", False):
+    from importlib.metadata import version
 
 from keyboardsounds.root import get_root
 
@@ -74,7 +53,58 @@ def main():
     if dm.capture_daemon_initialization():
         return
 
-    version_number = version("keyboardsounds")
+    if getattr(sys, "frozen", False):
+        # Read version from pyinstaller based on the information provided
+        # at build time using app-version.txt
+        try:
+            if WIN32:
+                # Read version from Windows executable version resource
+                import ctypes
+
+                def get_file_version(filename):
+                    """Get the version string from a Windows executable."""
+                    # Get version info size
+                    size = ctypes.windll.version.GetFileVersionInfoSizeW(filename, None)
+                    if size == 0:
+                        return None
+
+                    # Allocate buffer and get version info
+                    buffer = ctypes.create_string_buffer(size)
+                    if (
+                        ctypes.windll.version.GetFileVersionInfoW(
+                            filename, 0, size, buffer
+                        )
+                        == 0
+                    ):
+                        return None
+
+                    # Get the product version
+                    value = ctypes.c_void_p(0)
+                    value_size = ctypes.c_uint(0)
+                    if (
+                        ctypes.windll.version.VerQueryValueW(
+                            buffer,
+                            "\\StringFileInfo\\040904B0\\ProductVersion",
+                            ctypes.byref(value),
+                            ctypes.byref(value_size),
+                        )
+                        == 0
+                    ):
+                        return None
+
+                    # Extract version string
+                    return ctypes.wstring_at(value.value)
+
+                version_number = get_file_version(sys.executable)
+                if not version_number:
+                    version_number = "unknown"
+            else:
+                # For non-Windows frozen builds, use a default
+                version_number = "unknown"
+        except Exception:
+            version_number = "unknown"
+    else:
+        version_number = version("keyboardsounds")
 
     win_messages = ""
     if WIN32:

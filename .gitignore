@@ -2,3 +2,4 @@ __pycache__
 dist
 keyboardsounds.egg-info
 build
+app-version.txt

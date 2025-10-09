@@ -44,7 +44,7 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
-![Custom Profiles](./images/editor-all.png)
+<img src="./images/editor-all.png" height="300" />
 
 ### Application Rules
 

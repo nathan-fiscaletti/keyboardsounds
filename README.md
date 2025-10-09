@@ -205,7 +205,7 @@ Keyboard Sounds supports randomized pitch shifting in which you can change the p
 
 When enabled, each time a key is pressed or a mouse click is made, the pitch of the sound effect will be randomized between the lower and upper bound.
 
-<br><br>
+<br><br><br><br>
 
 ## Using Keyboard Sounds with OBS
 

@@ -28,7 +28,7 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 <br>
 
-<a href="https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest"><img src="./images/downloadbutton.png" height="40" alt="Download" /></a>
+<a href="https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest"><img src="./images/download-button.png" height="40" alt="Download" /></a>
 
 <br><br>
 

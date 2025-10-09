@@ -86,6 +86,8 @@ To enable this window you have several options:
 > [!NOTE]\
 > On linux, you will need to run `sudo apt install python3-tk` in order to use the `-w` flag with `kbs start`.
 
+<br><br>
+
 ## Command Line (macOS, Linux or Windows)
 
 1. **Install Python**
@@ -106,6 +108,8 @@ To enable this window you have several options:
 3. **Using the CLI**
    
    To use the Keyboard Sounds CLI, run `kbs --help` from your command line terminal.
+
+<br><br>
 
 ## Uninstalling
 

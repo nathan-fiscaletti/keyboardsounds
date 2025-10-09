@@ -18,7 +18,6 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 ### Getting Started
 
-- [Download](#download)
 - [Create Custom Profiles](#custom-profiles)
 - [Application Rules](#application-rules)
 - [Randomized Pitch Shift](#randomized-pitch-shift)

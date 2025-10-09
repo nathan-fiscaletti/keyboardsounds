@@ -26,11 +26,16 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 - [Uninstall Keyboard Sounds](#uninstalling)
 - [Developer Documentation](#development)
 
-## Download Desktop Application
+<br>
 
-> Currently the desktop application is only available for **Windows**. The [command line application](#command-line-macos-linux-or-windows) can be used on any platform that supports Python.
+<a href="https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest">
+    <img src="./images/downloadbutton.png" height="32" alt="Download" />
+</a>
 
-[⬇️ Download Desktop Application](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
+<br><br>
+
+> [!NOTE]\
+> The desktop application is only available for **Windows**. The [command line application](#command-line-macos-linux-or-windows) can be used on any platform that supports Python.
 
 ## Features
 

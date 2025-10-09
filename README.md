@@ -46,6 +46,8 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 ![Custom Profiles](./images/editor-with-status.png)
 
+<br>
+
 ### Application Rules
 
 <img align="right" src="./images/app-rules.png" height="350" />

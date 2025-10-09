@@ -1,3 +1,5 @@
+https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
+
 # Keyboard Sounds
 
 [![Discord](https://img.shields.io/badge/-Join%20the%20Community-gray?logo=discord&logoColor=%23ffffff&labelColor=%235865f2)](https://discord.gg/gysskqts6z)

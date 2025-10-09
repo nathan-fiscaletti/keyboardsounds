@@ -29,7 +29,6 @@ jobs:
 
   build-desktop-app:
     runs-on: windows-latest
-    needs: build-and-deploy-python-package
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python

@@ -12,9 +12,9 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 <img align="right" src="./images/status-new.png" width="300" />
 
-### Getting Started
-
 <a href="https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest"><img src="./images/download-button.png" height="32" alt="Download" /></a>
+
+### Getting Started
 
 - [Download](#download)
 - [Create Custom Profiles](#custom-profiles)

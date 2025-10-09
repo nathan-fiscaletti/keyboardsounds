@@ -60,7 +60,7 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 - _Application rules are currently only available for the Windows platform._
 
-<br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br>
 
 ### Randomized Pitch Shift
 

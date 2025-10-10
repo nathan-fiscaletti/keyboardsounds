@@ -17,6 +17,7 @@ setup(
         "requests==2.32.3",
         "pydub==0.25.1",
         "audioop-lts==0.2.2; python_version>='3.13'",
+        "pyinstaller==6.16.0",
     ],
     package_data={
         "keyboardsounds": [

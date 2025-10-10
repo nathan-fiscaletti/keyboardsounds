@@ -67,6 +67,10 @@ It is recommended that you install the package in editable mode to allow you to 
 To run the desktop application in development mode, run the following:
 
 ```bash
+# Build the runtime (used by the desktop application)
+powershell .\build-runtime.ps1
+
+# Run the desktop application
 cd application
 npm run start
 ```

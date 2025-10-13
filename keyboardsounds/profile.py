@@ -5,7 +5,8 @@ import shutil
 import tempfile
 import requests
 
-from keyboardsounds.root import ROOT
+from keyboardsounds.root import get_root
+
 from keyboardsounds.path_resolver import PathResolver
 from keyboardsounds.profile_validation import validate_profile
 from keyboardsounds.profile_builder import CliProfileBuilder
@@ -32,7 +33,7 @@ class Profile(PathResolver):
         one_shot_press_sound: str | None = None,
         one_shot_release_sound: str | None = None,
     ):
-        super().__init__(os.path.join(ROOT, "profiles", name))
+        super().__init__(os.path.join(get_root(), "profiles", name))
 
         self.name = name
         self.__one_shot = one_shot
@@ -110,7 +111,9 @@ class Profile(PathResolver):
     @classmethod
     def list(cls):
         names = [
-            f.name for f in os.scandir(os.path.join(ROOT, "profiles")) if f.is_dir()
+            f.name
+            for f in os.scandir(os.path.join(get_root(), "profiles"))
+            if f.is_dir()
         ]
         return [
             Profile(
@@ -124,7 +127,7 @@ class Profile(PathResolver):
 
     @classmethod
     def remove_profile(cls, name: str):
-        output_path = os.path.join(ROOT, "profiles", name)
+        output_path = os.path.join(get_root(), "profiles", name)
         if os.path.isdir(output_path):
             shutil.rmtree(output_path)
             print("Profile removed.")
@@ -216,7 +219,7 @@ class Profile(PathResolver):
         name = profile_data["profile"]["name"]
 
         print(f"Importing profile from '{input_path}'...")
-        output_path = os.path.join(ROOT, "profiles", name)
+        output_path = os.path.join(get_root(), "profiles", name)
 
         # if the profile already exists, delete it
         if os.path.isdir(output_path):
@@ -258,7 +261,7 @@ class Profile(PathResolver):
         profile_file = os.path.join(path, "profile.yaml")
         with open(profile_file, "w") as f:
             with open(
-                os.path.join(ROOT, "profiles", "profile.template.yaml"), "r"
+                os.path.join(get_root(), "profiles", "profile.template.yaml"), "r"
             ) as template_file:
                 template = template_file.read()
                 template = template.replace("{{ name }}", name)

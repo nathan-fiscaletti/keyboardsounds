@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="keyboardsounds",
-    version="6.1.1",
+    version="6.2.0",
     description="Adds the ability to play sounds while typing on any system.",
     author="Nathan Fiscaletti",
     author_email="nate.fiscaletti@gmail.com",
@@ -17,6 +17,7 @@ setup(
         "requests==2.32.3",
         "pydub==0.25.1",
         "audioop-lts==0.2.2; python_version>='3.13'",
+        "pyinstaller==6.16.0",
     ],
     package_data={
         "keyboardsounds": [

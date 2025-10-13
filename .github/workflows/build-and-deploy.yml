@@ -29,9 +29,74 @@ jobs:
 
   build-desktop-app:
     runs-on: windows-latest
-    needs: build-and-deploy-python-package
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+    - name: Generate version file
+      run: |
+        python -c "
+        import tomllib
+        
+        # Read version from pyproject.toml
+        with open('pyproject.toml', 'rb') as f:
+            pyproject = tomllib.load(f)
+        
+        version = pyproject['project']['version']
+        parts = version.split('.')
+        major, minor, patch = parts[0], parts[1], parts[2] if len(parts) > 2 else '0'
+        
+        print(f'Using version: {version}')
+        
+        version_file = f'''
+        VSVersionInfo(
+          ffi=FixedFileInfo(
+            filevers=({major}, {minor}, {patch}, 0),
+            prodvers=({major}, {minor}, {patch}, 0),
+            mask=0x3f,
+            flags=0x0,
+            OS=0x40004,
+            fileType=0x1,
+            subtype=0x0,
+            date=(0, 0)
+          ),
+          kids=[
+            StringFileInfo(
+              [
+              StringTable(
+                '040904B0',
+                [StringStruct('CompanyName', 'Nathan Fiscaletti'),
+                StringStruct('FileDescription', 'Keyboard Sounds'),
+                StringStruct('FileVersion', '{version}'),
+                StringStruct('InternalName', 'kbs'),
+                StringStruct('LegalCopyright', 'Copyright (c) 2025 Nathan Fiscaletti'),
+                StringStruct('OriginalFilename', 'kbs.exe'),
+                StringStruct('ProductName', 'Keyboard Sounds'),
+                StringStruct('ProductVersion', '{version}')])
+              ]),
+            VarFileInfo([VarStruct('Translation', [1033, 1200])])
+          ]
+        )
+        '''
+        with open('app-version.txt', 'w') as f:
+            f.write(version_file)
+        print('Generated app-version.txt')
+        "
+      shell: pwsh
+    - name: Build portable distribution
+      run: pyinstaller --distpath ./kbs-dist kbs.spec
+    - name: Copy runtime to application
+      run: |
+        New-Item -ItemType Directory -Force -Path ./application/.runtime
+        Copy-Item -Path ./kbs-dist/kbs/* -Destination ./application/.runtime -Recurse -Force
+      shell: pwsh
     - name: Install Node.js
       uses: actions/setup-node@v1
       with:

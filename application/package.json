@@ -1,7 +1,7 @@
 {
   "name": "kbs-electron",
   "productName": "Keyboard Sounds",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "https://keyboardsounds.net/",
   "main": ".webpack/main",
   "repository": {
@@ -14,6 +14,12 @@
     "files": [
       ".webpack/**/**/*",
       "node_modules/**/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": ".runtime",
+        "to": ".runtime"
+      }
     ],
     "directories": {
       "buildResources": "src/ui"

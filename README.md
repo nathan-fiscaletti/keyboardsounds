@@ -10,9 +10,14 @@ https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
 
 Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.
 
+<img align="right" src="./images/status-new.png" width="300" />
+
+<br>
+
+<a href="https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest"><img src="./images/download-button.png" height="32" alt="Download" /></a>
+
 ### Getting Started
 
-- [Install Keyboard Sounds](#installation)
 - [Create Custom Profiles](#custom-profiles)
 - [Application Rules](#application-rules)
 - [Randomized Pitch Shift](#randomized-pitch-shift)
@@ -24,43 +29,28 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 - [Uninstall Keyboard Sounds](#uninstalling)
 - [Developer Documentation](#development)
 
-## Installation
+<br><br>
 
-Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
-
-### Desktop Application (Windows only)
-
-[⬇️ Download](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
-
-<img align="right" src="./images/status-new.png" width="250" />
-
-Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
-
-The desktop application still requires the [command line](#command-line-macos-linux-or-windows) to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
-
-> [!IMPORTANT]\
-> **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
-> This will allow you to run Python from the command line, which is a requirement for the application to function correctly.
-
-You may need to restart the application after doing this for the changes to take effect.
-
-> For information on uninstalling Keyboard Sounds, see [Uninstall Keyboard Sounds](#uninstalling)
+> [!NOTE]\
+> The desktop application is only available for **Windows**. The [command line application](#command-line-macos-linux-or-windows) can be used on any platform that supports Python.
 
 ## Features
 
 ### Custom Profiles
 
 - Support for both **Mouse** and **Keyboard** audio profiles
-- Comes bundled with sixteen built in profiles (15 keyboard, 1 mouse)
+- Comes bundled with sixteen built in profiles (16 keyboard, 1 mouse)
 - Supports Custom profiles through the editors (`.wav` and `.mp3` supported)
 
 Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
-![Custom Profiles](./images/editor-with-profiles.png)
+![Custom Profiles](./images/editor-with-status.png)
+
+<br>
 
 ### Application Rules
 
-<img align="right" src="./images/app-rules.png" height="350" />
+<img align="right" src="./images/app-rules.png" height="500" />
 
 - Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon based on the currently focused application.
 
@@ -70,7 +60,7 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 
 - _Application rules are currently only available for the Windows platform._
 
-<br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br>
 
 ### Randomized Pitch Shift
 
@@ -80,8 +70,9 @@ Keyboard Sounds supports randomized pitch shifting in which you can change the p
 
 When enabled, each time a key is pressed or a mouse click is made, the pitch of the sound effect will be randomized between the lower and upper bound.
 
+<br><br><br><br>
 
-### Using Keyboard Sounds with OBS
+## Using Keyboard Sounds with OBS
 
 ![Daemon Window](./images/daemon-window.png)
 
@@ -95,6 +86,8 @@ To enable this window you have several options:
 
 > [!NOTE]\
 > On linux, you will need to run `sudo apt install python3-tk` in order to use the `-w` flag with `kbs start`.
+
+<br><br>
 
 ## Command Line (macOS, Linux or Windows)
 
@@ -117,6 +110,8 @@ To enable this window you have several options:
    
    To use the Keyboard Sounds CLI, run `kbs --help` from your command line terminal.
 
+<br><br>
+
 ## Uninstalling
 
 You can uninstall the Keyboard Sounds Desktop Application from the "Apps" section of your system Settings application. 
@@ -135,3 +130,4 @@ Documentation for developers who wish to contribute to this project can be found
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/nathan-fiscaletti/keyboardsounds.svg?variant=adaptive)](https://starchart.cc/nathan-fiscaletti/keyboardsounds)
+)

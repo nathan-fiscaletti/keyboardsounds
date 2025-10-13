@@ -11,9 +11,9 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 ### Getting Started
 
-- [Install Keyboard Sounds](#installation)
 - [Create Custom Profiles](#custom-profiles)
 - [Application Rules](#application-rules)
+- [Randomized Pitch Shift](#randomized-pitch-shift)
 - [Using Keyboard Sounds with OBS](#using-keyboard-sounds-with-obs)
 - [Command Line Usage](#command-line-macos-linux-or-windows)
 
@@ -21,27 +21,6 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 - [Uninstall Keyboard Sounds](#uninstalling)
 - [Developer Documentation](#development)
-
-## Installation
-
-Keyboard Sounds can be installed as a desktop application or as a Python package. The desktop application is recommended for most users as it is easier to install and use.
-
-### Desktop Application (Windows only)
-
-[⬇️ Download](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
-
-<img align="right" src="./images/status-new.png" width="250" />
-
-Currently the desktop application is only available for **Windows**. The Python package can be used on any platform that supports Python.
-
-The desktop application still requires the [command line](#command-line-macos-linux-or-windows) to be installed on your system. On first launch, the application will check that both Python and the required Python packages are installed.
-
-  - **Make sure when you install Python that you check the box that says "Add Python to PATH"**.
-    > This will allow you to run Python from the command line, which is a requirement for the desktop application to function correctly.
-
-You may need to restart the application after doing this for the changes to take effect.
-
-> For information on uninstalling Keyboard Sounds, see [Uninstall Keyboard Sounds](#uninstalling)
 
 ## Features
 
@@ -68,6 +47,16 @@ Read more about creating and editing profiles [here](./docs/custom-profiles.md).
 - _Application rules are currently only available for the Windows platform._
 
 <br><br><br><br>
+
+### Randomized Pitch Shift
+
+<img align="right" src="./images/pitch-shift.png" width="350" />
+
+Keyboard Sounds supports randomized pitch shifting in which you can change the pitch of the sound effects to a random value between a lower and upper bound.
+
+When enabled, each time a key is pressed or a mouse click is made, the pitch of the sound effect will be randomized between the lower and upper bound.
+
+<br><br><br><br><br>
 
 ### Using Keyboard Sounds with OBS
 

@@ -152,6 +152,7 @@ function App() {
   const [runOnStartUp, setRunOnStartup] = useState(true);
   const [enableDaemonWindow, setEnableDaemonWindow] = useState(true);
   const [runSoundDaemonOnStartup, setRunSoundDaemonOnStartup] = useState(true);
+  const [isLinux, setIsLinux] = useState(false);
 
   // Get the version from the backend
   useEffect(() => {
@@ -165,6 +166,13 @@ function App() {
     const run = async () => {
       const version = await execute("getBackendVersion");
       setBackEndVersion(version);
+    };
+    run();
+  }, []);
+  useEffect(() => {
+    const run = async () => {
+      const isLinux = await execute("isLinux");
+      setIsLinux(isLinux === `${true}`);
     };
     run();
   }, []);
@@ -497,9 +505,9 @@ function App() {
   useEffect(() => {
     if (selectedTab === 0) {        // Audio
       execute(`setHeight 790`);
-    } else if (selectedTab === 3) { // Settings
-      execute(`setHeight 932`);
-    } else if (selectedTab === 4) { // Community
+    } else if (selectedTab === (isLinux ? 2 : 3)) { // Settings
+      execute(`setHeight ${isLinux ? 852 : 932}`);
+    } else if (selectedTab === (isLinux ? 3 : 4)) { // Community
       execute(`setHeight 796`);
     } else {                        // All Other Pages
       execute(`setHeight 800`);
@@ -604,7 +612,7 @@ function App() {
           >
             <Tooltip title="Audio" arrow><Tab icon={<GraphicEqIcon />} /></Tooltip>
             <Tooltip title="Profiles" arrow><Tab icon={<LibraryMusicIcon />} /></Tooltip>
-            <Tooltip title="Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>
+            {!isLinux && (<Tooltip title="Rules" arrow><Tab icon={<GavelIcon />} /></Tooltip>)}
             <Tooltip title="Settings" arrow><Tab icon={<SettingsIcon />} /></Tooltip>
             <Tooltip title="Community" arrow><Tab icon={<ForumIcon />} /></Tooltip>
           </Tabs>
@@ -644,7 +652,7 @@ function App() {
               />
             )}
 
-            {selectedTab === 2 && (
+            {selectedTab === 2 && !isLinux && (
               <AppRules
                 appRules={appRules}
                 appRulesLoaded={appRulesLoaded}
@@ -654,7 +662,7 @@ function App() {
               />
             )}
 
-            {selectedTab === 3 && (
+            {selectedTab === (isLinux ? 2 : 3) && (
               <Settings
                 appVersion={appVersion}
                 backEndVersion={backEndVersion}
@@ -673,7 +681,7 @@ function App() {
               />
             )}
 
-            {selectedTab === 4 && (
+            {selectedTab === (isLinux ? 3 : 4) && (
               <About />
             )}
           </Box>

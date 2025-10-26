@@ -68,7 +68,11 @@ To run the desktop application in development mode, run the following:
 
 ```bash
 # Build the runtime (used by the desktop application)
+
+# (Windows)
 powershell .\build-runtime.ps1
+# (Linux)
+./build-runtime.sh
 
 # Run the desktop application
 cd application

@@ -20,6 +20,9 @@ try:
 except Exception:
     fcntl = None  # type: ignore
 
+# if sys.platform != 'win32':
+#     import signal
+
 import keyboardsounds.daemon as daemon
 from keyboardsounds.profile import Profile
 from keyboardsounds.external_api import ExternalAPI
@@ -438,33 +441,70 @@ class DaemonManager:
                 mouse_profile=mouse_profile,
             )
         else:
-            # Use sys.executable instead of sys.argv[0] for PyInstaller compatibility
-            # When bundled with --onefile, sys.executable points to the actual .exe,
-            # preventing multiple temp directory extractions and cleanup warnings
-            executable = (
-                sys.executable if getattr(sys, "frozen", False) else sys.argv[0]
-            )
-            print(f"using executable: {executable}")
-            args = [
-                executable,
-                "start-daemon",
-                str(volume),
-                profile if profile is not None else "off",
-                str(window),
-                semitones if semitones is not None else "off",
-                pitch_shift_profile if pitch_shift_profile is not None else "both",
-                mouse_profile if mouse_profile is not None else "off",
-            ]
-            subprocess.Popen(
-                args,
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                close_fds=True,
-                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-                start_new_session=True,
-            )
-            time.sleep(1.0)
+            if sys.platform != 'win32':
+                pid = os.fork()
+                if pid > 0:
+                    return True
+                else:
+                    try:
+                        os.setsid()
+                    except OSError as e:
+                        print(f"Child {os.getpid()}: setsid failed: {e}", file=sys.stderr)
+
+                    sys.stdout.flush()
+                    sys.stderr.flush()
+                    si = open(os.devnull, 'r')
+                    so = open(os.devnull, 'a+')
+                    se = open(os.devnull, 'a+')
+
+                    os.dup2(si.fileno(), sys.stdin.fileno())
+                    os.dup2(so.fileno(), sys.stdout.fileno())
+                    os.dup2(se.fileno(), sys.stderr.fileno())
+
+                    # Close the original file descriptors
+                    si.close()
+                    so.close()
+                    se.close()
+
+                    # signal.signal(signal.SIGHUP, signal.SIG_IGN)
+
+                    self.run_daemon(
+                        volume,
+                        profile,
+                        debug=False,
+                        window=window,
+                        semitones=semitones,
+                        pitch_shift_profile=pitch_shift_profile,
+                        mouse_profile=mouse_profile,
+                    )
+            else:
+                # Use sys.executable instead of sys.argv[0] for PyInstaller compatibility
+                # When bundled with --onefile, sys.executable points to the actual .exe,
+                # preventing multiple temp directory extractions and cleanup warnings
+                executable = (
+                    sys.executable if getattr(sys, "frozen", False) else sys.argv[0]
+                )
+                print(f"using executable: {executable}")
+                args = [
+                    executable,
+                    "start-daemon",
+                    str(volume),
+                    profile if profile is not None else "off",
+                    str(window),
+                    semitones if semitones is not None else "off",
+                    pitch_shift_profile if pitch_shift_profile is not None else "both",
+                    mouse_profile if mouse_profile is not None else "off",
+                ]
+                subprocess.Popen(
+                    args,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    close_fds=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                    start_new_session=True,
+                )
+                time.sleep(1.0)
         return True
 
     def __acquire_process_lock(self) -> bool:

@@ -14,7 +14,8 @@ os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 
 if not getattr(sys, "frozen", False):
-    from importlib.metadata import version
+    if not LINUX:
+        from importlib.metadata import version
 
 from keyboardsounds.root import get_root
 
@@ -31,13 +32,6 @@ if WIN32:
 
 
 def main():
-    if LINUX:
-        if os.geteuid() != 0:
-            print(
-                "warning: it is recommended that you run this program "
-                + "as root on Linux systems."
-            )
-
     LOCK_FILE = f"{get_root()}/.lock"
 
     # Work around to get pygame to load mp3 files on windows
@@ -100,7 +94,8 @@ def main():
                     version_number = "unknown"
             else:
                 # For non-Windows frozen builds, use a default
-                version_number = "unknown"
+                from keyboardsounds.version import get_version
+                version_number = get_version()
         except Exception:
             version_number = "unknown"
     else:

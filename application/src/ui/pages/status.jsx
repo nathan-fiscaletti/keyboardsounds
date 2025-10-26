@@ -33,7 +33,6 @@ const Status = ({
     onPitchProfileChanged,
 }) => {
   const tips = React.useMemo(() => [
-    'Use Application Rules to enable or disable sounds based on the focused app.',
     'Create your own keyboard profiles with the built-in Editor from the Profiles page.',
     'Enable the Daemon Window in Settings if you need a visible audio source for OBS.',
     'Start Keyboard Sounds with your system from Settings for a seamless experience.',

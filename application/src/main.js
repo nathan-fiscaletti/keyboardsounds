@@ -1,4 +1,4 @@
-const { app, ipcMain, shell, BrowserWindow, Menu, Tray, screen, dialog } = require('electron');
+const { app, ipcMain, shell, BrowserWindow, Menu, Tray, screen, dialog, Notification, nativeImage } = require('electron');
 
 import path from 'path';
 
@@ -21,10 +21,86 @@ let justShownWindow = false;
 
 // When enabled, even if NODE_ENV=development, the application will still
 // act as if it is running in a production state.
-const simulateProd = false;
+const simulateProd = true;
 
-const toggleWindow = () => {
-  console.log('toggleWindow() called');
+const getWindowProperties = () => {
+  const appWidth = 500;
+  const appHeight = 800;
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  let coords = {};
+
+  // Calculate the x and y position for the window
+  // Position the window on the bottom right of the screen
+  //
+  // This only applies to windows.
+  if (process.platform === 'win32') {
+    coords = {
+      x: width - appWidth - 10,
+      y: height - appHeight - 10
+    };
+  }
+
+  // Development / Default State for Window
+  const defaultWindowProperties = {
+    // Never changes
+    hiddenInMissionControl: true,
+    fullscreenable: false,
+    maximizable: false,
+
+    // Default size
+    width: 500,
+    height: 800,
+
+    // Changed based on platform / environment
+    show: true,
+    frame: true,
+    resizable: true,
+    movable: true,
+    minimizable: true,
+    alwaysOnTop: true,
+    closable: true,
+
+    // System
+    ...coords,
+    webPreferences: {
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    },
+  };
+
+  let windowProperties = {...defaultWindowProperties};
+
+  const isLinux = process.platform !== 'win32';
+  const isDevelopment = process.env.NODE_ENV === 'development' && !simulateProd;
+
+  // Linux Overrides
+  if (isLinux) {
+    windowProperties = {
+      ...windowProperties,
+      alwaysOnTop: isDevelopment, // Only show the window on top in dev.
+      resizable: isDevelopment,   // Allow resizing the window in dev.
+    };
+  }
+
+  // Windows Overrides
+  if (!isLinux) {
+    windowProperties = {
+      ...windowProperties,
+      show: isDevelopment,        // Start minimized unless in dev.
+      frame: isDevelopment,       // Disable window border and control bar unless in dev.
+      resizable: isDevelopment,   // Resizing is handled automatically in prod.
+      movable: isDevelopment,     // Position is handled automatically in prod.
+      minimizable: isDevelopment, // Window visibility is handled automatically in prod.
+      closable: isDevelopment,    // Closing the window is only permitted in dev.
+      skipTaskbar: !isDevelopment,          // Hide the app on the task bar in prod.
+    };
+  }
+
+  return windowProperties;
+}
+
+const showWindow = () => {
+  console.log('showWindow() called');
   // Check if the window exists and isn't destroyed; if so,
   // focus or restore it.
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -51,54 +127,16 @@ const toggleWindow = () => {
 
   console.log('Creating new mainWindow');
 
-  // Get the primary display's work area size
-  const appWidth = 500;
-  const appHeight = 800;
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-  // Calculate the x and y position for the window
-  // Position the window on the bottom right of the screen
-  const x = width - appWidth - 10;
-  const y = height - appHeight - 10;
+  // Create the browser window.
+  const config = getWindowProperties()
+  mainWindow = new BrowserWindow(config);
 
-  var extraVars = {};
-  console.log(`(container) process.env.NODE_ENV=${process.env.NODE_ENV}`);
-  if (process.env.NODE_ENV === 'development' && !simulateProd) {
-    extraVars = {
-      frame: true,
-      show: true,
-      resizable: true,
-      minimizable: true,
-      skipTaskbar: false,
-      movable: true,
-    };
+  if (process.env.NODE_ENV !== 'development' || simulateProd) {
+    mainWindow.setMenuBarVisibility(false);
   }
 
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    x: x,
-    y: y,
-    frame: false,
-    resizable: false,
-    movable: false,
-    minimizable: false,
-    maximizable: false,
-    closable: false,
-    alwaysOnTop: true,
-    fullscreenable: false,
-    hiddenInMissionControl: true,
-    show: false,
-    width: 500,
-    height: 800,
-    skipTaskbar: true,
-    webPreferences: {
-      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-    },
-
-    ...extraVars,
-  });
-
   // Close the window when it loses focus.
-  if (process.env.NODE_ENV !== 'development' || simulateProd) {
+  if ((process.env.NODE_ENV !== 'development' || simulateProd) && process.platform === 'win32') {
     mainWindow.on('blur', async () => {
       // Don't hide if we just showed the window (prevents race condition)
       if (justShownWindow) {
@@ -169,7 +207,7 @@ if (!gotTheLock) {
       }
       mainWindow.focus();
     } else {
-      toggleWindow();
+      showWindow();
     }
   });
 }
@@ -202,6 +240,12 @@ const initializeSystemTrayAndApp = async () => {
   tray = new Tray(AppIcon);
   const contextMenu = Menu.buildFromTemplate([
     {
+      label: 'Show Keyboard Sounds',
+      type: 'normal',
+      click: () => showWindow(),
+      icon: nativeImage.createFromPath(AppIcon),
+    },
+    {
       label: 'Create Profile',
       type: 'normal',
       click: () => {
@@ -229,7 +273,7 @@ const initializeSystemTrayAndApp = async () => {
   tray.setContextMenu(contextMenu);
 
   // Allow the user to click the tray icon to open or focus the application window
-  tray.on('click', toggleWindow);
+  tray.on('click', showWindow);
 
   // Show notification on launch (production only)
   if (process.env.NODE_ENV !== 'development' || simulateProd) {
@@ -260,29 +304,31 @@ app.whenReady().then(async () => {
   // dock icon is clicked and there are no other windows open.
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      toggleWindow();
+      showWindow();
     }
   });
     
   // Create the main window but don't show it yet
-  toggleWindow();
+  showWindow();
   
   // Wait for the main window to be ready before proceeding
-  await new Promise((resolve) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      if (mainWindow.webContents.isLoading()) {
-        mainWindow.webContents.once('did-finish-load', () => {
+  if (process.platform === 'win32') {
+    await new Promise((resolve) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.webContents.isLoading()) {
+          mainWindow.webContents.once('did-finish-load', () => {
+            mainWindow.hide();
+            resolve();
+          });
+        } else {
           mainWindow.hide();
           resolve();
-        });
+        }
       } else {
-        mainWindow.hide();
         resolve();
       }
-    } else {
-      resolve();
-    }
-  });
+    });
+  }
   
   // Initialize system tray
   await initializeSystemTrayAndApp();
@@ -290,7 +336,7 @@ app.whenReady().then(async () => {
   // Set up a handler that can be called when wizard completes
   kbs.setInitializeSystemTrayHandler(async () => {
     // When wizard completes, create the main window and initialize tray
-    toggleWindow();
+    showWindow();
     
     // Wait for the main window to be ready
     await new Promise((resolve) => {
@@ -329,6 +375,8 @@ app.on('window-all-closed', async () => {
 async function runUpdateCheck() {
   try {
     const update = await kbs.checkForUpdate();
+    const isWindows = process.platform === 'win32';
+
     if (update !== null) {
       const notifyOnUpdate = await kbs.getNotifyOnUpdate();
       if (notifyOnUpdate) {
@@ -336,13 +384,17 @@ async function runUpdateCheck() {
           type: 'info',
           title: 'Keyboard Sounds',
           message: `A new version of Keyboard Sounds is available!`,
-          detail: `${kbs.appVersion} → ${update.tag_name}\n\nWould you like to install it now? The application will be restarted after the update.`,
-          buttons: ['Install and relaunch', 'Remind me later'],
+          detail: `${kbs.appVersion} → ${update.tag_name}\n\n${isWindows ? "Would you like to install it now? The application will be restarted after the update." : "View a full change log and more information on the GitHub Release Page."}`,
+          buttons: [isWindows ? 'Install and relaunch' : 'View on GitHub', 'Remind me later'],
           defaultId: 0,
           cancelId: 1
         }).then(async (response) => {
           if (response.response === 0) {
-            kbs.downloadUpdate();
+            if (isWindows) {
+              kbs.downloadUpdate();
+            } else {
+              kbs.openReleaseInBrowser(update);
+            }
           }
         });
       }

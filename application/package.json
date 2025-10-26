@@ -1,5 +1,5 @@
 {
-  "name": "kbs-electron",
+  "name": "kbs",
   "productName": "Keyboard Sounds",
   "version": "2.2.0",
   "description": "https://keyboardsounds.net/",
@@ -33,13 +33,15 @@
     },
     "linux": {
       "target": "deb",
-      "category": "AudioVideo"
+      "category": "AudioVideo",
+      "icon": "./app_icon.icns"
     }
   },
   "scripts": {
     "start": "cross-env NODE_ENV=development electron-forge start",
     "package": "electron-forge package",
     "make-installer:win": "electron-builder -w \"-c.extraMetadata.main=.webpack\\x64\\main\\index.js\"",
+    "make-installer:linux": "electron-builder -l \"-c.extraMetadata.main=.webpack/x64/main/index.js\"",
     "lint": "echo \"No linting configured\""
   },
   "devDependencies": {

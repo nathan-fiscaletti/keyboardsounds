@@ -1,4 +1,4 @@
-const { app, ipcMain, shell, BrowserWindow, Menu, Tray, screen, dialog, Notification, nativeImage } = require('electron');
+const { app, ipcMain, shell, BrowserWindow, Menu, Tray, screen, dialog } = require('electron');
 
 import path from 'path';
 
@@ -243,7 +243,6 @@ const initializeSystemTrayAndApp = async () => {
       label: 'Show Keyboard Sounds',
       type: 'normal',
       click: () => showWindow(),
-      icon: nativeImage.createFromPath(AppIcon),
     },
     {
       label: 'Create Profile',

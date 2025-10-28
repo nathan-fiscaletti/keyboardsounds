@@ -30,7 +30,9 @@ const kbs = {
 			? path.join(process.cwd(), '.runtime')
 			: path.join(process.resourcesPath, '.runtime');
 
-		return Promise.resolve(path.join(runtimePath, 'kbs.exe'));
+		const appName = process.platform === 'win32' ? 'kbs.exe' : 'kbs';
+
+		return Promise.resolve(path.join(runtimePath, appName));
 	},
 
 	kbsCli: function (cmd, print=true) {
@@ -48,6 +50,10 @@ const kbs = {
 				});
 			}).catch(reject);
 		});
+	},
+
+	isLinux: function() {
+		return Promise.resolve(`${process.platform !== 'win32'}`);
 	},
 
 	setSimulateProd: function(val) {
@@ -70,6 +76,12 @@ const kbs = {
 	openInBrowser: function () {
 		return Promise.resolve(
 			shell.openExternal("https://github.com/nathan-fiscaletti/keyboardsounds?ref=KeyboardSounds%20Application")
+		);
+	},
+
+	openReleaseInBrowser: function(release) {
+		return Promise.resolve(
+			shell.openExternal(release.html_url)
 		);
 	},
 
@@ -722,12 +734,21 @@ const kbs = {
 				newHeightNum = Number(newHeight);
 			} catch (e) {}
 
-			animateBounds(this.mainWindow, {
-				x: width  - 510,
-				y: height - newHeightNum - 10,
-				width:  500,
-				height: newHeightNum
-			});
+			if (process.platform !== 'win32') { // isLinux
+				animateBounds(this.mainWindow, {
+					x: this.mainWindow.getBounds().x,
+					y: this.mainWindow.getBounds().y,
+					width:  500,
+					height: newHeightNum
+				});
+			} else {
+				animateBounds(this.mainWindow, {
+					x: width  - 510,
+					y: height - newHeightNum - 10,
+					width:  500,
+					height: newHeightNum
+				});
+			}
 
 			this.mainWindow.setResizable(false);
 		}

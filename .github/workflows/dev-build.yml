@@ -4,11 +4,12 @@ on:
     push:
       branches:
         - dev
+        - linux-desktop
       paths:
         - 'application/**'
 
 jobs:
-  build-desktop-app:
+  build-windows-app:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -106,7 +107,52 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts
+        name: build-artifacts-windows
         path: |
             application/dist/Keyboard-Sounds-Setup-windows-x64.exe
             application/dist/Keyboard-Sounds-Setup-windows-x64.exe.blockmap
+
+  build-linux-app:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+    - name: Build Runtime
+      uses: coactions/setup-xvfb@v1
+      with:
+        run: ./build-runtime.sh
+    - name: Copy profiles to application
+      run: |
+        Copy-Item -Path ./keyboardsounds/profiles -Destination ./application/.runtime/profiles -Recurse
+      shell: pwsh
+    - name: Install Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '18'
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./application
+    - name: Package Webpack
+      run: npm run package
+      working-directory: ./application
+    - name: Build Installer
+      run: npm run make-installer:linux
+      working-directory: ./application
+      env:
+        GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - name: Rename Installer
+      run: mv dist/kbs_*_amd64.deb dist/Keyboard-Sounds-amd64.deb
+      working-directory: ./application
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts-linux
+        path: application/dist/Keyboard-Sounds-amd64.deb

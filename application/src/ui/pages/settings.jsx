@@ -97,7 +97,7 @@ const InputCheckbox = ({title, tip, first, last, checked, onChange=(value)=>{}})
   )
 };
 
-const UpdateMessage = ({appVersion, checkingForUpdate, isUpdateAvailable, update, color, onCheckForUpdateRequested}) => {
+const UpdateMessage = ({appVersion, checkingForUpdate, isUpdateAvailable, update, color, onCheckForUpdateRequested, isLinux}) => {
   const [downloading, setDownloading] = useState(false);
 
   return (
@@ -139,14 +139,16 @@ const UpdateMessage = ({appVersion, checkingForUpdate, isUpdateAvailable, update
               </IconButton>
             </Link>
           </Tooltip>
-          {downloading ? (
-            <CircularProgress size={18} sx={{ ml: 1.25, mr: 1.25 }} />
-          ) : (
-            <Tooltip title="Download Now" placement="top" arrow>
-              <IconButton onClick={() => { setDownloading(true); execute("downloadUpdate").finally(() => setDownloading(false)); }}>
-                <CloudDownloadIcon sx={{ color }} fontSize="small" />
-              </IconButton>
-            </Tooltip>
+          {!isLinux && (
+            downloading ? (
+              <CircularProgress size={18} sx={{ ml: 1.25, mr: 1.25 }} />
+            ) : (
+              <Tooltip title="Download Now" placement="top" arrow>
+                <IconButton onClick={() => { setDownloading(true); execute("downloadUpdate").finally(() => setDownloading(false)); }}>
+                  <CloudDownloadIcon sx={{ color }} fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )
           )}
         </>)}
       </Box>
@@ -173,6 +175,16 @@ const Settings = ({
   const [update, setUpdate] = useState(null);
   const [checkingForUpdate, setCheckingForUpdate] = useState(false);
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
+
+  const [isLinux, setIsLinux] = useState(false);
+
+  useEffect(() => {
+      const run = async () => {
+        const isLinux = await execute("isLinux");
+        setIsLinux(isLinux === `${true}`);
+      };
+      run();
+    }, []);
 
   const checkForUpdate = () => {
     setCheckingForUpdate(true);
@@ -249,16 +261,18 @@ const Settings = ({
           bgcolor: "#292929",
         }}
       >
-        <InputCheckbox
-          checked={notifyOnLaunch}
-          onChange={onNotifyOnLaunchChanged}
-          title="Notify me when the application launches"
-          first />
-        <InputCheckbox
-          checked={notifyOnHide}
-          onChange={onNotifyOnHideChanged}
-          title="Notify me when minimized to System Tray"
-          />
+        {!isLinux && (<>
+          <InputCheckbox
+            checked={notifyOnLaunch}
+            onChange={onNotifyOnLaunchChanged}
+            title="Notify me when the application launches"
+            first />
+          <InputCheckbox
+            checked={notifyOnHide}
+            onChange={onNotifyOnHideChanged}
+            title="Notify me when minimized to System Tray"
+            />
+        </>)}
         <InputCheckbox
           checked={notifyOnUpdate}
           onChange={onNotifyOnUpdateChanged}
@@ -285,7 +299,8 @@ const Settings = ({
           update={update}
           appVersion={appVersion}
           color='#4caf50'
-          onCheckForUpdateRequested={checkForUpdate} />
+          onCheckForUpdateRequested={checkForUpdate}
+          isLinux={isLinux} />
 
         <Box sx={{
           pt: 1.5,

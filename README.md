@@ -6,7 +6,6 @@ https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
 [![Sponsor Me](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
 [![PyPi](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
 [![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
-[![Downloads](https://static.pepy.tech/badge/keyboardsounds)](https://pepy.tech/project/keyboardsounds)
 
 Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.
 
@@ -32,7 +31,11 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 <br><br>
 
 > [!NOTE]\
-> The desktop application is only available for **Windows**. The [command line application](#command-line-macos-linux-or-windows) can be used on any platform that supports Python.
+> The desktop application is only available for **Windows** and **Linux([*](./docs/linux-support.md))**. 
+>
+> * The [command line application](#command-line-macos-linux-or-windows) can be used on any platform that supports Python.
+
+
 
 ## Features
 
@@ -114,20 +117,23 @@ To enable this window you have several options:
 
 ## Uninstalling
 
-You can uninstall the Keyboard Sounds Desktop Application from the "Apps" section of your system Settings application. 
+### Desktop Application
 
-- Uninstalling the desktop app will **not** remove the Python package from your system, you will need to do this manually if you no longer wish to use the Python package using the following command:
+You can uninstall the Keyboard Sounds Desktop Application from the "Apps" section of your system Settings application.
 
-  ```sh
-  $ pip uninstall keyboardsounds
-  ```
+### Command Line Application
+
+```sh
+$ pip uninstall keyboardsounds
+```
 
 ## Development
 
 Documentation for developers who wish to contribute to this project can be found [here](./docs/development.md).
 
+If you have any questions, feel free to  [DM me on Discord](https://discord.gg/gysskqts6z).
+
                         
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/nathan-fiscaletti/keyboardsounds.svg?variant=adaptive)](https://starchart.cc/nathan-fiscaletti/keyboardsounds)
-)

@@ -441,7 +441,7 @@ class DaemonManager:
                 mouse_profile=mouse_profile,
             )
         else:
-            if sys.platform != 'win32':
+            if sys.platform != "win32":
                 pid = os.fork()
                 if pid > 0:
                     return True
@@ -449,13 +449,15 @@ class DaemonManager:
                     try:
                         os.setsid()
                     except OSError as e:
-                        print(f"Child {os.getpid()}: setsid failed: {e}", file=sys.stderr)
+                        print(
+                            f"Child {os.getpid()}: setsid failed: {e}", file=sys.stderr
+                        )
 
                     sys.stdout.flush()
                     sys.stderr.flush()
-                    si = open(os.devnull, 'r')
-                    so = open(os.devnull, 'a+')
-                    se = open(os.devnull, 'a+')
+                    si = open(os.devnull, "r")
+                    so = open(os.devnull, "a+")
+                    se = open(os.devnull, "a+")
 
                     os.dup2(si.fileno(), sys.stdin.fileno())
                     os.dup2(so.fileno(), sys.stdout.fileno())
@@ -484,7 +486,6 @@ class DaemonManager:
                 executable = (
                     sys.executable if getattr(sys, "frozen", False) else sys.argv[0]
                 )
-                print(f"using executable: {executable}")
                 args = [
                     executable,
                     "start-daemon",

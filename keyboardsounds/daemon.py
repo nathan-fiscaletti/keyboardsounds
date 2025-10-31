@@ -2,6 +2,8 @@ import os
 import io
 import subprocess
 from sys import platform
+import threading
+from queue import Queue
 
 import json
 import base64
@@ -50,6 +52,11 @@ __pitch_shift_profile = "both"
 __down = []
 __debug = False
 __sound_cache: dict[int, mixer.Sound] = {}  # Cache mixer.Sound objects by bytes id
+__cache_lock = threading.Lock()  # Lock for sound cache access
+__down_lock = threading.Lock()  # Lock for __down list access
+__sound_queue: Optional[Queue] = None  # Queue for sound playback tasks
+__sound_workers: list[threading.Thread] = []  # Worker threads for sound playback
+__num_sound_workers = 8
 
 # Keep references to listeners so they can be started/stopped dynamically
 __kb_listener: Optional[Listener] = None
@@ -102,6 +109,7 @@ def on_command(command: dict) -> None:
     global __kb_listener, __mouse_listener
     global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
     global __sound_cache
+    global __cache_lock
 
     if "action" in command:
         action = command["action"]
@@ -135,7 +143,8 @@ def on_command(command: dict) -> None:
                                 pass
                             __kb_listener = None
                         # Clear sound cache when profile changes
-                        __sound_cache.clear()
+                        with __cache_lock:
+                            __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -161,7 +170,8 @@ def on_command(command: dict) -> None:
                                 )
                                 __kb_listener.start()
                         # Clear sound cache when profile changes
-                        __sound_cache.clear()
+                        with __cache_lock:
+                            __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -191,7 +201,8 @@ def on_command(command: dict) -> None:
                                 pass
                             __mouse_listener = None
                         # Clear sound cache when profile changes
-                        __sound_cache.clear()
+                        with __cache_lock:
+                            __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -217,7 +228,8 @@ def on_command(command: dict) -> None:
                                 )
                                 __mouse_listener.start()
                         # Clear sound cache when profile changes
-                        __sound_cache.clear()
+                        with __cache_lock:
+                            __sound_cache.clear()
                         if __dm is not None:
                             __dm.update_lock_file(
                                 __volume,
@@ -349,15 +361,15 @@ def __on_press(key):
     global __am
     global __volume
     global __down
+    global __down_lock
 
-    if key in __down:
-        return
+    with __down_lock:
+        if key in __down:
+            return
+        __down.append(key)
 
     sound = __am.get_sound(key, action="press")
     __play_sound(sound, "keyboard")
-
-    # Play the sound
-    __down.append(key)
 
 
 def __on_release(key):
@@ -372,38 +384,94 @@ def __on_release(key):
     """
     global __down
     global __am
+    global __down_lock
 
     sound = __am.get_sound(key, action="release")
     __play_sound(sound, "keyboard")
 
-    __down = [k for k in __down if k != key]
+    with __down_lock:
+        __down = [k for k in __down if k != key]
+
+
+def __sound_worker():
+    """Worker thread that processes sound playback tasks from the queue."""
+    global __sound_queue
+    while True:
+        try:
+            task = __sound_queue.get()
+            if task is None:  # Sentinel value to stop the worker
+                break
+            sound, profile_type = task
+            __play_sound_thread(sound, profile_type)
+        except Exception as e:
+            print(f"Error in sound playback worker: {e}")
+            import traceback
+
+            traceback.print_exc()
+        finally:
+            __sound_queue.task_done()
+
+
+def __init_sound_workers():
+    """Initialize the sound worker threads."""
+    global __sound_queue, __sound_workers, __num_sound_workers
+    if __sound_queue is None:
+        __sound_queue = Queue()
+        for i in range(__num_sound_workers):
+            worker = threading.Thread(
+                target=__sound_worker,
+                name=f"sound_player_{i}",
+                daemon=False,  # Explicitly set as non-daemon
+            )
+            worker.start()
+            __sound_workers.append(worker)
 
 
 def __play_sound(sound, profile_type: str):
+    """Queue a sound for playback."""
+    global __sound_queue
+    if __sound_queue is None:
+        __init_sound_workers()
+    __sound_queue.put((sound, profile_type))
+
+
+def __play_sound_thread(sound, profile_type: str):
     global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
     global __sound_cache
+    global __cache_lock
+    global __volume
 
-    if sound is not None:
-        if __pitch_shift and (
-            __pitch_shift_profile == "both" or profile_type == __pitch_shift_profile
-        ):
-            semitones = random.randint(__pitch_shift_lower, __pitch_shift_upper)
-            clip = pitch_shift_from_bytes(sound, semitones)
-        else:
-            # Cache mixer.Sound objects to avoid recreating them on every keypress
-            sound.seek(0)
-            sound_bytes = sound.read()
-            sound.seek(0)
-            cache_key = id(sound_bytes)
+    if sound is None:
+        return
 
+    # Snapshot globals to avoid race conditions when they change mid-execution
+    pitch_shift = __pitch_shift
+    pitch_shift_lower = __pitch_shift_lower
+    pitch_shift_upper = __pitch_shift_upper
+    pitch_shift_profile = __pitch_shift_profile
+    volume = __volume
+
+    if pitch_shift and (
+        pitch_shift_profile == "both" or profile_type == pitch_shift_profile
+    ):
+        semitones = random.randint(pitch_shift_lower, pitch_shift_upper)
+        clip = pitch_shift_from_bytes(sound, semitones)
+    else:
+        # Cache mixer.Sound objects to avoid recreating them on every keypress
+        sound.seek(0)
+        sound_bytes = sound.read()
+        sound.seek(0)
+        cache_key = id(sound_bytes)
+
+        with __cache_lock:
             if cache_key in __sound_cache:
                 clip = __sound_cache[cache_key]
             else:
                 clip = mixer.Sound(sound)
                 __sound_cache[cache_key] = clip
 
-        clip.set_volume(float(__volume) / float(100))
-        clip.play()
+    clip.set_volume(float(volume) / float(100))
+    clip.play()
 
 
 def __on_mouse_click(x, y, button: Button, pressed: bool):

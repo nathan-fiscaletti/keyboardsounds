@@ -95,6 +95,7 @@ def main():
             else:
                 # For non-Windows frozen builds, use a default
                 from keyboardsounds.version import get_version
+
                 version_number = get_version()
         except Exception:
             version_number = "unknown"
@@ -301,7 +302,7 @@ def main():
             print(
                 f"Semitone range: {args.semitones} ({args.pitch_shift_profile})"
                 if args.semitones
-                else "Off"
+                else "Semitone range: Off"
             )
         elif status == "stale" or status == "free":
             print("Starting Keyboard Sounds daemon...")
@@ -312,7 +313,7 @@ def main():
             print(
                 f"Semitone range: {args.semitones} ({args.pitch_shift_profile})"
                 if args.semitones
-                else "Off"
+                else "Semitone range: Off"
             )
         # Require at least one profile
         if args.profile is None and args.mouse_profile is None:

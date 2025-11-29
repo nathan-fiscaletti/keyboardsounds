@@ -14,8 +14,7 @@ os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 
 if not getattr(sys, "frozen", False):
-    if not LINUX:
-        from importlib.metadata import version
+    from importlib.metadata import version
 
 from keyboardsounds.root import get_root
 

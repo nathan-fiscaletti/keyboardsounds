@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules. Available for Windows, Linux, macOS.">
+    <meta name="keywords" content="keyboard sounds, mechanical keyboard, typing sounds, keyboard audio, sound effects, typing experience, keyboard profiles, audio profiles, Windows, Linux, macOS">
+    <meta name="author" content="Nathan Fiscaletti">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#2b662b">
+    <link rel="canonical" href="https://keyboardsounds.net/">
+    
+    <title>Keyboard Sounds - Add Mechanical Keyboard Sound Effects to Any Keyboard</title>
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://keyboardsounds.net/">
+    <meta property="og:title" content="Keyboard Sounds - Add Mechanical Keyboard Sound Effects to Any Keyboard">
+    <meta property="og:description" content="Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules. Available for Windows, Linux, macOS.">
+    <meta property="og:image" content="https://keyboardsounds.net/banner.png">
+    <meta property="og:image:width" content="1486">
+    <meta property="og:image:height" content="1130">
+    <meta property="og:image:alt" content="Keyboard Sounds - Mechanical Keyboard Sound Effects Application">
+    <meta property="og:site_name" content="Keyboard Sounds">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Keyboard Sounds - Add Mechanical Keyboard Sound Effects to Any Keyboard">
+    <meta name="twitter:description" content="Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.">
+    <meta name="twitter:image" content="https://keyboardsounds.net/banner.png">
+    <meta name="twitter:image:alt" content="Keyboard Sounds - Mechanical Keyboard Sound Effects Application">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11531832051"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-11531832051');
+    </script>
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Keyboard Sounds",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": ["Windows", "Linux", "macOS"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.",
+      "url": "https://keyboardsounds.net/",
+      "author": {
+        "@type": "Person",
+        "name": "Nathan Fiscaletti"
+      },
+      "downloadUrl": "https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest",
+      "softwareVersion": "2.1.1",
+      "featureList": [
+        "Custom keyboard sound profiles",
+        "Application rules",
+        "Randomized pitch shift",
+        "16 built-in profiles",
+        "Profile editor",
+        "Mouse and keyboard audio support"
+      ]
+    }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2b662b;
+            --primary-dark: #255925;
+            --accent-color: #3a8a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --card-bg: #1a1a1a;
+            --border-color: #333333;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0d0d0d 50%, #0a0a0a 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.01) 2px,
+                    rgba(255, 255, 255, 0.01) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.01) 2px,
+                    rgba(255, 255, 255, 0.01) 4px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        main {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Header / Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1a4d1a 0%, #2b662b 25%, #2d5f2d 50%, #3a8a3a 75%, #2b662b 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            transition: border-bottom-left-radius 0.5s ease, border-bottom-right-radius 0.5s ease;
+        }
+        
+        .hero.scrolled {
+            border-bottom-left-radius: 50% 200px;
+            border-bottom-right-radius: 50% 200px;
+        }
+        
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(60, 140, 60, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(43, 102, 43, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(70, 150, 70, 0.15) 0%, transparent 50%);
+            animation: rotateGlow 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotateGlow {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            100% {
+                transform: rotate(360deg) scale(1.2);
+            }
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.03) 2px,
+                    rgba(255, 255, 255, 0.03) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.03) 2px,
+                    rgba(255, 255, 255, 0.03) 4px
+                );
+            animation: gridMove 15s linear infinite;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        @keyframes gridMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+        
+        /* Animated floating shapes - much more visible */
+        .hero-shape {
+            position: absolute;
+            pointer-events: none;
+            filter: blur(40px);
+        }
+        
+        .hero-shape-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(70, 160, 70, 0.3) 0%, rgba(43, 120, 43, 0.2) 40%, transparent 70%);
+            border-radius: 50%;
+            top: -10%;
+            left: -5%;
+            animation: floatShape1 15s ease-in-out infinite;
+        }
+        
+        .hero-shape-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(50, 130, 50, 0.25) 0%, rgba(30, 80, 30, 0.15) 40%, transparent 70%);
+            border-radius: 50%;
+            bottom: -5%;
+            right: -5%;
+            animation: floatShape2 18s ease-in-out infinite;
+        }
+        
+        .hero-shape-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(75, 170, 75, 0.2) 0%, rgba(45, 100, 45, 0.1) 40%, transparent 70%);
+            border-radius: 50%;
+            top: 50%;
+            right: 10%;
+            animation: floatShape3 12s ease-in-out infinite;
+        }
+        
+        .hero-shape-4 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(55, 140, 55, 0.25) 0%, rgba(30, 90, 30, 0.15) 40%, transparent 70%);
+            border-radius: 50%;
+            bottom: 20%;
+            left: 5%;
+            animation: floatShape4 14s ease-in-out infinite;
+        }
+        
+        @keyframes floatShape1 {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            33% {
+                transform: translate(80px, -60px) scale(1.2) rotate(120deg);
+            }
+            66% {
+                transform: translate(-40px, 80px) scale(0.9) rotate(240deg);
+            }
+        }
+        
+        @keyframes floatShape2 {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            33% {
+                transform: translate(-100px, 70px) scale(1.3) rotate(-120deg);
+            }
+            66% {
+                transform: translate(60px, -50px) scale(0.8) rotate(-240deg);
+            }
+        }
+        
+        @keyframes floatShape3 {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            50% {
+                transform: translate(50px, 100px) scale(1.4) rotate(180deg);
+            }
+        }
+        
+        @keyframes floatShape4 {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            50% {
+                transform: translate(-70px, -80px) scale(1.25) rotate(-180deg);
+            }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .scroll-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            animation: bounceScroll 2s ease-in-out infinite;
+            margin-top: 4rem;
+            padding-bottom: 2rem;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .scroll-indicator.hidden {
+            opacity: 0 !important;
+            pointer-events: none;
+            animation: none;
+        }
+        
+        .scroll-indicator-text {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+        
+        .scroll-indicator-arrow {
+            width: 24px;
+            height: 24px;
+            border-right: 3px solid rgba(255, 255, 255, 0.8);
+            border-bottom: 3px solid rgba(255, 255, 255, 0.8);
+            transform: rotate(45deg);
+        }
+        
+        @keyframes bounceScroll {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateY(10px);
+                opacity: 1;
+            }
+        }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .hero .tagline {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            margin-bottom: 4rem;
+            color: var(--text-secondary);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(43, 102, 43, 0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            border: 1px solid rgba(43, 102, 43, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .badge:hover {
+            background: rgba(43, 102, 43, 0.3);
+            transform: translateY(-2px);
+            color: var(--text-primary);
+            border-color: var(--primary-color);
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 4rem;
+            width: 100%;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #ffffff !important;
+            color: var(--primary-dark) !important;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: none !important;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+            color: var(--primary-dark) !important;
+            background: #ffffff !important;
+        }
+        
+        .btn-secondary {
+            background: transparent !important;
+            color: #ffffff !important;
+            border: 2px solid #ffffff !important;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+        
+        .video-container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeInUp 0.8s ease-out 0.8s both;
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .video-container video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+        }
+        
+        .section {
+            margin-bottom: 0;
+            padding: 6rem 2rem;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .section:first-of-type {
+            padding-top: 8rem;
+        }
+        
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .section:not(:first-of-type)::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--primary-color) 20%, 
+                var(--primary-color) 80%, 
+                transparent 100%);
+            opacity: 0.3;
+        }
+        
+        .section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--primary-color) 20%, 
+                var(--primary-color) 80%, 
+                transparent 100%);
+            opacity: 0.3;
+        }
+        
+        .section:last-of-type::after {
+            display: none;
+        }
+        
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            text-align: center;
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(20, 20, 20, 0.9) 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(43, 102, 43, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(43, 102, 43, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-color);
+            box-shadow: 0 15px 40px rgba(43, 102, 43, 0.3), 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+        
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-card li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .feature-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        /* Feature Showcase */
+        .feature-showcase {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: start;
+            margin-bottom: 4rem;
+            padding: 3rem;
+            background: rgba(26, 26, 26, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-showcase.centered-image {
+            align-items: center;
+        }
+        
+        .feature-showcase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 0% 0%, rgba(43, 102, 43, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .feature-showcase::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            pointer-events: none;
+        }
+        
+        .feature-showcase.reverse {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .feature-showcase.reverse .feature-content {
+            order: 2;
+        }
+        
+        .feature-showcase.reverse .feature-image {
+            order: 1;
+        }
+        
+        .feature-showcase.full-width-image {
+            grid-template-columns: 1fr;
+        }
+        
+        .feature-showcase.full-width-image .feature-image {
+            margin-top: 2rem;
+        }
+        
+        .feature-content h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .feature-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-content a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .feature-content a:hover {
+            color: var(--accent-color);
+        }
+        
+        .link-btn {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        
+        .link-btn:hover {
+            background: var(--primary-color);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+        
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            color: var(--accent-color);
+        }
+        
+        /* Override link colors for buttons */
+        .btn,
+        .btn:hover,
+        .btn:visited {
+            color: var(--primary-dark) !important;
+        }
+        
+        .btn-secondary,
+        .btn-secondary:hover,
+        .btn-secondary:visited {
+            color: var(--text-primary) !important;
+        }
+        
+        .link-btn,
+        .link-btn:visited {
+            color: var(--primary-color) !important;
+        }
+        
+        .link-btn:hover {
+            color: var(--text-primary) !important;
+        }
+        
+        .badge,
+        .badge:hover {
+            color: var(--text-primary);
+        }
+        
+        .feature-image {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: none;
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .feature-image:hover {
+            transform: translateY(-5px);
+            box-shadow: none;
+        }
+        
+        .feature-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* Installation Section */
+        .installation {
+            background: rgba(26, 26, 26, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .installation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 0% 0%, rgba(43, 102, 43, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .installation::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            pointer-events: none;
+        }
+        
+        .installation h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .installation ol {
+            padding-left: 1.5rem;
+        }
+        
+        .installation li {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .installation code {
+            background: var(--bg-darker);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            color: var(--primary-color);
+            display: block;
+            margin-top: 0.5rem;
+        }
+        
+        .inline-code {
+            font-style: italic;
+            color: var(--primary-color);
+        }
+        
+        .note {
+            background: rgba(43, 102, 43, 0.15);
+            border-left: 4px solid var(--primary-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(43, 102, 43, 0.3);
+            border-top: 1px solid rgba(43, 102, 43, 0.2);
+            border-bottom: 1px solid rgba(43, 102, 43, 0.2);
+        }
+        
+        .note strong {
+            color: var(--primary-color);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--bg-darker);
+            padding: 4rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--primary-color) 20%, 
+                var(--primary-color) 80%, 
+                transparent 100%);
+            opacity: 0.3;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .footer-text a {
+            color: var(--primary-color);
+        }
+        
+        .footer-text a:hover {
+            color: var(--accent-color);
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .feature-showcase {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-showcase.reverse .feature-content {
+                order: 1;
+            }
+            
+            .feature-showcase.reverse .feature-image {
+                order: 2;
+            }
+            
+            .hero {
+                min-height: auto;
+                padding: 3rem 1rem;
+            }
+            
+            .container {
+                padding: 2rem 1rem;
+            }
+        }
+        
+        /* Discord Button */
+        .discord-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .discord-btn img {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-shape hero-shape-1"></div>
+        <div class="hero-shape hero-shape-2"></div>
+        <div class="hero-shape hero-shape-3"></div>
+        <div class="hero-shape hero-shape-4"></div>
+        <div class="hero-content">
+            <h1>Keyboard Sounds</h1>
+            <p class="tagline">Add sound effects to your typing experience.</p>
+            
+            <div class="video-container">
+                <video src="https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511" controls width="800" style="width: 100%; height: auto; border-radius: 20px;"></video>
+            </div>
+            
+            <div class="cta-buttons">
+                <a href="https://github.com/nathan-fiscaletti/keyboardsounds" class="btn">Download on GitHub</a>
+                <a href="https://discord.gg/gysskqts6z" class="btn btn-secondary discord-btn">
+                    <img src="./dcico.svg" alt="Discord" />
+                    Join Discord
+                </a>
+            </div>
+            <div class="scroll-indicator">
+                <span class="scroll-indicator-text">Scroll</span>
+                <div class="scroll-indicator-arrow"></div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Intro -->
+            <section class="section">
+                <p style="font-size: 1.2rem; text-align: center; color: var(--text-secondary); max-width: 800px; margin: 0 auto 2rem;">
+                    Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. 
+                    It includes 16 built in profiles, a profile editor, and application rules.
+                </p>
+                <div class="badges">
+                    <a href="https://github.com/sponsors/nathan-fiscaletti" class="badge">💸 Sponsor Me!</a>
+                    <a href="https://badge.fury.io/py/keyboardsounds" class="badge">PyPi</a>
+                    <a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE" class="badge">License</a>
+                    <a href="https://github.com/nathan-fiscaletti/keyboardsounds" class="badge">GitHub</a>
+                </div>
+            </section>
+            
+            <!-- Features Overview -->
+            <section class="section">
+                <h2 class="section-title">Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3>Custom Profiles</h3>
+                        <ul>
+                            <li>Support for both <strong>Mouse</strong> and <strong>Keyboard</strong> audio profiles</li>
+                            <li>Comes bundled with sixteen built in profiles (15 keyboard, 1 mouse)</li>
+                            <li>Supports Custom profiles through the editors (<em>.wav</em> and <em>.mp3</em> supported)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>Application Rules</h3>
+                        <ul>
+                            <li>Control behavior based on focused application</li>
+                            <li>Enable only in specific apps (text editor, terminal)</li>
+                            <li>Disable for specific games</li>
+                            <li>Localize sound effects to particular applications</li>
+                        </ul>
+                        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                            <em>Application rules are currently only available for the Windows platform.</em>
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>Randomized Pitch Shift</h3>
+                        <ul>
+                            <li>Change pitch of sound effects randomly</li>
+                            <li>Set lower and upper bounds</li>
+                            <li>Each key press gets a unique pitch</li>
+                            <li>Creates more natural, varied sound</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Custom Profiles Showcase -->
+            <section class="section">
+                <div class="feature-showcase centered-image">
+                    <div class="feature-content">
+                        <h3>Custom Profiles</h3>
+                        <p>
+                            Create and customize your own keyboard sound profiles with support for both mouse and keyboard audio. 
+                            The editor supports <em>.wav</em> and <em>.mp3</em> formats, giving you complete control over your typing experience.
+                        </p>
+                        <p>
+                            <a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/docs/custom-profiles.md" class="link-btn">Learn more about custom profiles</a>
+                        </p>
+                    </div>
+                    <div class="feature-image">
+                        <img src="./images/editor-with-status.png" alt="Custom Profiles Editor">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Application Rules Showcase -->
+            <section class="section">
+                <div class="feature-showcase reverse">
+                    <div class="feature-content">
+                        <h3>Application Rules</h3>
+                        <p>
+                            Keyboard Sounds supports application rules in which you can control the behavior of the sound daemon 
+                            based on the currently focused application. This powerful feature gives you granular control over when 
+                            and where keyboard sounds are played, allowing you to customize your audio experience based on your 
+                            workflow.
+                        </p>
+                        <p>
+                            This allows you to do things like only enabling in your text editor or terminal, disabling it for 
+                            specific games, or localizing the sound effects to a particular application. With application rules, 
+                            you can ensure that keyboard sounds enhance your productivity without becoming a distraction during 
+                            activities that require focus or silence.
+                        </p>
+                        <p>
+                            <a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/docs/app-rules.md" class="link-btn">Read more about application rules</a>
+                        </p>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem;">
+                            <em>Application rules are currently only available for the Windows platform.</em>
+                        </p>
+                    </div>
+                    <div class="feature-image">
+                        <img src="./images/app-rules.png" alt="Application Rules">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Randomized Pitch Shift Showcase -->
+            <section class="section">
+                <div class="feature-showcase centered-image">
+                    <div class="feature-content">
+                        <h3>Randomized Pitch Shift</h3>
+                        <p>
+                            Keyboard Sounds supports randomized pitch shifting in which you can change the pitch of the sound 
+                            effects to a random value between a lower and upper bound.
+                        </p>
+                        <p>
+                            When enabled, each time a key is pressed or a mouse click is made, the pitch of the sound effect 
+                            will be randomized between the lower and upper bound.
+                        </p>
+                    </div>
+                    <div class="feature-image">
+                        <img src="./images/pitch-shift.png" alt="Randomized Pitch Shift">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Command Line Installation -->
+            <section class="section">
+                <h2 class="section-title">Command Line</h2>
+                <div class="installation">
+                    <p style="font-size: 1.1rem; margin-bottom: 2rem; color: var(--text-secondary);">
+                        Keyboard Sounds doesn't have to be installed as a desktop application. It can also be installed as a 
+                        standalone command line application, giving you the flexibility to control keyboard sounds directly from 
+                        your terminal. This is perfect for users who prefer command-line tools or want to integrate Keyboard Sounds 
+                        into their scripting workflows.
+                    </p>
+                    <h3>1. Install Python</h3>
+                    <p>
+                        To install this application as a CLI utility via the Python package, you will need to have Python installed 
+                        on your system. You can download Python from the <a href="https://www.python.org/" target="_blank">official website</a>.
+                    </p>
+                            <div class="note">
+                        <strong>IMPORTANT:</strong> Make sure when you install Python that you check the box that says "Add Python to PATH". 
+                        This will allow you to run Python from the command line, which is a requirement for the application to function correctly.
+                    </div>
+                    
+                    <h3 style="margin-top: 2rem;">2. Install the Keyboard Sounds CLI</h3>
+                    <p>
+                        After you have installed Python, you can install the Keyboard Sounds CLI by running the following command in your terminal.
+                    </p>
+                    <code>$ pip install keyboardsounds</code>
+                    
+                    <h3 style="margin-top: 2rem;">3. Using the CLI</h3>
+                    <p>
+                        To use the Keyboard Sounds CLI, run <em>kbs --help</em> from your command line terminal.
+                    </p>
+                </div>
+            </section>
+            
+            <!-- Platform Note -->
+            <section class="section">
+                <div class="note" style="max-width: 800px; margin: 0 auto;">
+                    <strong>Platform Support:</strong> The desktop application is available for <strong>Windows</strong> and 
+                    <strong>Linux</strong> (<a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/docs/linux-support.md">*</a>). The command line application can be used on 
+                    any platform that supports Python.
+                </div>
+            </section>
+            
+            <!-- OBS Integration -->
+            <section class="section">
+                <h2 class="section-title">Using Keyboard Sounds with OBS</h2>
+                <div class="feature-showcase full-width-image">
+                    <div class="feature-content">
+                        <p>
+                            In order to use Keyboard Sounds with OBS as an isolated audio source, OBS needs a window that it can 
+                            attach to that's connected to the process running the Daemon. <em>This is not the same process as the 
+                            desktop application.</em> To work with this, Keyboard Sounds provides a window that can be enabled 
+                            for the audio daemon.
+                        </p>
+                        <p><strong>To enable this window you have several options:</strong></p>
+                        <ol style="padding-left: 1.5rem; margin-top: 1rem;">
+                            <li><strong>If you ALWAYS want the daemon window:</strong> In the <strong>Settings</strong> tab of the 
+                                Keyboard Sounds Desktop Application, check the "Enable Daemon Window" option. This will start the 
+                                daemon window each time that the sound daemon is started by the desktop application.</li>
+                            <li><strong>If you only want the daemon window on demand:</strong> You can right-click the Keyboard 
+                                Sounds tray icon in your system tray and select the "Show Daemon Window" option. This will only 
+                                work when the daemon is currently running.</li>
+                            <li><strong>If you are using the command line:</strong> Run your <em>kbs start</em> command with 
+                                the <em>-w</em> flag.</li>
+                        </ol>
+                        <div class="note">
+                            <strong>Note:</strong> On linux, you will need to run <em>sudo apt install python3-tk</em> in 
+                            order to use the <em>-w</em> flag with <em>kbs start</em>.
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Development -->
+            <section class="section">
+                <h2 class="section-title">Development</h2>
+                <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">
+                        Documentation for developers who wish to contribute to this project can be found 
+                        <a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/docs/development.md" class="link-btn" style="display: inline; padding: 0.2rem 0.6rem; margin: 0;">here</a>.
+                    </p>
+                    <p>
+                        If you have any questions, feel free to <a href="https://discord.gg/gysskqts6z" class="link-btn" style="display: inline; padding: 0.2rem 0.6rem; margin: 0;">DM me on Discord</a>.
+                    </p>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="https://github.com/nathan-fiscaletti/keyboardsounds">GitHub</a>
+            <a href="https://discord.gg/gysskqts6z">Discord</a>
+            <a href="https://github.com/sponsors/nathan-fiscaletti">Sponsor</a>
+            <a href="https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE">License</a>
+        </div>
+    </footer>
+    
+    <script>
+        // Hide scroll indicator and add rounded bottom to hero when scrolling down
+        (function() {
+            console.log('Scroll indicator script starting...');
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            const heroSection = document.querySelector('.hero');
+            console.log('Scroll indicator element:', scrollIndicator);
+            console.log('Hero section element:', heroSection);
+            
+            if (!scrollIndicator) {
+                console.error('Scroll indicator element not found!');
+            }
+            
+            if (!heroSection) {
+                console.error('Hero section element not found!');
+            }
+            
+            let lastScrollTop = 0;
+            let ticking = false;
+            
+            function updateScrollIndicator() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                console.log('Scroll position:', scrollTop, 'Last scroll:', lastScrollTop);
+                
+                // Hide scroll indicator and add rounded bottom if scrolling down or scrolled more than 100px
+                if (scrollTop > 100 || scrollTop > lastScrollTop) {
+                    if (scrollIndicator) {
+                        console.log('Hiding scroll indicator');
+                        scrollIndicator.classList.add('hidden');
+                        console.log('Has hidden class:', scrollIndicator.classList.contains('hidden'));
+                    }
+                    if (heroSection) {
+                        console.log('Adding rounded bottom to hero');
+                        heroSection.classList.add('scrolled');
+                    }
+                } else if (scrollTop < lastScrollTop && scrollTop <= 100) {
+                    // Show scroll indicator and remove rounded bottom if scrolling back up near the top
+                    if (scrollIndicator) {
+                        console.log('Showing scroll indicator');
+                        scrollIndicator.classList.remove('hidden');
+                        console.log('Has hidden class:', scrollIndicator.classList.contains('hidden'));
+                    }
+                    if (heroSection) {
+                        console.log('Removing rounded bottom from hero');
+                        heroSection.classList.remove('scrolled');
+                    }
+                }
+                
+                lastScrollTop = scrollTop;
+                ticking = false;
+            }
+            
+            window.addEventListener('scroll', function() {
+                console.log('Scroll event fired');
+                if (!ticking) {
+                    window.requestAnimationFrame(updateScrollIndicator);
+                    ticking = true;
+                }
+            });
+            
+            // Initial check
+            console.log('Running initial check...');
+            updateScrollIndicator();
+            console.log('Scroll indicator script initialized');
+        })();
+        
+        // Fade in sections on scroll
+        (function() {
+            const sections = document.querySelectorAll('.section');
+            
+            if (sections.length === 0) {
+                console.log('No sections found for fade-in animation');
+                return;
+            }
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+            
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            // Check initial viewport for sections already visible
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    section.classList.add('visible');
+                    observer.unobserve(section);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
+

@@ -889,6 +889,166 @@
             color: var(--primary-color);
         }
         
+        /* Comparison Table */
+        .comparison-container {
+            background: rgba(26, 26, 26, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .comparison-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 0% 0%, rgba(43, 102, 43, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .comparison-table-wrapper {
+            overflow-x: auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: transparent;
+            margin: 0;
+        }
+        
+        .comparison-table thead {
+            background: rgba(43, 102, 43, 0.1);
+        }
+        
+        .comparison-table th {
+            padding: 1.5rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid rgba(43, 102, 43, 0.3);
+        }
+        
+        .comparison-table th.comparison-feature {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .comparison-table th.comparison-app {
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .comparison-table th.featured-app {
+            background: linear-gradient(135deg, rgba(43, 102, 43, 0.25) 0%, rgba(43, 102, 43, 0.15) 100%);
+            border-left: 3px solid var(--primary-color);
+            border-right: 3px solid var(--primary-color);
+            position: relative;
+        }
+        
+        .comparison-table th.featured-app::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+        
+        .comparison-table th.featured-app .app-header {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .comparison-table th.featured-app .app-icon {
+            box-shadow: 0 0 15px rgba(43, 102, 43, 0.5);
+            border: 2px solid rgba(43, 102, 43, 0.4);
+        }
+        
+        .comparison-table th.featured-app span {
+            font-weight: 700;
+            /* color: var(--primary-color); */
+            text-shadow: 0 0 10px rgba(43, 102, 43, 0.3);
+        }
+        
+        .comparison-table tbody tr td:nth-child(2) {
+            background: linear-gradient(90deg, rgba(43, 102, 43, 0.08) 0%, rgba(43, 102, 43, 0.03) 100%);
+            border-left: 2px solid rgba(43, 102, 43, 0.3);
+            border-right: 2px solid rgba(43, 102, 43, 0.3);
+            position: relative;
+        }
+        
+        .comparison-table tbody tr:hover td:nth-child(2) {
+            background: linear-gradient(90deg, rgba(43, 102, 43, 0.15) 0%, rgba(43, 102, 43, 0.08) 100%);
+            border-left-color: var(--primary-color);
+            border-right-color: var(--primary-color);
+        }
+        
+        .comparison-table tbody tr td:nth-child(2).comparison-check .check-yes {
+            color: var(--primary-color);
+            text-shadow: 0 0 8px rgba(43, 102, 43, 0.6);
+            font-size: 1.6rem;
+        }
+        
+        .app-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .app-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+        }
+        
+        .comparison-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background-color 0.2s ease;
+        }
+        
+        .comparison-table tbody tr:hover {
+            background: rgba(43, 102, 43, 0.05);
+        }
+        
+        .comparison-table td {
+            padding: 1.25rem 1rem;
+            color: var(--text-secondary);
+        }
+        
+        .comparison-table td.comparison-feature {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .comparison-table td.comparison-check {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .comparison-table td.comparison-check .check-yes {
+            color: var(--primary-color);
+        }
+        
+        .comparison-table td.comparison-check .check-no {
+            color: rgba(255, 255, 255, 0.2);
+        }
+        
         /* Footer */
         footer {
             background: var(--bg-darker);
@@ -977,6 +1137,28 @@
             
             .container {
                 padding: 2rem 1rem;
+            }
+            
+            .comparison-container {
+                padding: 1.5rem;
+            }
+            
+            .comparison-table {
+                font-size: 0.9rem;
+            }
+            
+            .comparison-table th,
+            .comparison-table td {
+                padding: 0.75rem 0.5rem;
+            }
+            
+            .app-icon {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .comparison-table td.comparison-check {
+                font-size: 1.2rem;
             }
         }
         
@@ -1142,6 +1324,125 @@
                     </div>
                     <div class="feature-image">
                         <img src="./images/pitch-shift.png" alt="Randomized Pitch Shift">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Comparison Section -->
+            <section class="section">
+                <h2 class="section-title">Feature Comparison</h2>
+                <div class="comparison-container">
+                    <div class="comparison-table-wrapper">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th class="comparison-feature"></th>
+                                    <th class="comparison-app featured-app">
+                                        <div class="app-header">
+                                            <img src="./application/app_icon.png" alt="Keyboard Sounds" class="app-icon">
+                                            <span>Keyboard Sounds</span>
+                                        </div>
+                                    </th>
+                                    <th class="comparison-app">
+                                        <div class="app-header">
+                                            <img src="https://raw.githubusercontent.com/hainguyents13/mechvibes/refs/heads/main/src/assets/icon.png" alt="MechVibes" class="app-icon">
+                                            <span>MechVibes</span>
+                                        </div>
+                                    </th>
+                                    <th class="comparison-app">
+                                        <div class="app-header">
+                                            <img src="https://raw.githubusercontent.com/hainguyents13/mechvibes-dx/refs/heads/main/assets/icon.ico" alt="MechvibesDX" class="app-icon">
+                                            <span>MechvibesDX</span>
+                                        </div>
+                                    </th>
+                                    <th class="comparison-app">
+                                        <div class="app-header">
+                                            <img src="https://github.com/kamillobinski/thock/blob/main/Thock/Assets.xcassets/AppIcon.appiconset/icon_512x512.png?raw=true" alt="Thock" class="app-icon">
+                                            <span>Thock</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="comparison-feature">Mouse Support</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Application Rules</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Randomized Pitch Shift</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">OBS Support</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Profile Editor</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Command Line Interface</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Cross-Platform</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">-</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Custom Profiles</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">High Quality Audio</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Press & Release Sounds</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="comparison-feature">Open Source</td>
+                                    <td class="comparison-check"><span class="check-yes">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                    <td class="comparison-check"><span class="check-no">✓</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>

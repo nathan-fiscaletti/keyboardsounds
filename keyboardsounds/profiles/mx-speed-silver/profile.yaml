@@ -16,8 +16,3 @@ sources:
     source: mx-speed-silver-5.wav
   - id: key6
     source: mx-speed-silver-6.wav
-
-keys:
-  other:
-    - sound: [ key1, key2, key3 ]
-      keys: [ backspace ]

@@ -27,8 +27,9 @@ from pydub import AudioSegment
 
 from pygame import mixer
 
-from pynput.keyboard import Listener
-from pynput.mouse import Listener as MouseListener, Button
+from pynput.mouse import Button
+
+from keyboardsounds.listener import KeyboardListener, MouseListener
 
 from keyboardsounds.profile import Profile, OneShotProfile
 from keyboardsounds.audio_manager import AudioManager
@@ -59,7 +60,7 @@ __sound_workers: list[threading.Thread] = []  # Worker threads for sound playbac
 __num_sound_workers = 8
 
 # Keep references to listeners so they can be started/stopped dynamically
-__kb_listener: Optional[Listener] = None
+__kb_listener: Optional[KeyboardListener] = None
 __mouse_listener: Optional[MouseListener] = None
 try:
     # Ensure pydub knows where ffmpeg is, even if not on PATH
@@ -165,7 +166,7 @@ def on_command(command: dict) -> None:
                             __am = AudioManager(Profile(profile))
                             # Start keyboard listener if not running
                             if __kb_listener is None:
-                                __kb_listener = Listener(
+                                __kb_listener = KeyboardListener(
                                     on_press=__on_press, on_release=__on_release
                                 )
                                 __kb_listener.start()
@@ -593,7 +594,7 @@ def run(
     mixer.init()
     mixer.set_num_channels(32)
     __kb_listener = (
-        Listener(on_press=__on_press, on_release=__on_release)
+        KeyboardListener(on_press=__on_press, on_release=__on_release)
         if __am is not None
         else None
     )

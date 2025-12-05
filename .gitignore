@@ -4,3 +4,4 @@ keyboardsounds.egg-info
 build
 app-version.txt
 version.py
+venv/

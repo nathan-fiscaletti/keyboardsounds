@@ -32,9 +32,15 @@
       "icon": "./app_icon.ico"
     },
     "linux": {
-      "target": "deb",
+      "target": [
+        "deb",
+        "pacman"
+      ],
       "category": "AudioVideo",
       "icon": "./app_icon.icns"
+    },
+    "pacman": {
+      "compression": "xz"
     }
   },
   "scripts": {

@@ -137,6 +137,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.12'
+    - name: Install libarchive-tools
+      run: sudo apt-get install -y libarchive-tools
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
@@ -165,11 +167,15 @@ jobs:
       working-directory: ./application
       env:
         GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-    - name: Rename Installer
-      run: mv dist/kbs_*_amd64.deb dist/Keyboard-Sounds-amd64.deb
+    - name: Rename debian installer
+      run: mv dist/kbs_*_amd64.deb dist/Keyboard-Sounds-Setup-linux-x64.deb
+      working-directory: ./application
+    - name: Rename pacman installer
+      run: mv dist/kbs-*.pacman dist/Keyboard-Sounds-Setup-linux-x64.pacman
       working-directory: ./application
     - name: Upload Artifacts
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          application/dist/Keyboard-Sounds-amd64.deb
+          application/dist/Keyboard-Sounds-Setup-linux-x64.deb
+          application/dist/Keyboard-Sounds-Setup-linux-x64.pacman

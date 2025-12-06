@@ -32,11 +32,6 @@ Then, log out and log back in for the changes to take effect.
 
 Keyboard Sounds is not officially supported when running as root.
 
-## Platform Support
-
-- Supports x86_64 Debian-based Linux distributions (e.g. Ubuntu, Debian, etc.)
-- Supports X11 and Wayland window managers.
-
 ---
 
 To expand support for other Linux distributions and window managers, I'm seeking volunteers to test the application in different environments. As I'm unable to personally test on all setups, your contributions would be invaluable to the project. If you are interested in helping, please [DM me on Discord](https://discord.gg/gysskqts6z).

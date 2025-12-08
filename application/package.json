@@ -1,7 +1,7 @@
 {
   "name": "kbs",
   "productName": "Keyboard Sounds",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "description": "https://keyboardsounds.net/",
   "main": ".webpack/main",
   "repository": {
@@ -32,9 +32,30 @@
       "icon": "./app_icon.ico"
     },
     "linux": {
-      "target": "deb",
+      "target": [
+        "deb",
+        "pacman"
+      ],
       "category": "AudioVideo",
       "icon": "./app_icon.icns"
+    },
+    "pacman": {
+      "compression": "xz",
+      "depends": [
+        "c-ares",
+        "ffmpeg",
+        "gtk3",
+        "libevent",
+        "libvpx",
+        "libxslt",
+        "libxss",
+        "minizip",
+        "nss",
+        "re2",
+        "snappy",
+        "libnotify",
+        "libappindicator-gtk3"
+      ]
     }
   },
   "scripts": {
@@ -62,7 +83,7 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.0.0",
     "electron": "29.2.0",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "^26.0.12",
     "file-loader": "^6.2.0",
     "node-loader": "^2.0.0",
     "style-loader": "^3.0.0"

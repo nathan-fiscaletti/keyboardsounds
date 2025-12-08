@@ -4,9 +4,10 @@ on:
     push:
       branches:
         - dev
-        - linux-desktop
+        - wayland-support
       paths:
         - 'application/**'
+        - '.github/**'
 
 jobs:
   build-windows-app:
@@ -120,6 +121,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.12'
+    - name: Install libarchive-tools
+      run: sudo apt-get install -y libarchive-tools
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
@@ -148,11 +151,19 @@ jobs:
       working-directory: ./application
       env:
         GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-    - name: Rename Installer
-      run: mv dist/kbs_*_amd64.deb dist/Keyboard-Sounds-amd64.deb
+    - name: Rename deb installer
+      run: mv dist/kbs_*_amd64.deb dist/Keyboard-Sounds-Setup-linux-x64.deb
       working-directory: ./application
-    - name: Upload artifacts
+    - name: Rename pacman installer
+      run: mv dist/kbs-*.pacman dist/Keyboard-Sounds-Setup-linux-x64.pacman
+      working-directory: ./application
+    - name: Upload deb installer
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts-linux
-        path: application/dist/Keyboard-Sounds-amd64.deb
+        name: build-artifacts-deb
+        path: application/dist/Keyboard-Sounds-Setup-linux-x64.deb
+    - name: Upload pacman installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts-pacman
+        path: application/dist/Keyboard-Sounds-Setup-linux-x64.pacman

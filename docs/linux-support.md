@@ -1,18 +1,37 @@
-# Keyboard Sounds: Desktop Linux Support
+# Keyboard Sounds: Linux Support
 
 <img align="right" src="../images/linux.png" width="300px">
 
-> [!NOTE]\
-> This documentation is related to the **Desktop** Linux distribution of [Keyboard Sounds](https://keyboardsounds.net). It is not related to the Linux distribution of the [Keyboard Sounds command line application](../#command-line-macos-linux-or-windows)
+## Command Line
+
+The Keyboard Sounds **command line** application is supported on Linux through [`pip`](https://packaging.python.org/en/latest/tutorials/installing-packages/). 
+
+```
+pip install keyboardsounds
+```
+
+## Desktop Application
 
 > [!WARNING]\
 > The Linux distribution of the Keyboard Sounds Desktop Application is currently in beta.
 
 [Download the latest release here](https://github.com/nathan-fiscaletti/keyboardsounds/releases/latest)
 
-### Official Support
+### Using with Wayland
 
-- Supports x86_64 Debian-based Linux distributions (e.g. Ubuntu, Debian, etc.)
-- Supports X Window System (X11) -- does not support Wayland.
+On Wayland, the application will use the libevdev library to listen for keyboard and mouse events. This is necessary because Wayland does not support the X11 event model. 
 
-I'm interested in supporting other Linux distributions and Window managers, but I need help! As I'm unable to test the application on other Linux distributions, I'm looking for volunteers to help me test the application on other Linux distributions. If you are interested in helping, please [DM me on Discord](https://discord.gg/gysskqts6z).
+> [!IMPORTANT] 
+> In order for libevdev to work, your user must be added to the `input` group through `usermod`.
+
+You can add your user to the `input` group by running the following command:
+```bash
+sudo usermod -aG input $USER
+```
+Then, log out and log back in for the changes to take effect.
+
+Keyboard Sounds is not officially supported when running as root.
+
+---
+
+To expand support for other Linux distributions and window managers, I'm seeking volunteers to test the application in different environments. As I'm unable to personally test on all setups, your contributions would be invaluable to the project. If you are interested in helping, please [DM me on Discord](https://discord.gg/gysskqts6z).

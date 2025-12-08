@@ -26,6 +26,7 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 ### Helpful Links
 
 - [Uninstall Keyboard Sounds](#uninstalling)
+- [Linux Support](./docs/linux-support.md)
 - [Developer Documentation](#development)
 
 <br><br>

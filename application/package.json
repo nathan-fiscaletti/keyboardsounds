@@ -1,7 +1,7 @@
 {
   "name": "kbs",
   "productName": "Keyboard Sounds",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "https://keyboardsounds.net/",
   "main": ".webpack/main",
   "repository": {

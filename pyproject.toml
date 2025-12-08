@@ -1,6 +1,6 @@
 [project]
 name = "keyboardsounds"
-version = "6.4.0"
+version = "6.4.1"
 authors = [
   { name="Nathan Fiscaletti", email="nate.fiscaletti@gmail.com" },
 ]
@@ -23,7 +23,7 @@ dependencies=[
   "pydub==0.25.1",
   "audioop-lts==0.2.2; python_version>='3.13'",
   "pyinstaller==6.16.0",
-  "libevdev==0.13.1",
+  "libevdev==0.13.1; sys_platform == 'linux'",
 ]
 
 [project.urls]

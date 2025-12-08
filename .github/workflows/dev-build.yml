@@ -4,7 +4,6 @@ on:
     push:
       branches:
         - dev
-        - wayland-support
       paths:
         - 'application/**'
         - '.github/**'

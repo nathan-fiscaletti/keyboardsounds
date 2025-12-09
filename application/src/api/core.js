@@ -22,6 +22,348 @@ const kbs = {
 	openFileDialogIsOpen: false,
 	appVersion: null, // this is filed in in main.js from package.json
 	simulateProd: false,
+	
+	// Socket connection management
+	_cachedPort: null,
+	_cachedLockFilePath: null,
+	_requestIdCounter: 0,
+
+	// Validates that a port is a valid number within acceptable range
+	validatePort: function(port) {
+		if (port === null || port === undefined) {
+			return false;
+		}
+		const portNum = Number(port);
+		if (isNaN(portNum) || !isFinite(portNum)) {
+			return false;
+		}
+		// Valid port range: 1-65535
+		if (portNum < 1 || portNum > 65535) {
+			return false;
+		}
+		return true;
+	},
+
+	// Resolves the lock file path (matches backend logic)
+	resolveLockFilePath: function() {
+		const homeDir = os.homedir();
+		const isWindows = process.platform === 'win32';
+		const rootDir = isWindows 
+			? path.join(homeDir, 'keyboardsounds')
+			: path.join(homeDir, '.keyboardsounds');
+		return path.join(rootDir, '.lock');
+	},
+
+	// Reads the lock file directly (no CLI call)
+	readLockFile: function() {
+		try {
+			const lockFilePath = this.resolveLockFilePath();
+			this._cachedLockFilePath = lockFilePath;
+			console.log('[SocketAPI] Reading lock file:', lockFilePath);
+			if (!fs.existsSync(lockFilePath)) {
+				console.log('[SocketAPI] Lock file does not exist - daemon not running');
+				// Clear cached port if lock file doesn't exist
+				if (this._cachedPort !== null) {
+					this._cachedPort = null;
+					console.log('[SocketAPI] Cleared cached port - lock file removed');
+				}
+				return null;
+			}
+			const data = fs.readFileSync(lockFilePath, 'utf8');
+			const lockData = JSON.parse(data);
+			if (lockData.api_port) {
+				// Validate port before caching
+				if (this.validatePort(lockData.api_port)) {
+					const portChanged = this._cachedPort !== lockData.api_port;
+					this._cachedPort = lockData.api_port;
+					if (portChanged) {
+						console.log('[SocketAPI] Port cached/updated:', lockData.api_port);
+					}
+				} else {
+					console.log('[SocketAPI] Lock file contains invalid port:', lockData.api_port);
+					// Clear cached port if new port is invalid
+					if (this._cachedPort === lockData.api_port) {
+						this._cachedPort = null;
+						console.log('[SocketAPI] Cleared cached port due to invalid port in lock file');
+					}
+					// Don't cache invalid port, but still return lockData for other fields
+				}
+			} else {
+				console.log('[SocketAPI] Lock file exists but no API port found');
+				// Clear cached port if lock file has no port
+				if (this._cachedPort !== null) {
+					this._cachedPort = null;
+					console.log('[SocketAPI] Cleared cached port - lock file has no port');
+				}
+			}
+			return lockData;
+		} catch (err) {
+			console.log('[SocketAPI] Failed to read lock file:', err);
+			// Clear cached port if lock file read failed
+			if (this._cachedPort !== null) {
+				this._cachedPort = null;
+				console.log('[SocketAPI] Cleared cached port - lock file read failed');
+			}
+			return null;
+		}
+	},
+
+	// Checks if daemon is running by attempting socket connection
+	checkDaemonRunning: function(port) {
+		return new Promise((resolve) => {
+			// Validate port before attempting connection
+			if (!this.validatePort(port)) {
+				console.log(`[SocketAPI] Invalid port for daemon check: ${port}`);
+				// Clear cached port if it matches the invalid port
+				if (this._cachedPort === port) {
+					this._cachedPort = null;
+					console.log(`[SocketAPI] Cleared cached port due to invalid port`);
+				}
+				resolve(false);
+				return;
+			}
+
+			console.log(`[SocketAPI] Checking if daemon is running on port ${port}...`);
+			let socket = null;
+			let resolved = false;
+			
+			try {
+				socket = new Socket();
+				socket.setTimeout(200);
+				
+				socket.once('connect', () => {
+					try {
+						if (!resolved) {
+							resolved = true;
+							console.log(`[SocketAPI] Daemon is running - socket connection successful on port ${port}`);
+							socket.destroy();
+							resolve(true);
+						}
+					} catch (err) {
+						console.log(`[SocketAPI] Error in connect handler:`, err);
+						if (!resolved) {
+							resolved = true;
+							resolve(false);
+						}
+					}
+				});
+				
+				socket.once('error', (err) => {
+					try {
+						if (!resolved) {
+							resolved = true;
+							console.log(`[SocketAPI] Daemon check failed - socket connection error on port ${port}:`, err.message);
+							// Clear cached port if connection failed (stale lock file)
+							if (this._cachedPort === port) {
+								this._cachedPort = null;
+								console.log(`[SocketAPI] Cleared cached port due to connection failure (stale lock file?)`);
+							}
+							resolve(false);
+						}
+					} catch (handlerErr) {
+						console.log(`[SocketAPI] Error in error handler:`, handlerErr);
+						if (!resolved) {
+							resolved = true;
+							resolve(false);
+						}
+					}
+				});
+				
+				socket.once('timeout', () => {
+					try {
+						if (!resolved) {
+							resolved = true;
+							console.log(`[SocketAPI] Daemon check timeout - socket connection timed out on port ${port}`);
+							// Clear cached port if connection timed out (stale lock file)
+							if (this._cachedPort === port) {
+								this._cachedPort = null;
+								console.log(`[SocketAPI] Cleared cached port due to connection timeout (stale lock file?)`);
+							}
+							socket.destroy();
+							resolve(false);
+						}
+					} catch (err) {
+						console.log(`[SocketAPI] Error in timeout handler:`, err);
+						if (!resolved) {
+							resolved = true;
+							resolve(false);
+						}
+					}
+				});
+				
+				socket.connect(port, 'localhost');
+			} catch (err) {
+				console.log(`[SocketAPI] Failed to create socket or connect:`, err);
+				if (!resolved) {
+					resolved = true;
+					// Clear cached port if socket creation failed
+					if (this._cachedPort === port) {
+						this._cachedPort = null;
+						console.log(`[SocketAPI] Cleared cached port due to socket creation failure`);
+					}
+					if (socket) {
+						try {
+							socket.destroy();
+						} catch (destroyErr) {
+							// Ignore destroy errors
+						}
+					}
+					resolve(false);
+				}
+			}
+		});
+	},
+
+	// Sends a request via socket API and waits for response
+	socketRequest: function(port, command) {
+		return new Promise((resolve, reject) => {
+			// Validate port before attempting connection
+			if (!this.validatePort(port)) {
+				console.log(`[SocketAPI] Invalid port for socket request: ${port}`);
+				reject(new Error(`Invalid port: ${port}`));
+				return;
+			}
+
+			const requestId = ++this._requestIdCounter;
+			const request = {
+				id: requestId,
+				...command
+			};
+
+			console.log(`[SocketAPI] Sending request #${requestId} via socket (port ${port}):`, command.action);
+
+			let socket = null;
+			let responseData = '';
+			let resolved = false;
+
+			try {
+				socket = new Socket();
+				socket.setTimeout(5000); // 5 second timeout
+
+				socket.on('data', (data) => {
+					try {
+						responseData += data.toString();
+						const lines = responseData.split('\n');
+						if (lines.length > 1) {
+							// We got a complete response
+							const responseLine = lines[0];
+							try {
+								const decoded = Buffer.from(responseLine, 'base64').toString('utf-8');
+								const response = JSON.parse(decoded);
+								if (response.id === requestId) {
+									if (!resolved) {
+										resolved = true;
+										socket.destroy();
+										if (response.error) {
+											console.log(`[SocketAPI] Request #${requestId} returned error:`, response.error);
+											reject(new Error(response.error));
+										} else {
+											console.log(`[SocketAPI] Request #${requestId} completed successfully`);
+											resolve(response.result);
+										}
+									}
+								}
+							} catch (err) {
+								if (!resolved) {
+									resolved = true;
+									socket.destroy();
+									console.log(`[SocketAPI] Request #${requestId} failed to parse response:`, err);
+									reject(err);
+								}
+							}
+						}
+					} catch (err) {
+						console.log(`[SocketAPI] Error in data handler:`, err);
+						if (!resolved) {
+							resolved = true;
+							socket.destroy();
+							reject(err);
+						}
+					}
+				});
+
+				socket.on('error', (err) => {
+					try {
+						if (!resolved) {
+							resolved = true;
+							socket.destroy();
+							console.log(`[SocketAPI] Request #${requestId} socket error:`, err.message);
+							// Clear cached port if connection failed (stale lock file)
+							if (this._cachedPort === port) {
+								this._cachedPort = null;
+								console.log(`[SocketAPI] Cleared cached port due to socket error (stale lock file?)`);
+							}
+							reject(err);
+						}
+					} catch (handlerErr) {
+						console.log(`[SocketAPI] Error in error handler:`, handlerErr);
+						if (!resolved) {
+							resolved = true;
+							reject(handlerErr);
+						}
+					}
+				});
+
+				socket.on('timeout', () => {
+					try {
+						if (!resolved) {
+							resolved = true;
+							socket.destroy();
+							console.log(`[SocketAPI] Request #${requestId} timed out after 5 seconds`);
+							// Clear cached port if connection timed out (stale lock file)
+							if (this._cachedPort === port) {
+								this._cachedPort = null;
+								console.log(`[SocketAPI] Cleared cached port due to timeout (stale lock file?)`);
+							}
+							reject(new Error('Socket request timeout'));
+						}
+					} catch (err) {
+						console.log(`[SocketAPI] Error in timeout handler:`, err);
+						if (!resolved) {
+							resolved = true;
+							reject(new Error('Socket request timeout'));
+						}
+					}
+				});
+
+				socket.on('connect', () => {
+					try {
+						console.log(`[SocketAPI] Request #${requestId} socket connected, sending request...`);
+						const requestJson = JSON.stringify(request);
+						const requestB64 = Buffer.from(requestJson).toString('base64');
+						socket.write(requestB64 + '\n');
+					} catch (err) {
+						console.log(`[SocketAPI] Error in connect handler:`, err);
+						if (!resolved) {
+							resolved = true;
+							socket.destroy();
+							reject(err);
+						}
+					}
+				});
+
+				socket.connect(port, 'localhost');
+			} catch (err) {
+				console.log(`[SocketAPI] Failed to create socket or connect:`, err);
+				if (!resolved) {
+					resolved = true;
+					// Clear cached port if socket creation failed
+					if (this._cachedPort === port) {
+						this._cachedPort = null;
+						console.log(`[SocketAPI] Cleared cached port due to socket creation failure`);
+					}
+					if (socket) {
+						try {
+							socket.destroy();
+						} catch (destroyErr) {
+							// Ignore destroy errors
+						}
+					}
+					reject(err);
+				}
+			}
+		});
+	},
 
 	// Resolves and caches the absolute path to the kbs executable
 	resolveKbsPath: function() {
@@ -86,17 +428,85 @@ const kbs = {
 	},
 
 	status: function () {
-		return new Promise((resolve, reject) => {
-			this.kbsCli('status --short', false).then((stdout) => {
-				try {
-					const status = JSON.parse(stdout);
-					resolve(status);
-				} catch (err) {
+		return new Promise(async (resolve, reject) => {
+			console.log('[Status] Checking daemon status...');
+			// Try to read lock file first (fast, no process)
+			const lockData = this.readLockFile();
+			
+			if (!lockData || !lockData.api_port) {
+				// Daemon not running - return "not running" status via CLI
+				// This is less frequent, so CLI is acceptable
+				console.log('[Status] Daemon not running - using CLI fallback');
+				this.kbsCli('status --short', false).then((stdout) => {
+					try {
+						const status = JSON.parse(stdout);
+						console.log('[Status] CLI status retrieved successfully');
+						resolve(status);
+					} catch (err) {
+						console.log('[Status] Failed to parse CLI status:', err);
+						reject(err);
+					}
+				}).catch((err) => {
+					console.log('[Status] CLI status command failed:', err);
 					reject(err);
+				});
+				return;
+			}
+
+			// Check if daemon is actually running by testing socket connection
+			const isRunning = await this.checkDaemonRunning(lockData.api_port);
+			
+			if (!isRunning) {
+				// Daemon died - fall back to CLI
+				console.log('[Status] Daemon check failed - using CLI fallback');
+				this.kbsCli('status --short', false).then((stdout) => {
+					try {
+						const status = JSON.parse(stdout);
+						// Clear cached port since daemon is not running
+						this._cachedPort = null;
+						console.log('[Status] CLI status retrieved (daemon not running)');
+						resolve(status);
+					} catch (err) {
+						console.log('[Status] Failed to parse CLI status:', err);
+						reject(err);
+					}
+				}).catch((err) => {
+					console.log('[Status] CLI status command failed:', err);
+					reject(err);
+				});
+				return;
+			}
+
+			// Daemon is running - use socket API (fast, no process)
+			console.log('[Status] Daemon is running - using socket API');
+			try {
+				const status = await this.socketRequest(lockData.api_port, {
+					action: 'get_status'
+				});
+				console.log('[Status] Socket API status retrieved successfully');
+				resolve(status);
+			} catch (err) {
+				// Socket request failed - fall back to CLI
+				console.log('[Status] Socket request failed, falling back to CLI:', err.message);
+				// Clear cached port since socket connection failed (stale lock file)
+				if (this._cachedPort === lockData.api_port) {
+					this._cachedPort = null;
+					console.log('[Status] Cleared cached port due to socket request failure (stale lock file?)');
 				}
-			}).catch((err) => {
-				reject(err);
-			});
+				this.kbsCli('status --short', false).then((stdout) => {
+					try {
+						const status = JSON.parse(stdout);
+						console.log('[Status] CLI status retrieved after socket failure');
+						resolve(status);
+					} catch (parseErr) {
+						console.log('[Status] Failed to parse CLI status:', parseErr);
+						reject(parseErr);
+					}
+				}).catch((cliErr) => {
+					console.log('[Status] CLI status command failed:', cliErr);
+					reject(cliErr);
+				});
+			}
 		});
 	},
 
@@ -396,17 +806,127 @@ const kbs = {
 	},
 
 	executeDaemonCommand: async function(command) {
-		const status = await this.status();
-		if (status.status !== 'running') {
-			return Promise.reject('Keyboard Sounds is not running.');
-		}
+		try {
+			console.log('[ExecuteDaemonCommand] Executing command:', command.action || command);
+			// Try to get port from cached lock file first (fast)
+			let port = this._cachedPort;
+			
+			if (!port) {
+				console.log('[ExecuteDaemonCommand] Port not cached, fetching status...');
+				// Fall back to status check
+				const status = await this.status();
+				if (status.status !== 'running') {
+					console.log('[ExecuteDaemonCommand] Daemon not running, command rejected');
+					return Promise.reject('Keyboard Sounds is not running.');
+				}
+				port = status.api_port;
+				if (port) {
+					this._cachedPort = port;
+					console.log('[ExecuteDaemonCommand] Port cached from status:', port);
+				}
+			} else {
+				console.log('[ExecuteDaemonCommand] Using cached port:', port);
+			}
+			
+			// Validate port before attempting connection
+			if (!this.validatePort(port)) {
+				console.log('[ExecuteDaemonCommand] Invalid port:', port);
+				return Promise.reject('Invalid API port.');
+			}
 
-		const port = status.api_port;
-		const socket = new Socket();
-		socket.connect(port, 'localhost', () => {
-			socket.write(Buffer.from(JSON.stringify(command)).toString('base64') + "\n");
-			socket.destroy();
-		});
+			// Use fire-and-forget socket command (no response expected)
+			console.log('[ExecuteDaemonCommand] Sending fire-and-forget command via socket (port', port + ')');
+			let socket = null;
+			
+			try {
+				socket = new Socket();
+				let commandSent = false;
+				
+				socket.on('connect', () => {
+					try {
+						console.log('[ExecuteDaemonCommand] Socket connected, sending command...');
+						if (!commandSent) {
+							commandSent = true;
+							const commandJson = JSON.stringify(command);
+							const commandB64 = Buffer.from(commandJson).toString('base64');
+							socket.write(commandB64 + "\n");
+							socket.destroy();
+							console.log('[ExecuteDaemonCommand] Command sent, socket closed');
+						}
+					} catch (err) {
+						console.log('[ExecuteDaemonCommand] Error in connect handler:', err);
+						if (socket) {
+							try {
+								socket.destroy();
+							} catch (destroyErr) {
+								// Ignore destroy errors
+							}
+						}
+					}
+				});
+				
+				socket.on('error', (err) => {
+					try {
+						console.log('[ExecuteDaemonCommand] Socket error:', err.message);
+						// Clear cached port if connection failed (stale lock file)
+						if (this._cachedPort === port) {
+							this._cachedPort = null;
+							console.log('[ExecuteDaemonCommand] Cleared cached port due to socket error (stale lock file?)');
+						}
+						if (socket) {
+							try {
+								socket.destroy();
+							} catch (destroyErr) {
+								// Ignore destroy errors
+							}
+						}
+					} catch (handlerErr) {
+						console.log('[ExecuteDaemonCommand] Error in error handler:', handlerErr);
+					}
+				});
+				
+				socket.on('timeout', () => {
+					try {
+						console.log('[ExecuteDaemonCommand] Socket timeout');
+						// Clear cached port if connection timed out (stale lock file)
+						if (this._cachedPort === port) {
+							this._cachedPort = null;
+							console.log('[ExecuteDaemonCommand] Cleared cached port due to timeout (stale lock file?)');
+						}
+						if (socket) {
+							try {
+								socket.destroy();
+							} catch (destroyErr) {
+								// Ignore destroy errors
+							}
+						}
+					} catch (err) {
+						console.log('[ExecuteDaemonCommand] Error in timeout handler:', err);
+					}
+				});
+				
+				socket.setTimeout(5000); // 5 second timeout
+				socket.connect(port, 'localhost');
+			} catch (err) {
+				console.log('[ExecuteDaemonCommand] Failed to create socket or connect:', err);
+				// Clear cached port if socket creation failed
+				if (this._cachedPort === port) {
+					this._cachedPort = null;
+					console.log('[ExecuteDaemonCommand] Cleared cached port due to socket creation failure');
+				}
+				if (socket) {
+					try {
+						socket.destroy();
+					} catch (destroyErr) {
+						// Ignore destroy errors
+					}
+				}
+				// Don't reject for fire-and-forget commands, just log the error
+			}
+		} catch (err) {
+			console.log('[ExecuteDaemonCommand] Unexpected error:', err);
+			// Don't throw uncaught exceptions for fire-and-forget commands
+		}
 	},
 
 	getVolume: async function() {
@@ -668,17 +1188,83 @@ const kbs = {
 	},
 
 	getState: function() {
-		return new Promise((resolve, reject) => {
-			this.kbsCli('state', false).then((stdout) => {
-				try {
-					const state = JSON.parse(stdout);
-					resolve(state);
-				} catch (err) {
+		return new Promise(async (resolve, reject) => {
+			console.log('[GetState] Fetching daemon state...');
+			// Try to read lock file first (fast, no process)
+			const lockData = this.readLockFile();
+			
+			if (!lockData || !lockData.api_port) {
+				// Daemon not running - use CLI
+				console.log('[GetState] Daemon not running - using CLI fallback');
+				this.kbsCli('state', false).then((stdout) => {
+					try {
+						const state = JSON.parse(stdout);
+						console.log('[GetState] CLI state retrieved successfully');
+						resolve(state);
+					} catch (err) {
+						console.log('[GetState] Failed to parse CLI state:', err);
+						reject(err);
+					}
+				}).catch((err) => {
+					console.log('[GetState] CLI state command failed:', err);
 					reject(err);
+				});
+				return;
+			}
+
+			// Check if daemon is actually running
+			const isRunning = await this.checkDaemonRunning(lockData.api_port);
+			
+			if (!isRunning) {
+				// Daemon died - fall back to CLI
+				console.log('[GetState] Daemon check failed - using CLI fallback');
+				this.kbsCli('state', false).then((stdout) => {
+					try {
+						const state = JSON.parse(stdout);
+						this._cachedPort = null;
+						console.log('[GetState] CLI state retrieved (daemon not running)');
+						resolve(state);
+					} catch (err) {
+						console.log('[GetState] Failed to parse CLI state:', err);
+						reject(err);
+					}
+				}).catch((err) => {
+					console.log('[GetState] CLI state command failed:', err);
+					reject(err);
+				});
+				return;
+			}
+
+			// Daemon is running - use socket API (fast, no process)
+			console.log('[GetState] Daemon is running - using socket API');
+			try {
+				const state = await this.socketRequest(lockData.api_port, {
+					action: 'get_state'
+				});
+				console.log('[GetState] Socket API state retrieved successfully');
+				resolve(state);
+			} catch (err) {
+				// Socket request failed - fall back to CLI
+				console.log('[GetState] Socket request failed, falling back to CLI:', err.message);
+				// Clear cached port since socket connection failed (stale lock file)
+				if (this._cachedPort === lockData.api_port) {
+					this._cachedPort = null;
+					console.log('[GetState] Cleared cached port due to socket request failure (stale lock file?)');
 				}
-			}).catch((err) => {
-				reject(err);
-			});
+				this.kbsCli('state', false).then((stdout) => {
+					try {
+						const state = JSON.parse(stdout);
+						console.log('[GetState] CLI state retrieved after socket failure');
+						resolve(state);
+					} catch (parseErr) {
+						console.log('[GetState] Failed to parse CLI state:', parseErr);
+						reject(parseErr);
+					}
+				}).catch((cliErr) => {
+					console.log('[GetState] CLI state command failed:', cliErr);
+					reject(cliErr);
+				});
+			}
 		});
 	},
 
@@ -803,14 +1389,39 @@ const kbs = {
 			});
 		};
 
-		setInterval(() => {
+		// Adaptive polling: faster when daemon is running, slower when not
+		let pollInterval = 1000; // Default 1 second
+		let lastDaemonStatus = null;
+		let pollCount = 0;
+		
+		const poll = () => {
+			pollCount++;
 			// Watch the status and notify the renderer process when it changes
 			const performNotify = shouldNotify()
 			if (lastKnownPerformNotify !== performNotify) {
-				console.log('performNotify', performNotify);
+				console.log('[Polling] performNotify changed:', performNotify);
 				lastKnownPerformNotify = performNotify;
 			}
 			if (performNotify) {
+				// Check if daemon is running by reading lock file (fast check)
+				const lockData = this.readLockFile();
+				const daemonRunning = lockData && lockData.api_port;
+				
+				// Adjust polling interval based on daemon status
+				if (daemonRunning && lastDaemonStatus !== 'running') {
+					pollInterval = 1000; // 1 second when running
+					lastDaemonStatus = 'running';
+					console.log(`[Polling] Daemon detected as running - switching to fast polling (${pollInterval}ms)`);
+				} else if (!daemonRunning && lastDaemonStatus !== 'not_running') {
+					pollInterval = 5000; // 5 seconds when not running
+					lastDaemonStatus = 'not_running';
+					console.log(`[Polling] Daemon detected as not running - switching to slow polling (${pollInterval}ms)`);
+				}
+				
+				if (pollCount % 10 === 0 || lastDaemonStatus === 'running') {
+					console.log(`[Polling] Poll #${pollCount} - daemon ${daemonRunning ? 'running' : 'not running'} - using ${daemonRunning ? 'socket API' : 'CLI'} (interval: ${pollInterval}ms)`);
+				}
+				
 				this.getState().then(state => {
 					const status = state.status;
 					const stringifiedStatus = JSON.stringify(status);
@@ -839,6 +1450,7 @@ const kbs = {
 					}
 
 					// Fetch keyboard and mouse profiles separately
+					// These are less frequent operations, so CLI is acceptable
 					Promise.all([
 						this.kbsCli('list-profiles -t keyboard --short', false),
 						this.kbsCli('list-profiles -t mouse --short', false),
@@ -863,10 +1475,21 @@ const kbs = {
 						console.error('Failed to fetch profiles:', err);
 					});
 				}).catch(err => {
-					console.error('Failed to fetch state:', err);
+					console.error('[Polling] Failed to fetch state:', err);
 				});
+			} else {
+				if (pollCount % 20 === 0) {
+					console.log(`[Polling] Poll #${pollCount} - notifications disabled, skipping`);
+				}
 			}
-		}, 1000);
+			
+			// Schedule next poll with adaptive interval
+			setTimeout(poll, pollInterval);
+		};
+		
+		// Start polling
+		console.log('[Polling] Starting adaptive polling system (initial interval: 1000ms)');
+		poll();
 	},
 
 	finalizeProfileEdit: async function(resJsonBase64) {

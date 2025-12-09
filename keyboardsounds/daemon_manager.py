@@ -6,7 +6,6 @@ import time
 import json
 import socket
 import threading
-import tkinter as tk
 import atexit
 from typing import Optional
 
@@ -750,6 +749,8 @@ class DaemonManager:
             self.__thread.start()
 
     def start_daemon_window(self):
+        import tkinter as tk
+
         self.__daemon_window_visible = True
         root = tk.Tk()
         root.title("Keyboard Sounds - Audio Daemon")
@@ -845,7 +846,7 @@ class DaemonManager:
         root.mainloop()
         self.__daemon_window_visible = False
 
-    def _stop_via_gui(self, root: tk.Tk) -> None:
+    def _stop_via_gui(self, root) -> None:
         try:
             # Close the window promptly to avoid UI freeze
             try:

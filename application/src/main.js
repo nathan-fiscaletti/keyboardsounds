@@ -5,6 +5,19 @@ import path from 'path';
 const a = require('electron-squirrel-startup');
 if (a) process.exit(0);
 
+// Global error handlers to prevent uncaught exceptions from crashing the app
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception in main process:', error);
+  // Don't exit the process - log and continue
+  // This prevents the white screen issue
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection in main process:', reason);
+  // Don't exit the process - log and continue
+  // This prevents the white screen issue
+});
+
 import { 
   kbs
 } from './api/core';
@@ -21,7 +34,7 @@ let justShownWindow = false;
 
 // When enabled, even if NODE_ENV=development, the application will still
 // act as if it is running in a production state.
-const simulateProd = true;
+const simulateProd = false;
 
 const getWindowProperties = () => {
   const appWidth = 500;

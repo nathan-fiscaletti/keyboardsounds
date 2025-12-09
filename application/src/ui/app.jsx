@@ -334,7 +334,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if(!appRulesLoaded && appRules.length > 0) {
+    if(!appRulesLoaded && appRules && appRules.length > 0) {
       setAppRulesLoaded(true);
     }
   }, [appRules]);

@@ -4,6 +4,7 @@ on:
     push:
       branches:
         - dev
+        - performance-improvement
       paths:
         - 'application/**'
         - '.github/**'

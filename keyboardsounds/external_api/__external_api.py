@@ -10,7 +10,7 @@ from keyboardsounds.external_api.__connection_handler import _ConnectionHandler
 
 class ExternalAPI:
     def __init__(
-        self, socket: socket.socket, on_command: Callable[[dict], None]
+        self, socket: socket.socket, on_command: Callable[[dict], dict | None]
     ) -> None:
         self.__socket = socket
         self.__continue = True

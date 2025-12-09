@@ -34,6 +34,7 @@ from keyboardsounds.listener import KeyboardListener, MouseListener
 from keyboardsounds.profile import Profile, OneShotProfile
 from keyboardsounds.audio_manager import AudioManager
 from typing import Optional, Any
+import json
 
 WIN32 = platform.lower().startswith("win")
 
@@ -104,13 +105,14 @@ def _to_wav_bytes(input_bytes: bytes) -> bytes:
     return proc.stdout
 
 
-def on_command(command: dict) -> None:
+def on_command(command: dict) -> Optional[dict]:
     global __volume
     global __am, __mam
     global __kb_listener, __mouse_listener
     global __pitch_shift, __pitch_shift_lower, __pitch_shift_upper, __pitch_shift_profile
     global __sound_cache
     global __cache_lock
+    global __dm
 
     if "action" in command:
         action = command["action"]
@@ -290,6 +292,62 @@ def on_command(command: dict) -> None:
                     __mam.profile.name if __mam is not None else None,
                 )
             print(f"Pitch shift set to {semitones}")
+        elif action == "get_status":
+            # Return current status via socket API
+            if __dm is not None:
+                status_json = __dm.status(full=False, short=True)
+                try:
+                    status_data = json.loads(status_json)
+                    return {"result": status_data}
+                except json.JSONDecodeError:
+                    return {"error": "Failed to parse status"}
+            else:
+                return {"error": "DaemonManager not available"}
+        elif action == "get_state":
+            # Return full state (status, rules, profiles) via socket API
+            if __dm is not None:
+                try:
+                    # Get status
+                    status_json = __dm.status(full=False, short=True)
+                    status_data = json.loads(status_json)
+                    
+                    # Get rules (Windows only)
+                    rules_data = None
+                    global_action = None
+                    if WIN32:
+                        from keyboardsounds.app_rules import get_rules
+                        rules = get_rules()
+                        global_action = rules.global_action.value
+                        rules_data = [
+                            {"app_path": rule.app_path, "action": rule.action.value}
+                            for rule in rules.rules
+                        ]
+                    
+                    # Get profiles
+                    profiles_data = [
+                        {
+                            "name": profile["name"],
+                            "author": profile["author"],
+                            "description": profile["description"],
+                        }
+                        for profile in [profile.metadata() for profile in Profile.list()]
+                    ]
+                    
+                    return {
+                        "result": {
+                            "status": status_data,
+                            "global_action": global_action,
+                            "rules": rules_data,
+                            "profiles": profiles_data,
+                        }
+                    }
+                except Exception as e:
+                    return {"error": f"Failed to get state: {str(e)}"}
+            else:
+                return {"error": "DaemonManager not available"}
+    
+    # Return None for fire-and-forget commands (no response expected)
+    return None
 
 
 def pitch_shift_from_bytes(buffer, semitones: float) -> mixer.Sound:

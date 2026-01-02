@@ -9,6 +9,9 @@ https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
 
 Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.
 
+> [!IMPORTANT]\
+> Keyboard Sounds is no longer under active development. While it is still maintained for bug fixes, no new features will be implemented. Development has moved to [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro), a much more modern and performant version of the application.
+
 <img align="right" src="./images/status-new.png" width="300" />
 
 <br>

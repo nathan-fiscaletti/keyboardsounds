@@ -11,6 +11,13 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 
 > [!IMPORTANT]\
 > Keyboard Sounds is no longer under active development. While it is still maintained for bug fixes, no new features will be implemented. Development has moved to [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro), a much more modern and performant version of the application.
+>
+> [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro) includes several new features including:
+>
+> - New backend written in Go with significant performance improvements.
+> - Separate volume controls for mouse and keyboard devices.
+> - New audio effects, and per-device audio effect configurations.
+> - Re-worked application rules with per-application profile selection.
 
 <img align="right" src="./images/status-new.png" width="300" />
 

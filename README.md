@@ -1,14 +1,3 @@
-https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
-
-# Keyboard Sounds
-
-[![Discord](https://img.shields.io/badge/-Join%20the%20Community-gray?logo=discord&logoColor=%23ffffff&labelColor=%235865f2)](https://discord.gg/gysskqts6z)
-[![Sponsor Me](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
-[![PyPi](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
-[![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
-
-Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.
-
 > [!IMPORTANT]\
 > Keyboard Sounds is no longer under active development. While it is still maintained for bug fixes, no new features will be implemented. Development has moved to [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro), a much more modern and performant version of the application.
 >
@@ -19,6 +8,17 @@ Keyboard Sounds is a free application that makes any keyboard sound like a Mecha
 > - Separate volume controls for mouse and keyboard devices.
 > - New audio effects, and per-device audio effect configurations.
 > - Re-worked application rules with per-application profile selection.
+
+https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
+
+# Keyboard Sounds
+
+[![Discord](https://img.shields.io/badge/-Join%20the%20Community-gray?logo=discord&logoColor=%23ffffff&labelColor=%235865f2)](https://discord.gg/gysskqts6z)
+[![Sponsor Me](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
+[![PyPi](https://badge.fury.io/py/keyboardsounds.svg)](https://badge.fury.io/py/keyboardsounds)
+[![License](https://img.shields.io/github/license/nathan-fiscaletti/keyboardsounds.svg)](https://github.com/nathan-fiscaletti/keyboardsounds/blob/master/LICENSE)
+
+Keyboard Sounds is a free application that makes any keyboard sound like a Mechanical Keyboard. It includes 16 built in profiles, a profile editor, and application rules.
 
 <img align="right" src="./images/status-new.png" width="300" />
 

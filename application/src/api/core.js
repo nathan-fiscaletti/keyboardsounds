@@ -79,6 +79,12 @@ const kbs = {
 		);
 	},
 
+	openProInBrowser: function () {
+		return Promise.resolve(
+			shell.openExternal("https://github.com/keyboard-sounds/keyboardsounds-pro")
+		);
+	},
+
 	openReleaseInBrowser: function(release) {
 		return Promise.resolve(
 			shell.openExternal(release.html_url)

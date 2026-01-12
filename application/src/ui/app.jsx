@@ -20,6 +20,10 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import Chip from "@mui/material/Chip";
+import Dialog from "@mui/material/Dialog";
+
+import PreviewImage from "./images/preview.png";
 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
@@ -32,6 +36,8 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import SettingsIcon from "@mui/icons-material/Settings";
 import ForumIcon from '@mui/icons-material/Forum';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import CloseIcon from '@mui/icons-material/Close';
 import { IconButton, Typography, Link } from "@mui/material";
 
 import { execute } from './execute';
@@ -501,6 +507,7 @@ function App() {
   });
 
   const [selectedTab, setSelectedTab] = useState(0);
+  const [chipDialogOpen, setChipDialogOpen] = useState(false);
 
   useEffect(() => {
     if (selectedTab === 0) {        // Audio
@@ -551,6 +558,16 @@ function App() {
           flexDirection: "row",
           alignItems: "center",
         }}>
+          {!isLinux && (
+            <Chip 
+              size="small"
+              label="What's Next?"
+              color="primary"
+              onClick={() => setChipDialogOpen(true)}
+              sx={{ mr: 1.5 }}
+              icon={<NewReleasesIcon />}
+            />
+          )}
           <Tooltip placement="bottom-start" title="View on GitHub" arrow>
             <IconButton sx={{
               mr: 1.5,
@@ -688,6 +705,26 @@ function App() {
 
         </Card>
       )}
+
+      <Dialog open={chipDialogOpen} onClose={() => setChipDialogOpen(false)}>
+        <Box sx={{ p: 2 }}>
+          <Box sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2
+          }}>
+            <Typography variant="h6">Introducing Keyboard Sounds Pro</Typography>
+            <IconButton onClick={() => setChipDialogOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <img src={PreviewImage} alt="Keyboard Sounds Pro Preview" style={{ width: "388px", height: "auto", borderRadius: "16px", textAlign: "center" }} />
+          <Typography variant="body1" sx={{ mt: 2 }}><b>Keyboard Sounds Pro</b> is a free, performance focused reimagining of Keyboard Sounds re-built from the ground up in Go. It includes all the features of the original version, plus many highly requested features.</Typography>
+          <Button fullWidth variant="contained" color="primary" sx={{ mt: 2 }} onClick={() => execute("openProInBrowser")}>Download On GitHub</Button>
+        </Box>
+      </Dialog>
       
     </ThemeProvider>
   );

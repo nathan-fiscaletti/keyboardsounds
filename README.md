@@ -1,13 +1,18 @@
 > [!IMPORTANT]\
-> Keyboard Sounds is no longer under active development. While it is still maintained for bug fixes, no new features will be implemented. Development has moved to [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro), a much more modern and performant version of the application.
+> Keyboard Sounds is no longer under active development. While it is still maintained for bug fixes, no new features will be implemented.
 >
-> [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro) includes several new features including:
+> Development has moved to [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro), a much more modern and performant version of the application.
+>
+> [Keyboard Sounds Pro](https://github.com/keyboard-sounds/keyboardsounds-pro) is totally free.
 >
 > - New backend written in Go with significant performance improvements.
 > - Full application redesign with a more modern look and feel.
-> - Separate volume controls for mouse and keyboard devices.
-> - New audio effects, and per-device audio effect configurations.
-> - Re-worked application rules with per-application profile selection.
+> - Several new and upgraded features including
+>   - **Improved volume control**, featuring control over the volume for both mouse and keyboard devices.
+>   - **Upgraded audio effects**, including pitch-shift, equalizer, and pan.
+>   - **Reimagined application rules**, with per-device configurations and the ability to toggle a rule.
+>   - **On-Screen Keyboard Shortcuts**, useful for steamers and highly configurable.
+>   - **Integrated Hotkeys**, for controlling the applications that can be linked to your StreamDeck.
 
 https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
 

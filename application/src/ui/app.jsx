@@ -558,16 +558,14 @@ function App() {
           flexDirection: "row",
           alignItems: "center",
         }}>
-          {!isLinux && (
-            <Chip 
-              size="small"
-              label="What's Next?"
-              color="primary"
-              onClick={() => setChipDialogOpen(true)}
-              sx={{ mr: 1.5 }}
-              icon={<NewReleasesIcon />}
-            />
-          )}
+          <Chip 
+            size="small"
+            label="What's Next?"
+            color="primary"
+            onClick={() => setChipDialogOpen(true)}
+            sx={{ mr: 1.5 }}
+            icon={<NewReleasesIcon />}
+          />
           <Tooltip placement="bottom-start" title="View on GitHub" arrow>
             <IconButton sx={{
               mr: 1.5,

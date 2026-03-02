@@ -14,6 +14,8 @@
 >   - **On-Screen Keyboard Shortcuts**, useful for steamers and highly configurable.
 >   - **Integrated Hotkeys**, for controlling the applications that can be linked to your StreamDeck.
 
+---
+
 https://github.com/user-attachments/assets/e2ed8513-0241-46ce-8a24-43104580d511
 
 # Keyboard Sounds

@@ -1173,9 +1173,60 @@
             width: 20px;
             height: 20px;
         }
+        
+        /* Pro app notice banner - floats over content */
+        .pro-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(90deg, rgba(43, 102, 43, 0.95) 0%, rgba(43, 102, 43, 0.9) 100%);
+            border-bottom: 1px solid rgba(43, 102, 43, 0.4);
+            padding: 0.75rem 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        .pro-notice a {
+            color: var(--text-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .pro-notice a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+        
+        .pro-notice-icon {
+            display: inline-block;
+            height: 1.25em;
+            width: auto;
+            vertical-align: -0.3em;
+            margin-right: 0.5em;
+            flex-shrink: 0;
+        }
+        
+        .pro-notice .pro-notice-inner {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25em;
+        }
     </style>
 </head>
 <body>
+    <!-- Keyboard Sounds Pro notice -->
+    <div class="pro-notice">
+        <span class="pro-notice-inner">
+            <img class="pro-notice-icon" src="./images/app_icon.png" alt="">
+            <a href="https://keyboardsounds.pro" target="_blank" rel="noopener noreferrer">Keyboard Sounds Pro</a> is now available. A free upgrade including new features and performance improvements.
+        </span>
+    </div>
+    
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-shape hero-shape-1"></div>
